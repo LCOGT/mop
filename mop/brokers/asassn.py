@@ -128,14 +128,13 @@ class ASASSNBroker():
         Creates and saves a ReducedDatum object of the given Target and its associated photometry data
         '''
         targets = targets
-        i = 0
         lightcurvelinks = []
         lightcurvepartlinks = []
         indices_with_photometry_data = []
         rd_list = []
 
         events = events
-        while(i < len(events)):
+        for i,event in enumerate(events):
             samplera = events[i][2]
             sampledec = events[i][3]
             sampleralist = samplera.split(':')
@@ -152,7 +151,6 @@ class ASASSNBroker():
                 if('/photometry/' in s):
                     lightcurvepartlinks.append(link.get('href'))
                     indices_with_photometry_data.append(i)
-            i = i + 1
 
         for partlink in lightcurvepartlinks:
             lightcurvelinks.append(os.path.join('https://asas-sn.osu.edu' + partlink))
@@ -160,8 +158,7 @@ class ASASSNBroker():
         '''
         Reads links with photometry data
         '''
-        k = 0
-        for link in lightcurvelinks:
+        for k,link in enumerate(lightcurvelinks):
             running = True
             hjd = []
             ut_date = []
@@ -183,9 +180,7 @@ class ASASSNBroker():
                     page = requests.get(functional_link)
                     doc = lh.fromstring(page.content)
                     tr_elements = doc.xpath('//tr')
-                    h = 0
                     for t in tr_elements[0]:
-                        h += 1
                         content = t.text_content()
                         table.append((content, []))
                     for m in range(1, len(tr_elements)):
@@ -226,8 +221,7 @@ class ASASSNBroker():
                     running == False
                     break
                 i = i + 1
-            n = 0
-            while(n < len(hjd)):
+            for n, HJD in enumerate(hjd):  # repeats for all of the data points on the link for a specific target
                 data = {'magnitude': mag[n], 'filter': myfilter[n],
                     'error': mag_error[n]}
                 time_to_float = float(hjd[n])
@@ -248,10 +242,7 @@ class ASASSNBroker():
                                         data_type='photometry',
                                         target=target)
                                 rd.save()
+                            rd_list.append(rd)
                 else:
                     pass
-                
-                rd_list.append(rd)
-                n = n + 1  # repeats for all of the data points on the link for a specific target
-            k = k + 1  # repeats for all targets 
         return rd_list
