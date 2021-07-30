@@ -3,7 +3,7 @@ from tom_observations.facilities import lco
 from tom_observations.cadence import CadenceForm
 from tom_observations.models import ObservationRecord
 from mop.toolbox.obs_details import all_night_moon_sep, calculate_visibility
-
+from astropy.time import Time
 from mop.toolbox import TAP
 import datetime
 from django.conf import settings
@@ -216,8 +216,7 @@ def build_and_submit_phot(target, obs_type):
 
        #Probably gonna need a MUSCAT exception
 
-       start = datetime.datetime.utcnow().isoformat()
-       end  = (datetime.datetime.utcnow()+datetime.timedelta(days=obs_duration)).isoformat()
+
 
        mag_now = TAP.TAP_mag_now(target)
        mag_exposure = mag_now
@@ -230,8 +229,11 @@ def build_and_submit_phot(target, obs_type):
 
        if telescope_class == '2m':
 
-          visible_at_muscat = calculate_visibility(target.ra, target.dec, start, end, 'OSS', max_airmass=max_airmass)
-          moon_sep_at_muscat = all_night_moon_sep(target.ra, target.dec, start, end, 'OSS', sample_size=75)
+          start = Time(datetime.datetime.utcnow())
+          end  = Time(datetime.datetime.utcnow()+datetime.timedelta(days=obs_duration))
+
+          visible_at_muscat = calculate_visibility(target.ra, target.dec, start, end, 'OGG', max_airmass=max_airmass)
+          moon_sep_at_muscat = all_night_moon_sep(target.ra, target.dec, start, end, 'OGG', sample_size=75)
 
           if visible_at_muscat and min(moon_sep_at_muscat[0]) >= 15:
               build_and_submit_muscat(target, obs_type)
@@ -252,7 +254,8 @@ def build_and_submit_phot(target, obs_type):
        # ip alone
        obs_dic = {}
 
-
+       start = datetime.datetime.utcnow().isoformat()
+       end  = (datetime.datetime.utcnow()+datetime.timedelta(days=obs_duration)).isoformat()
        obs_dic['name'] = obs_name
        obs_dic['target_id'] = target.id
        obs_dic['start'] = start
@@ -363,7 +366,6 @@ def build_and_submit_muscat(target, obs_type):
        #Defaults
        observing_type  = 'IMAGING'
        instrument_type = '2M0-SCICAM-MUSCAT'
-       type = 'REPEAT_EXPOSE'
        proposal =  os.getenv('LCO_PROPOSAL_ID')
        facility = 'LCO'
        observation_mode = 'NORMAL'
@@ -416,13 +418,16 @@ def build_and_submit_muscat(target, obs_type):
        exposure_time_z = exposure_time_i
        exposure_time = max(exposure_time_g, exposure_time_r, exposure_time_i, exposure_time_z)
 
-       diffuser_g_position = 'OUT'
-       diffuser_r_position = 'OUT'
-       diffuser_i_position = 'OUT'
-       diffuser_z_position = 'OUT'
+       diffuser_g_position = 'out'
+       diffuser_r_position = 'out'
+       diffuser_i_position = 'out'
+       diffuser_z_position = 'out'
 
+       start = datetime.datetime.utcnow().isoformat()
+       end  = (datetime.datetime.utcnow()+datetime.timedelta(days=obs_duration)).isoformat()
 
        obs_dic = {} # ASYNCHRONOUS MODE
+
        obs_dic['name'] = obs_name
        obs_dic['target_id'] = target.id
        obs_dic['start'] = start
@@ -431,19 +436,18 @@ def build_and_submit_muscat(target, obs_type):
 
        obs_dic['ipp_value'] = ipp
        obs_dic['exposure_count'] = 1
-       # obs_dic['repeat_duration'​] = 14400 # 4 hours. Not sure how to make sure this happens each night
-       obs_dic['exposure_mode'] = 'ASYNCHRONOUS'
        obs_dic['exposure_time_g'] = exposure_time_g
        obs_dic['exposure_time_r'] = exposure_time_r
        obs_dic['exposure_time_i'] = exposure_time_i
        obs_dic['exposure_time_z'] = exposure_time_z
-       obs_dic['exposure_time'] = exposure_time
-       obs_dic['mode'] = 'MUSCAT_FAST'
-       obs_dic['guiding_config'] = 'ON'
-       obs_dic['diffuser_g_position'] = diffuser_g_position
-       obs_dic['diffuser_r_position'] = diffuser_r_position
-       obs_dic['diffuser_i_position'] = diffuser_i_position
-       obs_dic['diffuser_z_position'] = diffuser_z_position
+
+       obs_dic ['diffuser_g_position'] = diffuser_g_position
+       obs_dic ['diffuser_r_position'] = diffuser_r_position
+       obs_dic ['diffuser_i_position'] = diffuser_i_position
+       obs_dic ['diffuser_z_position'] = diffuser_z_position
+
+       obs_dic['guider_mode'] = 'ON'
+       obs_dic['exposure_mode'] = 'ASYNCHRONOUS'
 
        obs_dic['period'] = cadence
        obs_dic['jitter'] = jitter
@@ -452,7 +456,7 @@ def build_and_submit_muscat(target, obs_type):
        obs_dic['proposal'] = proposal
        obs_dic['instrument_type'] = instrument_type
        obs_dic['facility'] = facility
-       obs_dic['type'] = type
+
 
 
        request_obs =  lco.LCOMuscatImagingObservationForm(obs_dic)
