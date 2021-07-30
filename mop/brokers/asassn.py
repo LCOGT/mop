@@ -177,7 +177,7 @@ class ASASSNBroker():
                 functional_link = os.path.join(link+"?page=" + str(i))
                 try:
                     xhtml = self.url_get_contents(functional_link).decode('utf-8')
-                    p = HTMLTableParser()
+                    p = HTMLParser()
                     p.feed(xhtml)
                     dataframe = pd.DataFrame(p.tables)
                     matrix = dataframe.to_numpy()
