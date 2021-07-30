@@ -4,7 +4,6 @@ from astropy.time import Time, TimezoneInfo
 import astropy.units as u
 from bs4 import BeautifulSoup
 import datetime
-from html.parser import HTMLParser
 import lxml.html as lh
 import os
 import pandas as pd
@@ -56,7 +55,7 @@ class ASASSNBroker():
                 data = t.text_content()
                 if i > 0:
                     try:
-                        data = int(data)
+                        data = float(data)
                     except:
                         pass
                 table_list[i][1].append(data)
@@ -95,7 +94,10 @@ class ASASSNBroker():
         list_of_targets = []
         listofevents = events
         for event in listofevents[0:]:
-            target_name = event[0]
+            if("---" in event[0]):
+                target_name = 'ASASSN_MOP_' + event[2] + '_' + event[3]
+            else:
+                target_name = event[0]
             sexagesimal_string = event[2] + " " + event[3]
             cible = SkyCoord(sexagesimal_string, frame=ICRS, unit=(u.hourangle, u.deg))
             try:
@@ -175,46 +177,82 @@ class ASASSNBroker():
             i = 1
             while(running == True):
                 functional_link = os.path.join(link+"?page=" + str(i))
+                table = []
                 try:
-                    xhtml = self.url_get_contents(functional_link).decode('utf-8')
-                    p = HTMLParser()
-                    p.feed(xhtml)
-                    dataframe = pd.DataFrame(p.tables)
-                    matrix = dataframe.to_numpy()
-                    length = len(matrix[0])
-                    j = 1
-                    while(j < length):
-                        hjd.append(matrix[0][j][0])
-                        ut_date.append(matrix[0][j][1])
-                        camera.append(matrix[0][j][2])
-                        myfilter.append(matrix[0][j][3])
-                        mag.append(matrix[0][j][4])
-                        mag_error.append(matrix[0][j][5])
-                        flux.append(matrix[0][j][6])
-                        flux_error.append(matrix[0][j][7])
-                        j = j + 1
 
-                except HTTPError:
+                    page = requests.get(functional_link)
+                    doc = lh.fromstring(page.content)
+                    tr_elements = doc.xpath('//tr')
+                    h = 0
+                    for t in tr_elements[0]:
+                        h += 1
+                        content = t.text_content()
+                        table.append((content, []))
+                    for m in range(1, len(tr_elements)):
+                        row = tr_elements[m]
+                        '''
+                        If row is not of size 8, the data is not from the right table
+                        '''
+                        if len(row) != 8:
+                            break
+                        h = 0
+                        for t in row.iterchildren():
+                            data = t.text_content()
+                            if h>0:
+                                try:
+                                    data = int(data)
+                                except:
+                                    pass
+                            table[h][1].append(data)
+                            h += 1
+                        for element in table[0][1]:
+                            hjd.append(element)
+                        for element in table[1][1]:
+                            ut_date.append(element)
+                        for element in table[2][1]:
+                            camera.append(element)
+                        for element in table[3][1]:
+                            myfilter.append(element)
+                        for element in table[4][1]:
+                            mag.append(float(element))
+                        for element in table[5][1]:
+                            mag_error.append(float(element))
+                        for element in table[6][1]:
+                            flux.append(element)
+                        for element in table[7][1]:
+                            flux_error.append(element)
+
+                except IndexError:
                     running == False
                     break
                 i = i + 1
-            data = {'magnitude': mag, 'myfilter': myfilter,
-                    'error': mag_error}
-            jd = Time(datetime.datetime.now()).jd
-            jd = Time(jd, format='jd', scale='utc')
-            index = indices_with_photometry_data[k]
-            target = targets[index]
-            try:
-                rd = ReducedDatum.objects.get(value=data)
-            except:
-                rd, created = ReducedDatum.objects.get_or_create(
-                    timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                    value=data,
-                    source_name='ASAS-SN',
-                    data_type='photometry',
-                    target=target)
-            if created:
-                rd.save()
-            rd_list.append(rd)
-            k = k + 1
+            n = 0
+            while(n < len(hjd)):
+                data = {'magnitude': mag[n], 'filter': myfilter[n],
+                    'error': mag_error[n]}
+                time_to_float = float(hjd[n])
+                jd = Time(time_to_float, format='jd').jd
+                jd = Time(jd, format='jd', scale='utc')
+                index = indices_with_photometry_data[k]
+                target = targets[index]
+                try:
+                    times = [Time(i.timestamp).jd for i in ReducedDatum.objects.filter(target=target) if i.data_type == 'photometry']
+                except: 
+                    times = []
+                if  (jd.value not in times):  
+                                rd, _ = ReducedDatum.objects.get_or_create(
+                                        timestamp=jd.to_datetime(timezone=TimezoneInfo()),
+                                        value=data,
+                                        source_name='ASAS-SN',
+                                        source_location='ASAS-SN',
+                                        data_type='photometry',
+                                        target=target)
+                                rd.save()
+                                rd_list.append(rd)
+                else:
+                    pass
+                
+
+                n = n + 1  # repeats for all of the data points on the link for a specific target
+            k = k + 1  # repeats for all targets 
         return rd_list

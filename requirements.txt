@@ -1,6 +1,6 @@
 #astroplan==0.8
 #astropy==4.2.1
-tomtoolkit==2.4.0
+tomtoolkit==2.6.8
 #tom_publications==0.1.0
 #tom-antares>=0.1.0
 psycopg2===2.8.4

@@ -35,6 +35,12 @@ runtap:
   schedule: "0 */4 * * *"
   resources: {}
 
+# CronJob: Update observation status
+# runtap:
+  # enabled: true
+  # schedule: "0 */4 * * *"
+ # resources: {}
+
 # CronJob: Harvest ZTF IPAC
 harvestztfipac:
   enabled: true
