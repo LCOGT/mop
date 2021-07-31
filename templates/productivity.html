@@ -1,0 +1,15 @@
+{% extends 'tom_common/base.html' %}
+{% block content %}
+<html>
+<head>
+  <title>Test Plot</title>
+</head>
+<body>
+  {% if graph %}
+  <div style="width:600;height:500">
+    {{ graph|safe }}
+  </div>
+  {% endif %}
+</body>
+</html>
+{% endblock %}

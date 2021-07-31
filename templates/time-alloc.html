@@ -1,0 +1,12 @@
+{% extends 'tom_common/base.html' %}
+{% block content %}
+<p>
+I would like to replace this with a template tag or a list template,
+but it seems to be crashing at the moment :/
+</p>
+<ul>
+  {% for target in targets %}
+  <li>{{ target.name }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

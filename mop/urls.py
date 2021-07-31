@@ -20,4 +20,6 @@ from mop.views import MOPTargetDetailView
 urlpatterns = [
     path('targets/<int:pk>/', MOPTargetDetailView.as_view(), name='detail'),
     path('', include('tom_common.urls')),
+    path('productivity/', include(('productivity.urls', 'productivity'), namespace='productivity')),
+    path('time-alloc/', include(('time-alloc.urls', 'time-alloc'), namespace='time-alloc'))
 ]
