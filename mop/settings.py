@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
+    'mozilla_django_oidc',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -153,14 +154,44 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_URL = f'/{base_path}{base_path_trailing_slash}accounts/login/'
-LOGIN_REDIRECT_URL = f'/{base_path}'
-LOGOUT_REDIRECT_URL = f'/{base_path}'
+# LOGIN_REDIRECT_URL = f'/{base_path}'
+# LOGOUT_REDIRECT_URL = f'/{base_path}'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
+    'mop.auth_backends.KeycloakOIDCAuthenticationBackend',
     'guardian.backends.ObjectPermissionBackend',
 )
+
+LOGIN_URL = f'/{base_path}{base_path_trailing_slash}accounts/login/'
+oidc_login_url = os.environ.get('OIDC_LOGIN_URL_PATH', '')
+if oidc_login_url:
+  LOGIN_URL = f'/{base_path}{base_path_trailing_slash}{oidc_login_url}/'
+
+LOGIN_REDIRECT_URL = os.environ.get('OIDC_REDIRECT_URL', f'/{base_path}')
+LOGOUT_REDIRECT_URL = os.environ.get('OIDC_REDIRECT_URL_POST_LOGOUT', f'/{base_path}')
+
+OIDC_RP_CLIENT_ID = os.environ.get('OIDC_CLIENT_ID', '')
+OIDC_RP_CLIENT_SECRET = os.environ.get('OIDC_CLIENT_SECRET', '')
+OIDC_RP_SCOPES = os.environ.get('OIDC_SCOPES', '')
+if not OIDC_RP_SCOPES:
+  OIDC_RP_SCOPES = "openid profile email"
+OIDC_OP_AUTHORIZATION_ENDPOINT = os.environ.get('OIDC_OP_AUTHORIZATION_ENDPOINT', '')
+OIDC_OP_TOKEN_ENDPOINT = os.environ.get('OIDC_OP_TOKEN_ENDPOINT', '')
+OIDC_OP_USER_ENDPOINT = os.environ.get('OIDC_OP_USER_ENDPOINT', '')
+
+## Required for Keycloak
+OIDC_RP_SIGN_ALGO = os.environ.get('OIDC_RP_SIGN_ALGO', 'RS256')
+OIDC_OP_JWKS_ENDPOINT = os.environ.get('OIDC_OP_JWKS_ENDPOINT', '')
+
+# OIDC_USERNAME_ALGO
+# ref: https://mozilla-django-oidc.readthedocs.io/en/stable/installation.html#generating-usernames
+OIDC_USERNAME_ALGO = 'mop.auth_backends.generate_username'
+
+# SESSION_ENGINE
+# ref: https://github.com/mozilla/mozilla-django-oidc/issues/435#issuecomment-1036372844
+# ref: https://docs.djangoproject.com/en/4.0/topics/http/sessions/
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/

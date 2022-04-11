@@ -24,6 +24,7 @@ trailing_slash = ''
 if base_path:
     trailing_slash = '/'
 urlpatterns = [
+    path(f'''{base_path}{trailing_slash}oidc/''', include('mozilla_django_oidc.urls')),
     path(f'''{base_path}{trailing_slash}targets/<int:pk>/''', MOPTargetDetailView.as_view(), name='detail'),
     path(f'''{base_path}{trailing_slash}''', TemplateView.as_view(
         template_name='tom_common/index.html',
