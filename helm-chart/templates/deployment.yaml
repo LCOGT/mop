@@ -130,11 +130,11 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /{{ .Values.ingress.basePath }}
               port: gunicorn
           readinessProbe:
             httpGet:
-              path: /
+              path: /{{ .Values.ingress.basePath }}
               port: gunicorn
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

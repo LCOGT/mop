@@ -16,8 +16,17 @@ Including another URLconf
 from django.urls import path, include
 
 from mop.views import MOPTargetDetailView
+from django.views.generic import TemplateView
+import os
 
+base_path = os.environ.get('URL_BASE_PATH', '').strip('/')
+trailing_slash = ''
+if base_path:
+    trailing_slash = '/'
 urlpatterns = [
-    path('targets/<int:pk>/', MOPTargetDetailView.as_view(), name='detail'),
-    path('', include('tom_common.urls')),
+    path(f'''{base_path}{trailing_slash}targets/<int:pk>/''', MOPTargetDetailView.as_view(), name='detail'),
+    path(f'''{base_path}{trailing_slash}''', TemplateView.as_view(
+        template_name='tom_common/index.html',
+        extra_context={"base_path": base_path}), name='home'),
+    path(f'''{base_path}{trailing_slash}''', include('tom_common.urls')),
 ]

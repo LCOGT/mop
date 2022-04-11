@@ -76,6 +76,8 @@ build it here and use it everywhere.
 {{- define "mop.backendEnv" -}}
 - name: PYTHONUNBUFFERED
   value: "1"
+- name: URL_BASE_PATH
+  value: {{ .Values.ingress.basePath | quote }}
 - name: DB_HOST
   value: {{ include "mop.dbhost" . | quote }}
 - name: DB_NAME

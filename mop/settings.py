@@ -22,7 +22,11 @@ import tempfile
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
+# Get URL base path
+base_path = os.environ.get('URL_BASE_PATH', '').strip('/')
+base_path_trailing_slash = ''
+if base_path:
+    base_path_trailing_slash = '/'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
@@ -149,9 +153,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = f'/{base_path}{base_path_trailing_slash}accounts/login/'
+LOGIN_REDIRECT_URL = f'/{base_path}'
+LOGOUT_REDIRECT_URL = f'/{base_path}'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
