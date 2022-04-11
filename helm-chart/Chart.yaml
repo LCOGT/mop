@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 name: mop
 description: A Helm chart for Kubernetes for the MOP TOM
 
@@ -13,8 +13,14 @@ description: A Helm chart for Kubernetes for the MOP TOM
 type: application
 
 # This is the chart version. Don't change it. The helmPipeline() appends the git hash to it as needed.
-version: 0.2.0
+version: 0.2.1
 
 # This is the version number of the application being deployed. Don't change it. This value
 # is edited by helmPipeline() to be consistent with the latest git-tag on the master branch of the repository.
 appVersion: 0.0.0
+
+dependencies:
+- name: postgresql
+  version: 8.6.4
+  repository: https://charts.helm.sh/stable
+  condition: useDockerizedDatabase
