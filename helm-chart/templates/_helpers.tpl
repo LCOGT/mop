@@ -76,6 +76,8 @@ build it here and use it everywhere.
 {{- define "mop.backendEnv" -}}
 - name: PYTHONUNBUFFERED
   value: "1"
+- name: URL_BASE_PATH
+  value: {{ .Values.ingress.basePath | quote }}
 - name: DB_HOST
   value: {{ include "mop.dbhost" . | quote }}
 - name: DB_NAME
@@ -107,13 +109,38 @@ build it here and use it everywhere.
 - name: IRSA_USERNAME
   value: {{ .Values.irsaUsername | quote }}
 - name: IRSA_PASSWORD
-  value: {{ .Values.irsaPassword | quote }} 
+  value: {{ .Values.irsaPassword | quote }}
+{{- if .Values.awsExistingSecret }}
+- name: AWS_S3_ENDPOINT_URL
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.awsExistingSecret | quote }}
+      key: "awsEndpointUrl"
+- name: AWS_ACCESS_KEY_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.awsExistingSecret | quote }}
+      key: "awsAccessKeyId"
+- name: AWS_SECRET_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.awsExistingSecret | quote }}
+      key: "awsSecretAccessKey"
+- name: AWS_S3_BUCKET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.awsExistingSecret | quote }}
+      key: "awsS3Bucket"
+{{- else }}
+- name: AWS_S3_ENDPOINT_URL
+  value: {{ .Values.awsEndpointUrl | quote }}
 - name: AWS_ACCESS_KEY_ID
   value: {{ .Values.awsAccessKeyId | quote }}
 - name: AWS_SECRET_ACCESS_KEY
   value: {{ .Values.awsSecretAccessKey | quote }}
 - name: AWS_S3_BUCKET
-  value: {{ .Values.awsS3Bucket | quote }}  
+  value: {{ .Values.awsS3Bucket | quote }}
+{{- end }}
 - name: GEMINI_USERNAME
   value: {{ .Values.geminiUsername | quote }}
 - name: GEMINI_N_API_KEY

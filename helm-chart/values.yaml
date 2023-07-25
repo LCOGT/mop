@@ -153,6 +153,7 @@ service:
 
 ingress:
   enabled: false
+  basePath: ""
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
@@ -216,7 +217,10 @@ lcoProposalId: ""
 lcoUsername: ""
 
 # AWS Credentials
-# These MUST be overriden in secret configuration file
+# If `awsExistingSecret` is specified, all `aws*` params must be included in the specified secret
+awsExistingSecret: ""
+# These MUST be overriden in secret configuration file if `awsExistingSecret` is not specified
+awsEndpointUrl: ""
 awsAccessKeyId: ""
 awsSecretAccessKey: ""
 awsS3Bucket: ""

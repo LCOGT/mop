@@ -54,11 +54,15 @@
             {% endif %}
           </li>
           <li>
-            <a class="btn btn-outline-success" title="logout" href="{% url 'logout' %}">Logout</a>
+            <!-- <a class="btn btn-outline-success" title="logout" href="{% url 'logout' %}">Logout</a> -->
+            <form action="{% url 'oidc_logout' %}" method="post">
+              {% csrf_token %}
+              <input class="btn btn-outline-success" type="submit" value="logout">
+            </form>
           </li>
         {% else %}
           <li class="nav-item">
-            <a class="btn btn-outline-success" title="logout" href="{% url 'login' %}">Login</a>
+            <a class="btn btn-outline-success" title="logout" href="{% url 'oidc_authentication_init' %}">Login</a>
           </li>
         {% endif %}
         </ul>

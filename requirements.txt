@@ -13,3 +13,4 @@ boto3==1.16.61
 lxml==4.9.1
 pandas
 #numpy
+mozilla-django-oidc
