@@ -13,11 +13,12 @@ from django.views.generic.edit import FormView
 from django.contrib import messages
 from mop.toolbox.obs_control import fetch_all_lco_requestgroups, parse_lco_requestgroups
 from mop.forms import TargetClassificationForm, TargetSelectionForm
+from mop.tasks import get_target_visibility_from_site
 from tom_common.mixins import Raise403PermissionRequiredMixin
 from django_filters.views import FilterView
 from guardian.mixins import PermissionListMixin
 from guardian.shortcuts import get_objects_for_user
-from datetime import datetime, timedelta
+import numpy as np
 from mop.toolbox import utilities, querytools
 from mop.toolbox.mop_classes import MicrolensingEvent
 from django.views.generic.list import ListView
@@ -404,8 +405,6 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
         # Configuration:
         # Maximum airmass limit to consider a target visible
         # Number of intervals with which to calculate visibility throughout a single night
-        airmass_max = 2.0
-        visibiliy_intervals = 10
         context = super().get_context_data(*args, **kwargs)
 
         # Parse the date, handling exceptions
@@ -420,7 +419,8 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
                 targets = target_list.targets.all()
             else:
                 targets = get_objects_for_user(request.user, 'tom_targets.view_target').distinct()
-            logger.info('FacilitySelectView: Retrieved ' + str(targets.count()) + ' targets')
+            t1 = datetime.utcnow()
+            logger.info('FacilitySelectView: Retrieved ' + str(targets.count()) + ' targets at ' + repr(t1))
 
             # Configure output target table.
             # The displayed table can be extended to include selected extra_fields for each target,
@@ -440,35 +440,24 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
             # visible at lower airmass than the limit from any site - if so the target is considered to be visible
             observable_targets = []
             for object in targets:
-                airmass_limit = 2.0 # Hardcoded for now
-                logger.info('FacilitySelectView: calculating visibility for ' + object.name)
-                visibility_data = get_sidereal_visibility(
-                    object, start_time, end_time,
-                    visibiliy_intervals, airmass_max,
-                    observation_facility=request.POST.get('observatory')
-                )
-                logger.info('FacilitySelectView: Got visibility data')
-                for site, vis_data in visibility_data.items():
-                    airmass_data = np.array([x for x in vis_data[1] if x])
-                    if len(airmass_data) > 0:
-                        s = SkyCoord(object.ra, object.dec, frame='icrs', unit=(u.deg, u.deg))
-                        target_data = [
-                            object.name, s.ra.to_string(u.hour), s.dec.to_string(u.deg, alwayssign=True),
-                            site, round(airmass_data.min(), 1)
-                        ]
 
-                        # Extract any requested extra parameters for this object, if available
-                        for param in settings.SELECTION_EXTRA_FIELDS:
-                            if param in object.extra_fields.keys():
-                                target_data.append(object.extra_fields[param])
-                            else:
-                                target_data.append(None)
-                        observable_targets.append(target_data)
-                        logger.info('FacilitySelectView: Got observable target ' + object.name)
+                logger.info('FacilitySelectView: calculating visibility for ' + object.name)
+
+                obs_info = get_target_visibility_from_site(
+                    object,
+                    request.POST.get('observatory'),
+                    start_time, end_time,
+                )
+
+                if len(obs_info) > 0:
+                    observable_targets += obs_info
 
             context['observable_targets'] = observable_targets
 
         except ValueError:
             messages.add_message(request, messages.WARNING, "Invalid date given")
+
+        t2 = datetime.utcnow()
+        logger.info('FacilitySelectView: took ' + repr(t2 - t1) + ' in total')
 
         return self.render_to_response(context)

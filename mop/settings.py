@@ -63,7 +63,22 @@ INSTALLED_APPS = [
     'tom_dataproducts',
     'silk',
     'mop',
+    'django_dramatiq',
 ]
+
+DRAMATIQ_BROKER = {
+    "BROKER": "dramatiq.brokers.redis.RedisBroker",
+    "OPTIONS": {
+        "url": "redis://127.0.0.1:6379/0"
+    },
+    "MIDDLEWARE": [
+        "dramatiq.middleware.AgeLimit",
+        "dramatiq.middleware.TimeLimit",
+        "dramatiq.middleware.Callbacks",
+        "dramatiq.middleware.Retries",
+        "django_dramatiq.middleware.DbConnectionsMiddleware",
+    ]
+}
 
 SITE_ID = 1
 
