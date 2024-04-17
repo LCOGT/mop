@@ -163,10 +163,13 @@ def check_planet_priority(planet_priority, planet_priority_error, mag_baseline, 
     # peak or not, with greater flexibiltiy allowed prior to the peak
     criterion1 = (planet_priority>10)
     if time_now >= t_0:
-        criterion2 = (planet_priority/planet_priority_error>3)
+        criterion2 = (planet_priority / planet_priority_error > 3)
     else:
-        criterion2 = ((planet_priority - planet_priority_error) > 0)
-    criterion3 = (mag_baseline-mag_now>2)
+        criterion2 = (planet_priority / planet_priority_error > 0)
+    # Loosening criterion 3 to observe more potential planetary candidates
+    # Might need  based on the survey (some might require amplitude of 2.0
+    # to remove spurious planetary candidates).
+    criterion3 = (mag_baseline - mag_now > 0.3)
     criterion4 = (mag_now<19)
 
     if criterion1 and criterion2 and criterion3 and criterion4:
@@ -190,13 +193,14 @@ def check_long_priority(long_priority, long_priority_error,
     '''
 
     # Criterion on the priority uncertainty depends on whether the event has reached the
-    # peak or not, with greater flexibiltiy allowed prior to the peak
+    # peak or not, with greater flexibility allowed prior to the peak
     criterion1 = (long_priority > 10.0)
     if time_now >= t_0:
-        criterion2 = (long_priority/long_priority_error>3)
+        criterion2 = (long_priority / long_priority_error > 3)
     else:
-        criterion2 = ((long_priority - long_priority_error) > 0)
-    criterion3 = (t_E / t_E_error > 3.0)
+        criterion2 = (long_priority / long_priority_error > 1)
+    # Loosened criterion3, changed from 3 sigma to 1
+    criterion3 = (t_E / t_E_error > 1.0)
     criterion4 = (mag_now < 17.5)
     criterion5 = (red_chi2 < 20.0)
 
