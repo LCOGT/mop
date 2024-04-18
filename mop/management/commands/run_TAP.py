@@ -173,7 +173,7 @@ class Command(BaseCommand):
                                     observing_mode = TAP.TAP_observing_mode(planet_priority, planet_priority_error,
                                                                         long_priority, long_priority_error,
                                                                         tE_pspl, tE_pspl_error, mag_now,
-                                                                        mulens.Baseline_magnitude, red_chi2,
+                                                                        float(mulens.Baseline_magnitude), red_chi2,
                                                                         t0_pspl, time_now)
 
                                 else:
@@ -272,8 +272,9 @@ class Command(BaseCommand):
                         logger.info('runTAP: Time taken to store reduceddatums' + str(t9 - t8))
                         utilities.checkpoint()
 
-                except:
+                except Exception as e:
                     logger.warning('runTAP: Cannot perform TAP for target ' + event.name)
+                    logger.warning('Exception: ' + e)
             logger.info('runTAP: Completed run')
             t10 = datetime.datetime.utcnow()
             logger.info('runTAP: Time taken to complete ' + str(t10 - t1))
