@@ -160,19 +160,24 @@ def check_planet_priority(planet_priority, planet_priority_error, mag_baseline, 
     '''
 
     # Criterion on the priority uncertainty depends on whether the event has reached the
-    # peak or not, with greater flexibiltiy allowed prior to the peak
-    criterion1 = (planet_priority>10)
-    # if time_now >= t_0:
-    #     criterion2 = (planet_priority / planet_priority_error > 3)
-    # else:
-    #     criterion2 = (planet_priority / planet_priority_error > 1)
-    # Loosened criterion 2
-    criterion2 = (planet_priority / planet_priority_error > 1)
+    # peak or not, with greater flexibility allowed prior to the peak
+    criterion1 = (planet_priority > 10)
+    if time_now >= t_0:
+        # Loosened post-peak from 3 sigma to 2 sigma.
+        criterion2 = (planet_priority / planet_priority_error > 2)
+    else:
+        criterion2 = (planet_priority / planet_priority_error > 1)
     # Loosening criterion 3 to observe more potential planetary candidates
     # Might need  based on the survey (some might require amplitude of 2.0
     # to remove spurious planetary candidates).
-    criterion3 = (mag_baseline - mag_now > 0.3)
-    criterion4 = (mag_now<19)
+    # If event is brighter than 17.5 -> lower ampl. limit.
+    # If it's dimmer - 2 mag limit, we don't want to use up too much 1m time
+    # on very dim events.
+    if mag_now < 17.5:
+        criterion3 = (mag_baseline - mag_now > 0.3)
+    else:
+        criterion3 = (mag_baseline - mag_now > 2.)
+    criterion4 = (mag_now < 19.)
 
     if criterion1 and criterion2 and criterion3 and criterion4:
         return True
@@ -180,7 +185,9 @@ def check_planet_priority(planet_priority, planet_priority_error, mag_baseline, 
         return False
 
 def check_long_priority(long_priority, long_priority_error,
-                        t_E, t_E_error, mag_now, red_chi2, t_0, time_now):
+                        t_E, t_E_error, mag_now,
+                        mag_baseline, red_chi2,
+                        t_0, time_now):
     '''
     This function checks if the event status should be changed to priority stellar event.
 
@@ -197,18 +204,18 @@ def check_long_priority(long_priority, long_priority_error,
     # Criterion on the priority uncertainty depends on whether the event has reached the
     # peak or not, with greater flexibility allowed prior to the peak
     criterion1 = (long_priority > 10.0)
-    # if time_now >= t_0:
-    #     criterion2 = (long_priority / long_priority_error > 3)
-    # else:
-    #     criterion2 = (long_priority / long_priority_error > 1)
-    #Loosened criterion 2
-    criterion2 = (long_priority / long_priority_error > 1)
+    if time_now >= t_0:
+        # Loosened post-peak from 3 sigma to 2 sigma.
+        criterion2 = (long_priority / long_priority_error > 2)
+    else:
+        criterion2 = (long_priority / long_priority_error > 1)
     # Loosened criterion3, changed from 3 sigma to 1
     criterion3 = (t_E / t_E_error > 1.0)
     criterion4 = (mag_now < 17.5)
     criterion5 = (red_chi2 < 20.0)
+    criterion6 = (mag_baseline - mag_now > 0.3)
 
-    if criterion1 and criterion2 and criterion3 and criterion4 and criterion5:
+    if criterion1 and criterion2 and criterion3 and criterion4 and criterion5 and criterion6:
         # and (((t_0 - t_now - (3. * (t_0_error + t_E_error))) / t_E) < 1.2)): # turning off events should be handled by Alive status
         if(long_priority > 50.):
             return 'priority'
