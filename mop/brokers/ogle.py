@@ -116,6 +116,7 @@ class OGLEBroker(GenericBroker):
 
     def find_and_ingest_photometry(self, targets):
         current_year = str(int(Time.now().byear))
+        previous_year = str(int(Time.now().byear)-1)
         logger.info('OGLE harvester: ingesting photometry')
 
         for target in targets:
@@ -128,7 +129,7 @@ class OGLEBroker(GenericBroker):
             # it will not otherwise be updating.  Also check to see if the latest
             # datapoint is more recent than those data already ingested, to minimize
             # runtime.
-            if year == current_year:
+            if year == current_year or year == previous_year:
                 photometry = self.read_ogle_lightcurve(target)
                 if t_last_jd:
                     if photometry[-1][0] > t_last_jd:

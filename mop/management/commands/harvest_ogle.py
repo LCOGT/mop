@@ -18,9 +18,16 @@ class Command(BaseCommand):
 
         Ogle = ogle.OGLEBroker()
 
+        # Parse the years for which to harvest target data, since this could be a single
+        # integer or a list:
+        if ',' in options['years']:
+            year_list = options['years'].split(',')
+        else:
+            year_list = [options['years']]
+
         # If a number of events to select is given, make a list of all available events;
         # the random selection is applied later.  If a specific event name is given, fetch data for that event only
-        (list_of_targets, new_targets) = Ogle.fetch_alerts(years=[options['years']], events=str(options['events']))
+        (list_of_targets, new_targets) = Ogle.fetch_alerts(years=year_list, events=str(options['events']))
         logger.info('Identified and ingested '+str(len(list_of_targets))+' target(s) from OGLE survey')
 
         # For the new targets, set the permissions such that all OMEGA team members can see them
