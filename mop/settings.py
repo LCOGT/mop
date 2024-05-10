@@ -33,6 +33,7 @@ DEBUG = ast.literal_eval(os.getenv('DJANGO_DEBUG', 'False'))
 
 ALLOWED_HOSTS = ['*']
 
+TOM_NAME = 'MOP'
 
 # Application definition
 
@@ -120,11 +121,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
-
-
-
-
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -282,7 +281,6 @@ DATA_PRODUCT_TYPES = {
 }
 
 DATA_PROCESSORS = {
-
     'photometry': 'mop.processors.photometry_processor.PhotometryProcessor',
     'spectroscopy': 'mop.processors.spectroscopy_processor.SpectroscopyProcessor',
 }
@@ -308,6 +306,12 @@ BROKERS = {
         'api_key': os.environ.get('TNS_API_KEY','dummy'),
         'bot_id': '164734',
         'bot_name': 'MOP_Bot',
+    }
+}
+
+HARVESTERS = {
+    'TNS': {
+        'api_key': os.environ.get('TNS_API_KEY','dummy'),
     }
 }
 
@@ -427,7 +431,9 @@ OPEN_URLS = ['/mop/Home']
 HOOKS = {
     'target_post_save': 'tom_common.hooks.target_post_save',
     'observation_change_state': 'tom_common.hooks.observation_change_state',
-    'data_product_post_upload': 'tom_dataproducts.hooks.data_product_post_upload'
+    'data_product_post_upload': 'tom_dataproducts.hooks.data_product_post_upload',
+    'data_product_post_save': 'tom_dataproducts.hooks.data_product_post_save',
+    'multiple_data_products_post_save': 'tom_dataproducts.hooks.multiple_data_products_post_save',
 }
 
 AUTO_THUMBNAILS = False
@@ -438,6 +444,10 @@ THUMBNAIL_DEFAULT_SIZE = (200, 200)
 
 HINTS_ENABLED = True
 HINT_LEVEL = 20
+
+# Default Plotly theme setting, can set to any valid theme:
+# 'plotly', 'plotly_white', 'plotly_dark', 'ggplot2', 'seaborn', 'simple_white', 'none'
+PLOTLY_THEME = 'plotly_white'
 
 try:
     from local_settings import * # noqa
