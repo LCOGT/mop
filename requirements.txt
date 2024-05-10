@@ -1,6 +1,6 @@
 tomtoolkit==2.17.0
 psycopg2===2.8.4
-gunicorn[gevent]==20.0.4
+gunicorn[gevent]==22.0.0
 factory_boy==2.12.0
 whitenoise==5.0.1
 pyLIMA==1.9.2
