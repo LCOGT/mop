@@ -15,9 +15,7 @@ import os
 import ast
 import tempfile
 
-
-
-
+import mop.match_managers.matching_event_manager
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -417,6 +415,16 @@ SELECTION_EXTRA_FIELDS = [
     'TAP_priority',
     'TAP_priority_longtE',
 ]
+
+# Define MATCH_MANAGERS here. This is a dictionary that contains a dotted module path to the desired match manager
+# for a given model.
+# For example:
+# MATCH_MANAGERS = {
+#    "Target": "my_custom_code.match_managers.MyCustomTargetMatchManager"
+# }
+MATCH_MANAGERS = {
+    "Target": "mop.match_managers.matching_event_manager.EventMatchManager"
+}
 
 TARGET_PERMISSIONS_ONLY=True
 
