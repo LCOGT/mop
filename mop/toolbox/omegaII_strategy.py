@@ -77,6 +77,15 @@ def determine_obs_config(target, observing_mode, current_mag, time_now, t0, tE):
     exposure_time_ip = TAP.calculate_exptime_omega_sdss_i(current_mag)
     exposure_time_gp = np.min(
         (exposure_time_ip * 3., 600))  # no more than 10 min. Factor 3 returns same SNR for ~(g-i) = 1.2
+
+    ### TEMPORARY EXPTIME CAP
+    # Due to a autoguider failures on the 1m network (known cases ELP/DomeA, CPT/DomeB)
+    # exposure times are capped at 180s, following advice from science support
+    max_exptime = 180.0
+    exposure_time_gp = min(exposure_time_gp, max_exptime)
+    exposure_time_ip = min(exposure_time_ip, max_exptime)
+    ###
+
     for conf in configs:
         conf['exposure_times'] = []
         conf['exposure_counts'] = []
@@ -85,7 +94,14 @@ def determine_obs_config(target, observing_mode, current_mag, time_now, t0, tE):
                 conf['exposure_times'].append(exposure_time_ip)
             elif f == 'SDSS-g':
                 conf['exposure_times'].append(exposure_time_gp)
-            conf['exposure_counts'].append(1)
+
+            ### TEMPORARY EXP COUNT ADJUSTMENT
+            # To compensate for the shorter exposures, if the exposure time
+            # was capped above, then request more exposures.
+            if conf['exposure_times'][-1] == max_exptime:
+                conf['exposure_counts'].append(4)
+            else:
+                conf['exposure_counts'].append(2)
 
         start = datetime.utcnow()
         end = (datetime.utcnow() + timedelta(days=conf['duration']))

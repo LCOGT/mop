@@ -46,7 +46,7 @@ class Command(BaseCommand):
                 tap_list = TargetList(name='OMEGAII')
                 tap_list.save()
             t2 = datetime.datetime.utcnow()
-            logger.info('runTAP: Time taken for tap_list query' + str(t2 - t1))
+            logger.info('runTAP: Time taken for tap_list query ' + str(t2 - t1))
             utilities.checkpoint()
 
             ### Prefetch data on the selected targetset
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             KMTNet_fields = TAP.load_KMTNet_fields()
 
             t3 = datetime.datetime.utcnow()
-            logger.info('runTAP: Time taken for creation of event objects' + str(t3 - t2))
+            logger.info('runTAP: Time taken for creation of event objects ' + str(t3 - t2))
             utilities.checkpoint()
 
             ## Get list of targets for which there are currently-pending observations already in the LCO Portal.
@@ -66,7 +66,7 @@ class Command(BaseCommand):
                         + ' targets: ' + repr(pending_obs))
 
             t4 = datetime.datetime.utcnow()
-            logger.info('runTAP: Time taken to fetch pending obs' + str(t4 - t3))
+            logger.info('runTAP: Time taken to fetch pending obs ' + str(t4 - t3))
             utilities.checkpoint()
 
 
@@ -136,7 +136,7 @@ class Command(BaseCommand):
                         # for this target:
 
                         t6 = datetime.datetime.utcnow()
-                        logger.info('runTAP: Time taken for priority calculations' + str(t6 - t5))
+                        logger.info('runTAP: Time taken for priority calculations ' + str(t6 - t5))
                         utilities.checkpoint()
 
                         # Exclude events that are within the High Cadence Zone
@@ -165,7 +165,7 @@ class Command(BaseCommand):
                             logger.info('runTAP: Event should be observed')
                             # Check target for visibility
                             visible = obs_control.check_visibility(event, Time.now().decimalyear, verbose=False)
-                            logger.info('runTAP: Event visible?  ' + repr(visible))
+                            logger.info('runTAP: Event visible? ' + repr(visible))
 
                             if visible:
                                 if mag_now:
@@ -239,7 +239,7 @@ class Command(BaseCommand):
                         mulens.store_parameter_set(update_extras)
 
                         t8 = datetime.datetime.utcnow()
-                        logger.info('runTAP: Time taken to store extra parameters' + str(t8 - t7))
+                        logger.info('runTAP: Time taken to store extra parameters ' + str(t8 - t7))
                         utilities.checkpoint()
 
                         data = {'tap_planet': planet_priority,
@@ -269,7 +269,7 @@ class Command(BaseCommand):
                             rd.save()
 
                         t9 = datetime.datetime.utcnow()
-                        logger.info('runTAP: Time taken to store reduceddatums' + str(t9 - t8))
+                        logger.info('runTAP: Time taken to store reduceddatums ' + str(t9 - t8))
                         utilities.checkpoint()
 
                 except Exception as e:
