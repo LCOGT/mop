@@ -5,6 +5,7 @@ from mop.toolbox import fittools
 from datetime import datetime
 import json
 import logging
+import pytz
 
 logger = logging.getLogger(__name__)
 
@@ -119,8 +120,8 @@ class MicrolensingEvent():
         """Method to store in the TOM the timeseries lihgtcurve corresponding to a fitted model.
         The input is a model fit object from PyLIMA"""
 
-        # Why is this timestamp hardwired?
-        model_time = datetime.strptime('2018-06-29 08:15:27.243860', '%Y-%m-%d %H:%M:%S.%f')
+        tz = pytz.timezone('utc')
+        model_time = datetime.utcnow().replace(tzinfo=tz)
 
         # Extract the model lightcurve timeseries from the PyLIMA fit object
         data = {

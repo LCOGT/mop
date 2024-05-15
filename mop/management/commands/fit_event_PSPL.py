@@ -31,18 +31,18 @@ class Command(BaseCommand):
         t, created = Target.objects.get_or_create(name= options['target_name'])
         logger.info('Fitting single event: '+t.name)
 
-        try:
-            mulens = MicrolensingEvent(t)
-            mulens.set_extra_params(TargetExtra.objects.filter(target=t))
-            mulens.set_reduced_data(
-                ReducedDatum.objects.filter(target=t).order_by("timestamp")
-            )
+        #try:
+        mulens = MicrolensingEvent(t)
+        mulens.set_extra_params(TargetExtra.objects.filter(target=t))
+        mulens.set_reduced_data(
+            ReducedDatum.objects.filter(target=t).order_by("timestamp")
+        )
 
-            if len(mulens.red_data) > 0:
-                result = run_fit(mulens, cores=options['cores'], verbose=True)
+        if len(mulens.red_data) > 0:
+            result = run_fit(mulens, cores=options['cores'], verbose=True)
 
-        except:
-            logger.warning('Fitting event '+t.name+' hit an exception')
+        #except:
+        #    logger.warning('Fitting event '+t.name+' hit an exception')
 
         connection.close()
         tend = datetime.datetime.utcnow()

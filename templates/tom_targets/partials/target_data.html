@@ -12,18 +12,18 @@
     <h5 style="color: #016603">{{ target.extra_fields.Sky_location }}</h5>
   {% endif %}
 {% endif %}
-{% if 'is_YSO' in target.extra_fields.keys %}
-    {% if target.extra_fields.is_YSO == 'True' %}
+{% if 'YSO' in target.extra_fields.keys %}
+    {% if target.extra_fields.YSO == 'True' %}
         <h5 style="color: #016603">Known YSO</h5>
     {% endif %}
 {% endif %}
-{% if 'is_QSO' in target.extra_fields.keys %}
-    {% if target.extra_fields.is_QSO == 'True' %}
+{% if 'QSO' in target.extra_fields.keys %}
+    {% if target.extra_fields.QSO == 'True' %}
         <h5 style="color: #016603">Known QSO</h5>
     {% endif %}
 {% endif %}
-{% if 'is_galaxy' in target.extra_fields.keys %}
-    {% if target.extra_fields.is_galaxy == 'True' %}
+{% if 'galaxy' in target.extra_fields.keys %}
+    {% if target.extra_fields.galaxy == 'True' %}
         <h5 style="color: #016603">Known galaxy</h5>
     {% endif %}
 {% endif %}

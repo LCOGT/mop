@@ -13,17 +13,17 @@
   {% endif %}
 {% endif %}
 {% if 'YSO' in target.extra_fields.keys %}
-    {% if target.extra_fields.YSO%}
+    {% if target.extra_fields.YSO == 'True' %}
         <h5 style="color: #016603">Known YSO</h5>
     {% endif %}
 {% endif %}
 {% if 'QSO' in target.extra_fields.keys %}
-    {% if target.extra_fields.QSO %}
+    {% if target.extra_fields.QSO == 'True' %}
         <h5 style="color: #016603">Known QSO</h5>
     {% endif %}
 {% endif %}
 {% if 'galaxy' in target.extra_fields.keys %}
-    {% if target.extra_fields.galaxy %}
+    {% if target.extra_fields.galaxy == 'True' %}
         <h5 style="color: #016603">Known galaxy</h5>
     {% endif %}
 {% endif %}
