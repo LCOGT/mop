@@ -35,6 +35,7 @@ class Command(BaseCommand):
                     float(working_target.ra),
                     float(working_target.dec),
                     radius)
+                print(nearby_targets)
 
                 logger.info(' -> Found ' + str(nearby_targets.count()) + ' in proximity to ' + working_target.name)
 
@@ -43,7 +44,7 @@ class Command(BaseCommand):
 
                     # Sort the targets into the order in which they were created in the MOP DB;
                     # this will be used to determine the primary name and aliases of this event
-                    targets = targets.order_by('created')
+                    targets = nearby_targets.order_by('created')
                     primary_target = targets[0]
                     matching_targets = targets[1:]
                     logger.info(' -> Primary target name: ' + primary_target.name)
