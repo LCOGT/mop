@@ -32,8 +32,8 @@ class Command(BaseCommand):
 
                 # Search for all targets near to the working target's coordinates:
                 nearby_targets = Target.matches.match_cone_search(
-                    float(working_target.ra),
-                    float(working_target.dec),
+                    round(float(working_target.ra),5),
+                    round(float(working_target.dec),5),
                     radius)
                 print(nearby_targets)
 
