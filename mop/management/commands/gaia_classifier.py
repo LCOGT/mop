@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from tom_dataproducts.models import ReducedDatum
+from tom_targets.models import Target
 from astropy.time import Time
 from mop.toolbox import querytools, fittools
 import numpy as np
@@ -14,6 +15,10 @@ class Command(BaseCommand):
 
     help = 'Identify microlensing events from Gaia alerts'
 
+    def add_arguments(self, parser):
+
+        parser.add_argument('event', help='name of a specific event or all')
+
     def handle(self, *args, **options):
         with transaction.atomic():
             classifier = 1
@@ -21,7 +26,14 @@ class Command(BaseCommand):
             logger.info('Gaia classifier started run - version check')
 
             # Retrieve a set of MicrolensingEvent objects of active Gaia Targets:
-            target_data = querytools.get_gaia_alive_events()
+            if options['event'] == 'all':
+                logger.info('Gathering data on all active Gaia events')
+                target_data = querytools.get_gaia_alive_events()
+            else:
+                logger.info('Gathering data on event ' + options['event'])
+                t = Target.objects.get(name=options['event'])
+                target_data = querytools.fetch_data_for_targetset([t])
+
             nalive = str(len(target_data))
             logger.info('Found '+ nalive + ' alive Gaia targets')
 
@@ -36,9 +48,12 @@ class Command(BaseCommand):
                     # fit parameters are ignored until they are model fitted.
                     # Fitted targets will have their class set to microlensing by default
 
-                    if mulens.extras['u0'].value != 0.0 \
-                        and mulens.extras['t0'].value != 0.0 \
-                        and mulens.extras['tE'].value != 0.0 \
+                    if type(mulens.extras['u0'].value) != str \
+                            and mulens.extras['u0'].value != 0.0 and not np.isnan(mulens.extras['u0'].value)\
+                        and type(mulens.extras['t0'].value) != str \
+                        and mulens.extras['t0'].value != 0.0 and not np.isnan(mulens.extras['t0'].value)\
+                        and type(mulens.extras['tE'].value) != str \
+                        and mulens.extras['tE'].value != 0.0 and not np.isnan(mulens.extras['tE'].value)\
                         and event.ra != None and event.dec != None:
 
                         # Test for an invalid blend magnitude:
@@ -73,6 +88,8 @@ class Command(BaseCommand):
                                 }
                                 mulens.store_parameter_set(update_extras)
                                 logger.info(event.name+': Reset as unclassified poor fit')
+                    else:
+                        logger.info(event.name + ': Fitted model parameters are invalid, cannot evaluate')
 
             elif classifier == 2:
                 for event, mulens in target_data.items():

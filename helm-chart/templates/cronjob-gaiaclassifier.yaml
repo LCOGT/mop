@@ -36,6 +36,7 @@ spec:
                 - python
                 - manage.py
                 - gaia_classifier
+              args: ["all"]
               env:
                 {{- include "mop.backendEnv" . | nindent 16 }}
               resources:

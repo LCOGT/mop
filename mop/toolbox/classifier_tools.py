@@ -159,7 +159,6 @@ def check_known_variable(target, coord=None):
         if 'none' not in str(extra_params['TNS_class']).lower():
             extra_params['Classification'] = extra_params['TNS_class']
             extra_params['Category'] = extra_params['TNS_class']
-        # else:
         #     extra_params['Classification'] = 'Known transient'
         #     extra_params['Category'] = 'Unclassified'
 
