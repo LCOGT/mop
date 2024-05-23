@@ -32,7 +32,7 @@ class Command(BaseCommand):
             else:
                 logger.info('Gathering data on event ' + options['event'])
                 t = Target.objects.get(name=options['event'])
-                target_data = querytools.fetch_data_for_targetset([t])
+                target_data = querytools.fetch_data_for_targetset([t], check_need_to_fit=False)
 
             nalive = str(len(target_data))
             logger.info('Found '+ nalive + ' alive Gaia targets')
