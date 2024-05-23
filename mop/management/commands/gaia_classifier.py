@@ -42,55 +42,62 @@ class Command(BaseCommand):
                 for k, (event, mulens) in enumerate(target_data.items()):
                     logger.info('Classifier evaluating ' + mulens.name + ', ' + str(k) + ' out of ' + nalive)
 
-                    # The expectation is that the lightcurve data for them will have a model
-                    # fit by a separate process, which will have stored the resulting model
-                    # parameters in the EXTRA_PARAMs for each Target.  Targets with no
-                    # fit parameters are ignored until they are model fitted.
-                    # Fitted targets will have their class set to microlensing by default
+                    # First check for targets that have been flagged as binary microlensing events.
+                    # The model fit results for these events are known to be unreliable because MOP
+                    # doesn't yet handle binary fits, so the following evaluation is invalid, and shouldn't
+                    # override a binary classification, which is assigned manually.
+                    if 'Microlensing binary' not in event.extra_fields['Classification']:
+                        # The expectation is that the lightcurve data for them will have a model
+                        # fit by a separate process, which will have stored the resulting model
+                        # parameters in the EXTRA_PARAMs for each Target.  Targets with no
+                        # fit parameters are ignored until they are model fitted.
+                        # Fitted targets will have their class set to microlensing by default
 
-                    if type(mulens.extras['u0'].value) != str \
-                            and mulens.extras['u0'].value != 0.0 and not np.isnan(mulens.extras['u0'].value)\
-                        and type(mulens.extras['t0'].value) != str \
-                        and mulens.extras['t0'].value != 0.0 and not np.isnan(mulens.extras['t0'].value)\
-                        and type(mulens.extras['tE'].value) != str \
-                        and mulens.extras['tE'].value != 0.0 and not np.isnan(mulens.extras['tE'].value)\
-                        and event.ra != None and event.dec != None:
+                        if type(mulens.extras['u0'].value) != str \
+                                and mulens.extras['u0'].value != 0.0 and not np.isnan(mulens.extras['u0'].value)\
+                            and type(mulens.extras['t0'].value) != str \
+                            and mulens.extras['t0'].value != 0.0 and not np.isnan(mulens.extras['t0'].value)\
+                            and type(mulens.extras['tE'].value) != str \
+                            and mulens.extras['tE'].value != 0.0 and not np.isnan(mulens.extras['tE'].value)\
+                            and event.ra != None and event.dec != None:
 
-                        # Test for an invalid blend magnitude:
-                        valid_blend_mag = classifier_tools.check_valid_blend(float(mulens.extras['Blend_magnitude'].value))
+                            # Test for an invalid blend magnitude:
+                            valid_blend_mag = classifier_tools.check_valid_blend(float(mulens.extras['Blend_magnitude'].value))
 
-                        # Test for a suspiciously large u0:
-                        valid_u0 = classifier_tools.check_valid_u0(float(mulens.extras['u0'].value))
+                            # Test for a suspiciously large u0:
+                            valid_u0 = classifier_tools.check_valid_u0(float(mulens.extras['u0'].value))
 
-                        # Test for low-amplitude change in photometry:
-                        valid_dmag = classifier_tools.check_valid_dmag(mulens)
+                            # Test for low-amplitude change in photometry:
+                            valid_dmag = classifier_tools.check_valid_dmag(mulens)
 
-                        # Test for suspicious reduced chi squared value
-                        valid_chisq = classifier_tools.check_valid_chi2sq(mulens)
+                            # Test for suspicious reduced chi squared value
+                            valid_chisq = classifier_tools.check_valid_chi2sq(mulens)
 
-                        # If a target fails all three criteria, set its classification
-                        # to 'Unclassified variable'.  Note that TAP will consider scheduling
-                        # observations for any object with 'microlensing' in the
-                        # classification
-                        if not valid_blend_mag or not valid_u0 or not valid_dmag:
-                            update_extras={
-                                'Classification': 'Unclassified variable',
-                                'Category': 'Unclassified'
-                            }
-                            mulens.store_parameter_set(update_extras)
-                            logger.info(mulens.name+': Reset as unclassified variable')
-
-                        if 'red_chi2' in event.extra_fields.keys():
-                            if not valid_chisq:
+                            # If a target fails all three criteria, set its classification
+                            # to 'Unclassified variable'.  Note that TAP will consider scheduling
+                            # observations for any object with 'microlensing' in the
+                            # classification
+                            if not valid_blend_mag or not valid_u0 or not valid_dmag:
                                 update_extras={
-                                    'Classification': 'Unclassified poor fit',
+                                    'Classification': 'Unclassified variable',
                                     'Category': 'Unclassified'
                                 }
                                 mulens.store_parameter_set(update_extras)
-                                logger.info(event.name+': Reset as unclassified poor fit')
-                    else:
-                        logger.info(event.name + ': Fitted model parameters are invalid, cannot evaluate')
+                                logger.info(mulens.name+': Reset as unclassified variable')
 
+                            if 'red_chi2' in event.extra_fields.keys():
+                                if not valid_chisq:
+                                    update_extras={
+                                        'Classification': 'Unclassified poor fit',
+                                        'Category': 'Unclassified'
+                                    }
+                                    mulens.store_parameter_set(update_extras)
+                                    logger.info(event.name+': Reset as unclassified poor fit')
+                        else:
+                            logger.info(event.name + ': Fitted model parameters are invalid, cannot evaluate')
+                    else:
+                        logger.info(event.name + ': Classified as microlensing binary, will not override')
+                        
             elif classifier == 2:
                 for event, mulens in target_data.items():
                     update_extras = {
