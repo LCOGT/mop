@@ -259,6 +259,9 @@ def merge_data_products(primary_target, primary_datums, matching_targets, matchi
     and will be the same for the primary target.
     It also skips the lc_model lightcurve for the matching targets, since these will be refitted
     for the primary target.
+
+    It should also be noted that this function does not update any DataProductGroups, since MOP
+    doesn't make use of these.
     """
     # Distill a list of the unique data sources of ReducedDatums that the primary target already has
     primary_data_sources = list(set([rd.source_name for rd in primary_datums]))
@@ -333,3 +336,15 @@ def merge_comments(matching_comments, primary_target):
             com.save()
 
     logger.info(' -> Merged comments for ' + primary_target.name)
+
+def merge_observations(observations, primary_target):
+    """
+    Function to re-assign ownership of an observation record to the primary target.
+
+    observations    list of QuerySets   ObservationRecords
+    """
+
+    for qs in observations:
+        for obs in qs:
+            obs.target = primary_target
+            obs.save()

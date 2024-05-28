@@ -3,7 +3,7 @@ from tom_targets.tests.factories import SiderealTargetFactory
 from datetime import datetime, timedelta
 from tom_targets.models import Target, TargetExtra, TargetName, TargetList
 from tom_dataproducts.models import DataProduct, ReducedDatum, DataProductGroup
-from tom_observations.models import ObservationRecord
+from tom_observations.models import ObservationRecord, ObservationGroup
 from django_comments.models import Comment
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User, Group
@@ -84,7 +84,6 @@ class TestMergeExtraParams(TestCase):
             'TNS_name': 'None', 'TNS_class': 'None'
         }
         self.primary_target.save(extras = self.primary_extras)
-        results = Comment.objects.all()
 
         current_site = Site.objects.get_current()
         c1 = Comment.objects.create(
@@ -122,6 +121,34 @@ class TestMergeExtraParams(TestCase):
             scheduled_start = datetime.utcnow(),
             scheduled_end = datetime.utcnow() + timedelta(days=1)
         )
+
+        obs2 = ObservationRecord.objects.create(
+            target=self.primary_target,
+            user = u1,
+            facility = 'MOA',
+            parameters = {'tel': 'tel_moa', 'site': 'NZ'},
+            observation_id = 'TEST012345_moa',
+            status = 'PENDING',
+            scheduled_start = datetime.utcnow(),
+            scheduled_end = datetime.utcnow() + timedelta(days=1)
+        )
+
+        obsgroup1 = ObservationGroup.objects.create(
+            name= 'primary_target_obs1'
+        )
+        obsgroup1.observation_records.add(obs1)
+        obsgroup1.save()
+
+        obsgroup2 = ObservationGroup.objects.create(
+            name= 'primary_target_moa',
+        )
+        obsgroup2.observation_records.add(obs2)
+        obsgroup2.save()
+
+        self.primary_observations = {
+            'records': [ obs1, obs2 ],
+            'groups': [ obsgroup1, obsgroup2 ]
+            }
 
         dp1 = DataProduct.objects.create(
             target=self.primary_target,
@@ -161,7 +188,7 @@ class TestMergeExtraParams(TestCase):
         )
         self.matched_comments = [c2]
 
-        obs2 = ObservationRecord.objects.create(
+        obs3 = ObservationRecord.objects.create(
             target=tmatch1,
             user = u1,
             facility = 'LCO',
@@ -172,9 +199,15 @@ class TestMergeExtraParams(TestCase):
             scheduled_end = datetime.utcnow() + timedelta(days=1)
         )
 
+        obsgroup3 = ObservationGroup.objects.create(
+            name= 'match_target1_obs3',
+        )
+        obsgroup3.observation_records.add(obs3)
+        obsgroup3.save()
+
         dp2 = DataProduct.objects.create(
             target=tmatch1,
-            observation_record = obs2,
+            observation_record = obs3,
             data = 'path/to/dataproduct2',
             data_product_type = 'photometry'
         )
@@ -188,7 +221,7 @@ class TestMergeExtraParams(TestCase):
             value = {'datum': 2, 'filter': 'ip'}
         )
 
-        obs3 = ObservationRecord.objects.create(
+        obs4 = ObservationRecord.objects.create(
             target=tmatch1,
             user = u1,
             facility = 'LCO',
@@ -199,9 +232,15 @@ class TestMergeExtraParams(TestCase):
             scheduled_end = datetime.utcnow() + timedelta(days=1)
         )
 
+        obsgroup4 = ObservationGroup.objects.create(
+            name= 'match_target2_obs4'
+        )
+        obsgroup4.observation_records.add(obs4)
+        obsgroup4.save()
+
         dp3 = DataProduct.objects.create(
             target=tmatch1,
-            observation_record = obs3,
+            observation_record = obs4,
             data = 'path/to/dataproduct3',
             data_product_type = 'photometry'
         )
@@ -215,6 +254,10 @@ class TestMergeExtraParams(TestCase):
             value = {'datum': 2, 'filter': 'gp'}
         )
         self.matching_data = [rd2, rd3]
+        self.matching_observations = {
+            'groups': [obsgroup3, obsgroup4],
+            'records': [obs3, obs4]
+        }
 
         tmatch2 = SiderealTargetFactory.create()
         tmatch2.name = 'MOA-2024-BLG-023'
@@ -418,3 +461,20 @@ class TestMergeExtraParams(TestCase):
         results = Comment.objects.filter(object_pk=self.primary_target.pk)
         for c in self.matched_comments:
             assert(c in results)
+
+    def test_merge_observations(self):
+
+        # Test that the function works for observation records
+        obs_records = [ObservationRecord.objects.filter(target=t) for t in self.matching_targets]
+
+        merge_utils.merge_observations(obs_records, self.primary_target)
+
+        test_obs_records = ObservationRecord.objects.filter(target=self.primary_target)
+
+        expected_obsrecords = self.primary_observations['records'] + self.matching_observations['records']
+
+        assert(len(test_obs_records) == len(expected_obsrecords))
+        for entry in test_obs_records:
+            assert(entry in expected_obsrecords)
+            assert(entry.target == self.primary_target)
+

@@ -16,11 +16,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         radius = float(options['radius'])
-        duplicate_targets = []
+        duplicate_targets = {}
 
         # Loop over all targets currently in the database:
         targets = Target.objects.all()
         for working_target in targets:
+            duplicate_targets[working_target] = []
 
             # First check whether this target has already been marked as a duplicate of another:
             if working_target not in duplicate_targets:
@@ -63,7 +64,7 @@ class Command(BaseCommand):
                     # Merge TargetLists, if the primary or matching targets are listed
                     self.merge_targetgroups(primary_target, matching_targets)
 
-                    # Transfer ownership of any observation records made for the matched targets:
+                    # Transfer ownership of any observation records and groups made for the matched targets:
                     self.merge_observation_records(primary_target, matching_targets)
 
                     # Transfer any comments made on the matched targets:
@@ -71,10 +72,12 @@ class Command(BaseCommand):
 
                     # Add duplicate targets to the list for removal:
                     for t in matching_targets:
-                        duplicate_targets.add(t)
+                        duplicate_targets[working_target].append(t)
 
         # Last step is to remove the duplicated targets
-
+        for t, matches in duplicate_targets.items():
+            print(t.name + ' has matches ' + repr(matches))
+            
     def merge_names(self, primary_target, matching_targets):
         """
         Method creates TargetName aliases for the primary target from the names of the
@@ -144,17 +147,16 @@ class Command(BaseCommand):
 
     def merge_observation_records(self, primary_target, matching_targets):
         """
-        Method to combine observation records from duplicated targets
+        Method to combine observation records from duplicated targets.  Note that although
+        ObservationGroups are also stored these are associated with ObservationRecords,
+        rather than with targets directly, so the ownership of ObsGroups transfers
+        automatically once the ObservationRecords are updated.
         """
 
         # Retrieve any observation record pertaining to each of the matching targets:
         obs_records = [ObservationRecord.objects.filter(target=t) for t in matching_targets]
 
-        # Transfer ownership of these ObservationRecords to the primary target
-        for qs in obs_records:
-            for obs in qs:
-                obs.target = primary_target
-                obs.save()
+        merge_utils.merge_observations(obs_records, primary_target)
 
         logger.info(' -> Completed transfer of observation records to ' + primary_target.name)
 
