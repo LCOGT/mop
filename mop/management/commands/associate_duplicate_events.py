@@ -12,19 +12,36 @@ class Command(BaseCommand):
     help = 'Identify events with multiple Target entries'
 
     def add_arguments(self, parser):
+        parser.add_argument('target', help='Name of target to check or all')
         parser.add_argument('radius', help='Match radius in arcseconds')
+        parser.add_argument('delete', help='Delete duplicated Targets?  If yes, enter "delete"')
 
     def handle(self, *args, **options):
+
+        # Figure out if we should check just one target for duplication or all of them
+        if 'all' in str(options['target']).lower():
+            target_selection = Target.objects.all()
+        else:
+            target_selection = Target.objects.filter(name=options['target'])
+
+        if len(target_selection) == 0:
+            raise IOError('No targets found matching selection ' + options['target'])
+
         radius = float(options['radius'])
         duplicate_targets = {}
 
+        if 'delete' in str(options['delete']).lower():
+            check_opt = input('Configured to DELETE duplicated targets!  Are you sure?  Type yes to proceed: ')
+
+            if check_opt != 'yes':
+                logger.warning('Deletion of duplicates NOT authorised, halting')
+                exit()
+
         # Loop over all targets currently in the database:
-        targets = Target.objects.all()
-        for working_target in targets:
-            duplicate_targets[working_target] = []
+        for working_target in target_selection:
 
             # First check whether this target has already been marked as a duplicate of another:
-            if working_target not in duplicate_targets:
+            if working_target not in duplicate_targets.keys():
                 logger.info(
                     'Searching for duplicates within ' + options['radius']+'arcsec of ' + working_target.name
                     + ' RA=' + str(working_target.ra)
@@ -71,13 +88,22 @@ class Command(BaseCommand):
                     self.merge_comments(primary_target, matching_targets)
 
                     # Add duplicate targets to the list for removal:
+                    duplicate_targets[working_target] = []
                     for t in matching_targets:
                         duplicate_targets[working_target].append(t)
 
         # Last step is to remove the duplicated targets
-        for t, matches in duplicate_targets.items():
-            print(t.name + ' has matches ' + repr(matches))
-            
+        if len(duplicate_targets) > 0:
+            logger.info('Summary of duplicated targets: ')
+            for t, matches in duplicate_targets.items():
+                if len(matches) > 0:
+                    logger.info(t.name + ' has matches ' + repr(matches))
+                    if 'delete' in str(options['delete']).lower():
+                        for matching_target in matches:
+                            matching_target.delete()
+        else:
+            logger.info('No duplicated targets found')
+
     def merge_names(self, primary_target, matching_targets):
         """
         Method creates TargetName aliases for the primary target from the names of the
@@ -177,6 +203,6 @@ class Command(BaseCommand):
         """
 
         # Retrieve all comments associated with the matching targets:
-        matching_comments = [Comment.objects.filter(object_id=t.pk) for t in matching_targets]
+        matching_comments = [Comment.objects.filter(object_pk=t.pk) for t in matching_targets]
 
         merge_utils.merge_comments(matching_comments, primary_target)

@@ -240,7 +240,7 @@ def sanity_check_data_sources(t, datums_qs):
         datum_qs QuerySet ReducedDatums for the given target
     """
 
-    expected_sources = ['OGLE', 'MOA', 'Gaia', 'ZTF', 'ATLAS',
+    expected_sources = ['OGLE', 'MOA', 'Gaia', 'ZTF', 'ZTFDR3', 'ATLAS',
                         'Interferometry_predictor', 'AOFT_table', 'GSC_query_results',
                         'MOP']
 
