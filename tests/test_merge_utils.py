@@ -1,7 +1,12 @@
 from django.test import TestCase
 from tom_targets.tests.factories import SiderealTargetFactory
-from datetime import datetime
-from tom_targets.models import TargetExtra
+from datetime import datetime, timedelta
+from tom_targets.models import Target, TargetExtra, TargetName, TargetList
+from tom_dataproducts.models import DataProduct, ReducedDatum, DataProductGroup
+from tom_observations.models import ObservationRecord
+from django_comments.models import Comment
+from django.contrib.sites.models import Site
+from django.contrib.auth.models import User, Group
 from mop.management.commands import merge_utils
 import copy
 
@@ -12,10 +17,19 @@ class TestMergeExtraParams(TestCase):
     """
 
     def setUp(self):
+
+        u1 = User.objects.create(
+            username = 'test1',
+            first_name='Test',
+            last_name='User1',
+            email='test@lco.global'
+        )
+
         self.primary_target = SiderealTargetFactory.create()
         self.primary_target.name = 'OGLE-2023-GD-0011'
         self.primary_target.ra = 244.6058
         self.primary_target.dec = -54.0788
+        self.primary_target.save()
         self.primary_extras = {
             'Alive': 'True',
             'Classification': 'Microlensing PSPL',
@@ -70,6 +84,61 @@ class TestMergeExtraParams(TestCase):
             'TNS_name': 'None', 'TNS_class': 'None'
         }
         self.primary_target.save(extras = self.primary_extras)
+        results = Comment.objects.all()
+
+        current_site = Site.objects.get_current()
+        c1 = Comment.objects.create(
+            content_object = self.primary_target,
+            user = u1,
+            site = current_site,
+            comment = 'Test comment for primary target'
+        )
+        self.primary_comments = [c1]
+
+        self.targetlist1 = TargetList.objects.create(
+            name = 'TESTGROUP1'
+        )
+        self.targetlist2 = TargetList.objects.create(
+            name = 'TESTGROUP2'
+        )
+        self.targetlist1.targets.add(self.primary_target)
+
+        datagroup = DataProductGroup.objects.create(
+            name = 'TEST'
+        )
+        datagroup.save()
+
+        usergroup = Group.objects.create(
+            name = 'TEST'
+        )
+
+        obs1 = ObservationRecord.objects.create(
+            target=self.primary_target,
+            user = u1,
+            facility = 'OGLE',
+            parameters = {'tel': 'tel1', 'site': 'test_site'},
+            observation_id = 'TEST012345',
+            status = 'PENDING',
+            scheduled_start = datetime.utcnow(),
+            scheduled_end = datetime.utcnow() + timedelta(days=1)
+        )
+
+        dp1 = DataProduct.objects.create(
+            target=self.primary_target,
+            observation_record = obs1,
+            data = 'path/to/dataproduct',
+            data_product_type = 'photometry'
+        )
+
+        rd1 = ReducedDatum.objects.create(
+            target=self.primary_target,
+            data_product = dp1,
+            source_name = 'OGLE',
+            data_type = 'photometry',
+            timestamp = datetime.utcnow(),
+            value = {'datum': 1, 'filter': 'I'}
+        )
+        self.primary_target_data = [rd1]
 
         tmatch1 = SiderealTargetFactory.create()
         tmatch1.name = 'Gaia24amk'
@@ -82,6 +151,71 @@ class TestMergeExtraParams(TestCase):
         tmatch1_extras['Observing_mode'] = 'priority_stellar_event'
         tmatch1.save(extras = tmatch1_extras)
 
+        self.targetlist2.targets.add(tmatch1)
+
+        c2 = Comment.objects.create(
+            content_object = tmatch1,
+            user = u1,
+            site = current_site,
+            comment = 'This is the first matching target'
+        )
+        self.matched_comments = [c2]
+
+        obs2 = ObservationRecord.objects.create(
+            target=tmatch1,
+            user = u1,
+            facility = 'LCO',
+            parameters = {'tel': 'tel2', 'site': 'test_site2'},
+            observation_id = 'TEST012345',
+            status = 'PENDING',
+            scheduled_start = datetime.utcnow(),
+            scheduled_end = datetime.utcnow() + timedelta(days=1)
+        )
+
+        dp2 = DataProduct.objects.create(
+            target=tmatch1,
+            observation_record = obs2,
+            data = 'path/to/dataproduct2',
+            data_product_type = 'photometry'
+        )
+
+        rd2 = ReducedDatum.objects.create(
+            target=tmatch1,
+            data_product = dp2,
+            source_name = 'OMEGA',
+            data_type = 'photometry',
+            timestamp = datetime.utcnow()+timedelta(seconds=5),
+            value = {'datum': 2, 'filter': 'ip'}
+        )
+
+        obs3 = ObservationRecord.objects.create(
+            target=tmatch1,
+            user = u1,
+            facility = 'LCO',
+            parameters = {'tel': 'tel3', 'site': 'test_site2'},
+            observation_id = 'TEST012345',
+            status = 'PENDING',
+            scheduled_start = datetime.utcnow(),
+            scheduled_end = datetime.utcnow() + timedelta(days=1)
+        )
+
+        dp3 = DataProduct.objects.create(
+            target=tmatch1,
+            observation_record = obs3,
+            data = 'path/to/dataproduct3',
+            data_product_type = 'photometry'
+        )
+
+        rd3 = ReducedDatum.objects.create(
+            target=tmatch1,
+            data_product = dp3,
+            source_name = 'OMEGA',
+            data_type = 'photometry',
+            timestamp = datetime.utcnow()+timedelta(seconds=5),
+            value = {'datum': 2, 'filter': 'gp'}
+        )
+        self.matching_data = [rd2, rd3]
+
         tmatch2 = SiderealTargetFactory.create()
         tmatch2.name = 'MOA-2024-BLG-023'
         tmatch2.ra = 244.6058
@@ -92,6 +226,16 @@ class TestMergeExtraParams(TestCase):
         tmatch2_extras['Category'] = 'RR Lyrae'
         tmatch2_extras['QSO'] = 'True'
         tmatch2.save(extras = tmatch2_extras)
+
+        self.targetlist2.targets.add(tmatch2)
+
+        c3 = Comment.objects.create(
+            content_object = tmatch2,
+            user = u1,
+            site = current_site,
+            comment = 'This is the second matching target'
+        )
+        self.matched_comments = [c3]
 
         self.matching_targets = [ tmatch1, tmatch2 ]
         self.matching_extras = [ tmatch1_extras, tmatch2_extras ]
@@ -206,3 +350,71 @@ class TestMergeExtraParams(TestCase):
 
         for key, value in self.update_params.items():
             assert(str(result[key]) == str(value))
+
+    def test_merge_names(self):
+        aliases = TargetName.objects.filter(target=self.primary_target)
+
+        result = merge_utils.merge_names(self.primary_target, self.matching_targets)
+
+        aliases = TargetName.objects.filter(target=self.primary_target)
+
+        name_set = [x.name for x in aliases]
+
+        for t in self.matching_targets:
+            assert(t.name in name_set)
+
+    def test_merge_data_products(self):
+
+        # Call function to transfer ownership of the data products of the matched targets to
+        # the primary target
+        primary_data = ReducedDatum.objects.filter(target=self.primary_target)
+        matched_data = [ReducedDatum.objects.filter(target=x) for x in self.matching_targets]
+
+        merge_utils.merge_data_products(self.primary_target,
+                            primary_data,
+                            self.matching_targets,
+                            matched_data)
+
+        # Query the DB to retrieve all data now associated with the primary target
+        updated_data = ReducedDatum.objects.filter(
+            target=self.primary_target
+        )
+
+        # Check that the resulting list of data matches the test data
+        # provided for both the primary and matching targets
+        expected_data = self.primary_target_data + self.matching_data
+
+        assert(len(updated_data) == len(expected_data))
+        for rd in updated_data:
+            assert(rd in expected_data)
+
+    def test_merge_targetgroups(self):
+        """
+        Method to test the merging of TargetLists.
+        If matching targets are assigned to a TargetGroup that the primary target is NOT already
+        a member of, then the primary target should be added to that Target Group.
+        """
+
+        targetlists = TargetList.objects.all()
+
+        merge_utils.merge_targetgroups(targetlists, self.primary_target, self.matching_targets)
+
+        # The primary target was assigned to target list 1, but the other matching targets
+        # were assigned to target list 2.  So this function should have added the primary target
+        # to target list 2.
+        test_lists = TargetList.objects.filter(targets__in=[self.primary_target.pk])
+        assert(self.targetlist1 in test_lists)
+        assert(self.targetlist2 in test_lists)
+
+    def test_merge_comments(self):
+
+        # Retrieve the comments for all matching targets and transfer ownership of them to the primary target
+        matching_comments = [Comment.objects.filter(object_pk=x.pk) for x in self.matching_targets]
+
+        merge_utils.merge_comments(matching_comments, self.primary_target)
+
+        # Retrieve all comments associated with the primary target and check this now includes all the
+        # comments for the matching targets
+        results = Comment.objects.filter(object_pk=self.primary_target.pk)
+        for c in self.matched_comments:
+            assert(c in results)
