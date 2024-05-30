@@ -136,7 +136,6 @@ class MicrolensingTarget(BaseTarget):
         self.aoft_table = None
         self.neighbours = []
         for dset in qs:
-            print('DATASETS: ',dset.data_type, dset.source_name)
             if dset.data_type == 'lc_model':
                 self.existing_model = dset
 

@@ -126,6 +126,20 @@ def mop_photometry(mulens):
         'plot': offline.plot(fig, output_type='div', show_link=False)
     }
 
+def check_model_valid(mulens):
+
+    try:
+        u0 = float(mulens.u0)
+        u0_error = float(mulens.u0_error)
+    except AttributeError:
+        u0 = None
+        u0 = None
+    if u0 == None or u0_error == None or u0 == 0.0 or u0_error == 0.0:
+        model_valid = False
+    else:
+        model_valid = True
+
+    return model_valid
 
 @register.inclusion_tag('tom_dataproducts/partials/interferometry_data.html')
 def interferometry_data(mulens):
@@ -134,19 +148,8 @@ def interferometry_data(mulens):
     logger.info('MOP INTERFEROMETRY started at: ' + str(t1))
     utilities.checkpoint()
 
-    # Gather extra_param key values for target's Gaia catalog data
-    #u0 = utilities.fetch_extra_param(target, 'u0')
-    #u0_error = utilities.fetch_extra_param(target, 'u0_error')
-    try:
-        u0 = float(mulens.u0)
-        u0_error = float(mulens.u0_error)
-    except AttributeError:
-        u0 = None
-        u0 = None
-    if u0 == None or u0_error == None or u0 == 0.0 or u0_error == 0.0:
-        context['model_valid'] = False
-    else:
-        context['model_valid'] = True
+    # Check for a valid model fit:
+    context['model_valid'] = check_model_valid(mulens)
 
     if mulens.existing_model:
         context['t0_date'] = str(convert_JD_to_UTC(mulens.t0))
@@ -374,6 +377,9 @@ def gaia_neighbours_data(mulens):
     logger.info('GAIA NEIGHBOURS started ' + str(t1))
     utilities.checkpoint()
     context = {}
+
+    # Check for a valid model fit:
+    context['model_valid'] = check_model_valid(mulens)
 
     # Gather the ReducedData for the neighbouring stars
     # Unpack the QuerySet returned into a more convenient format for display
