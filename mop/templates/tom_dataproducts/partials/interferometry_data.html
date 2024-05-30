@@ -8,9 +8,9 @@
     <div class="row"">
         <table class="table">
             <tr>
-                <td><b>GRAVITY candidate</b></td><td>{{Interferometry_candidate}}</td>
-                <td><b>Observation mode</b></td><td>{{Interferometry_mode}}</td>
-                <td><b>Guide star</b></td><td>{{Interferometry_guide_star}}</td>
+                <td><b>GRAVITY candidate</b></td><td>{{ target.interferometry_candidate|yesno:"True,False"  }}</td>
+                <td><b>Observation mode</b></td><td>{{ target.interferometry_mode }}</td>
+                <td><b>Guide star</b></td><td>{{ target.interferometry_guide_star }}</td>
             </tr>
         </table>
     </div>
@@ -21,7 +21,7 @@
         </div>
         <br>
         <p>
-        Gaia Source ID: {{Gaia_Source_ID}}
+        Gaia Source ID: {{target.gaia_source_id}}
         </p>
         <table class="table">
             <thead>
@@ -35,11 +35,11 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{{Distance|floatformat:3}}</td>
-                    <td>{{Teff|floatformat:3}}</td>
-                    <td>{{logg|floatformat:3}}</td>
-                    <td>{{Fe_H|floatformat:3}}</td>
-                    <td>{{RUWE|floatformat:3}}</td>
+                    <td>{{target.distance|floatformat:3}}</td>
+                    <td>{{target.teff|floatformat:3}}</td>
+                    <td>{{target.logg|floatformat:3}}</td>
+                    <td>{{target.metallicity|floatformat:3}}</td>
+                    <td>{{target.ruwe|floatformat:3}}</td>
                 </tr>
             </tbody>
         </table>
@@ -59,15 +59,15 @@
              </thead>
              <tbody>
              <tr>
-                 <td>{{Gmag|floatformat:3}}&#8723;{{Gmag_error|floatformat:3}}</td>
-                 <td>{{BPmag|floatformat:3}}&#8723;{{BPmag_error|floatformat:3}}</td>
-                 <td>{{RPmag|floatformat:3}}&#8723;{{RPmag_error|floatformat:3}}</td>
-                 <td>{{BP_RP|floatformat:3}}&#8723;{{BP_RP_error|floatformat:3}}</td>
-                 <td>{{Mag_base_J|floatformat:3}}</td>
-                 <td>{{Mag_base_H|floatformat:3}}</td>
-                 <td>{{Mag_base_K|floatformat:3}}</td>
-                 <td>{{Reddening_BP_RP_|floatformat:3}}</td>
-                 <td>{{Extinction_G|floatformat:3}}</td>
+                 <td>{{target.gmag|floatformat:3}}&#8723;{{target.gmag_error|floatformat:3}}</td>
+                 <td>{{target.bpmag|floatformat:3}}&#8723;{{target.bpmag_error|floatformat:3}}</td>
+                 <td>{{target.rpmag|floatformat:3}}&#8723;{{target.rpmag_error|floatformat:3}}</td>
+                 <td>{{target.bprp|floatformat:3}}&#8723;{{target.bprp_error|floatformat:3}}</td>
+                 <td>{{target.mag_base_J|floatformat:3}}</td>
+                 <td>{{target.mag_base_H|floatformat:3}}</td>
+                 <td>{{target.mag_base_K|floatformat:3}}</td>
+                 <td>{{target.reddening_bprp|floatformat:3}}</td>
+                 <td>{{target.extinction_g|floatformat:3}}</td>
                  <td></td>
              </tr>
              </tbody>
@@ -85,12 +85,12 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{{Mag_peak_J|floatformat:3}}&#8723;{{Mag_peak_J_error|floatformat:3}}</td>
-                    <td>{{Mag_peak_H|floatformat:3}}&#8723;{{Mag_peak_H_error|floatformat:3}}</td>
-                    <td>{{Mag_peak_K|floatformat:3}}&#8723;{{Mag_peak_K_error|floatformat:3}}</td>
+                    <td>{{target.mag_peak_J|floatformat:3}}&#8723;{{target.mag_peak_J_error|floatformat:3}}</td>
+                    <td>{{target.mag_peak_H|floatformat:3}}&#8723;{{target.mag_peak_H_error|floatformat:3}}</td>
+                    <td>{{target.mag_peak_K|floatformat:3}}&#8723;{{target.mag_peak_K_error|floatformat:3}}</td>
                     <td>{{t0_date}}</td>
-                    <td>{{t0|floatformat:3}}&#8723;{{t0_error|floatformat:3}}</td>
-                    <td>{{Interferometry_interval|floatformat:3}}</td>
+                    <td>{{target.t0|floatformat:3}}&#8723;{{target.t0_error|floatformat:3}}</td>
+                    <td>{{target.interferometry_interval|floatformat:3}}</td>
                 </tr>
             </tbody>
         </table>

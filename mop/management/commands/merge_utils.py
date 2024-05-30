@@ -295,11 +295,11 @@ def merge_data_products(primary_target, primary_datums, matching_targets, matchi
             # Data products from OMEGA should be transferred, but renamed to distinguish the
             # lightcurve data
             elif 'OMEGA' in rd.source_name:
-                rd.source_name = rd.source_name + '_' + matching_targets[i].name
-                rd.value['filter'] = rd.value['filter'] + '_' + matching_targets[i].name
                 transfer_ownership = True
 
             if transfer_ownership:
+                rd.source_name = rd.source_name + '_' + matching_targets[i].name
+                rd.value['filter'] = rd.value['filter'] + '_' + matching_targets[i].name
                 rd.target = primary_target
                 rd.save()
 

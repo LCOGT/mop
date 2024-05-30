@@ -1,6 +1,6 @@
 from tom_dataproducts.models import ReducedDatum
 from tom_targets.models import Target,TargetExtra,TargetName, TargetList
-from mop.toolbox.mop_classes import MicrolensingEvent
+from microlensing_targets.models import MicrolensingTarget
 from mop.toolbox import utilities
 import logging
 import datetime
@@ -106,9 +106,6 @@ def fetch_data_for_targetset(target_list, check_need_to_fit=True, fetch_photomet
     t1 = datetime.datetime.utcnow()
 
     # Perform the search for associated data
-    target_extras = TargetExtra.objects.filter(
-        target__in=target_list
-    )
     datums = ReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
     names = TargetName.objects.filter(target__in=target_list)
 
@@ -121,22 +118,20 @@ def fetch_data_for_targetset(target_list, check_need_to_fit=True, fetch_photomet
     # data products for later use
     logger.info('queryTools: collating data on microlensing event set')
     target_data = {}
-    for i, t in enumerate(target_list):
-        mulens = MicrolensingEvent(t)
-        mulens.set_target_names(names.filter(target=t))
-        mulens.set_extra_params(target_extras.filter(target=t))
+    for i, mulens in enumerate(target_list):
+        mulens.get_target_names(names.filter(target=mulens))
         if fetch_photometry:
-            mulens.set_reduced_data(datums.filter(target=t))
+            mulens.get_reduced_data(datums.filter(target=mulens))
         if check_need_to_fit:
             (status, reason) = mulens.check_need_to_fit()
             logger.info('queryTools: Need to fit: ' + repr(status) + ', reason: ' + reason)
 
             if mulens.need_to_fit:
-                target_data[t] = mulens
+                target_data[mulens.name] = mulens
 
         else:
-            target_data[t] = mulens
-        logger.info('queryTools: collated data for target ' + t.name + ', '
+            target_data[mulens.name] = mulens
+        logger.info('queryTools: collated data for target ' + mulens.name + ', '
                     + str(i) + ' out of ' + str(len(target_list)))
         utilities.checkpoint()
 

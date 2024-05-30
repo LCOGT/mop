@@ -45,8 +45,8 @@ class MOPTargetDetailView(TargetDetailView):
         context = super().get_context_data(*args, **kwargs)
         context['class_form'] = TargetClassificationForm()
         target = self.get_object()
-        target_data = querytools.fetch_data_for_targetset([target], check_need_to_fit=False)
-        context['mulens'] = target_data[target]
+        target_data = querytools.fetch_data_for_targetset([target], check_need_to_fit=False, fetch_photometry=True)
+        context['target'] = target_data[target.name]
 
         t2 = datetime.utcnow()
         logger.info('GET_CONTEXT took ' + str(t2 - t1))

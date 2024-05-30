@@ -1,50 +1,29 @@
 {% load static tom_common_extras targets_extras mop_extras %}
-{% if 'Sky_location' in target.tags.keys %}
-  {% if target.tags.Sky_location == 'In HCZ' %}
-    <h5 style="color: #ffffff; background-color: #690a00">{{ target.tags.Sky_location }}</h5>
-  {% else %}
-    <h5 style="color: #016603">{{ target.tags.Sky_location }}</h5>
-  {% endif %}
-{% elif 'Sky_location' in target.extra_fields.keys %}
-  {% if target.extra_fields.Sky_location == 'In HCZ' %}
-    <h5 style="color: #ffffff; background-color: #690a00">{{ target.extra_fields.Sky_location }}</h5>
-  {% else %}
-    <h5 style="color: #016603">{{ target.extra_fields.Sky_location }}</h5>
-  {% endif %}
+
+{% if target.sky_location == 'In HCZ' %}
+<h5 style="color: #ffffff; background-color: #690a00">{{ target.sky_location }}</h5>
+{% else %}
+<h5 style="color: #016603">{{ target.sky_location }}</h5>
 {% endif %}
-{% if 'YSO' in target.extra_fields.keys %}
-    {% if target.extra_fields.YSO == 'True' %}
-        <h5 style="color: #016603">Known YSO</h5>
-    {% endif %}
+
+{% if target.YSO == 'True' %}
+    <h5 style="color: #016603">Known YSO</h5>
 {% endif %}
-{% if 'QSO' in target.extra_fields.keys %}
-    {% if target.extra_fields.QSO == 'True' %}
-        <h5 style="color: #016603">Known QSO</h5>
-    {% endif %}
+{% if target.QSO == 'True' %}
+    <h5 style="color: #016603">Known QSO</h5>
 {% endif %}
-{% if 'galaxy' in target.extra_fields.keys %}
-    {% if target.extra_fields.galaxy == 'True' %}
-        <h5 style="color: #016603">Known galaxy</h5>
-    {% endif %}
+{% if target.galaxy == 'True' %}
+    <h5 style="color: #016603">Known galaxy</h5>
 {% endif %}
-{% if 'TNS_name' in target.extra_fields.keys and 'TNS_class' in target.extra_fields.keys %}
-    {% if target.extra_fields.TNS_name != 'None' and target.extra_fields.TNS_class != 'None' %}
-        <h5 style="color: #016603">TNS: {{ target.extra_fields.TNS_name }} {{ target.extra_fields.TNS_class }}</h5>
-    {% elif target.extra_fields.TNS_name != 'None' and target.extra_fields.TNS_class == 'None' %}
-        <h5 style="color: #016603">TNS name: {{ target.extra_fields.TNS_name }}</h5>
-    {% elif target.extra_fields.TNS_name == 'None' and target.extra_fields.TNS_class != 'None' %}
-        <h5 style="color: #016603">TNS class: {{ target.extra_fields.TNS_class }}</h5>
-    {% endif %}
-{% elif 'TNS_name' in target.extra_fields.keys and 'TNS_class' not in target.extra_fields.keys %}
-    <h5 style="color: #016603">TNS name: {{ target.extra_fields.TNS_name }}</h5>
-    {% if target.extra_fields.TNS_name != 'None' and target.extra_fields.TNS_name != None %}
-        <h5 style="color: #016603">TNS name: {{ target.extra_fields.TNS_name }}</h5>
-    {% endif %}
-{% elif 'TNS_class' in target.extra_fields.keys and 'TNS_name' not in target.extra_fields.keys %}
-    {% if target.extra_fields.TNS_class != 'None' and target.extra_fields.TNS_class != None %}
-        <h5 style="color: #016603">TNS class: {{ target.extra_fields.TNS_class }}</h5>
-    {% endif %}
+
+{% if target.TNS_name != 'None' and target.TNS_class != 'None' %}
+    <h5 style="color: #016603">TNS: {{ target.TNS_name }} {{ target.TNS_class }}</h5>
+{% elif target.TNS_name != 'None' and target.TNS_class == 'None' %}
+    <h5 style="color: #016603">TNS name: {{ target.TNS_name }}</h5>
+{% elif target.TNS_name == 'None' and target.TNS_class != 'None' %}
+    <h5 style="color: #016603">TNS class: {{ target.TNS_class }}</h5>
 {% endif %}
+
 <a href="{% url 'tom_targets:update' pk=target.id %}" title="Update Target parameters manually" class="btn  btn-primary">Update Target</a>
 <a href="{% url 'tom_targets:delete' pk=target.id %}" title="Delete Target" class="btn  btn-warning">Delete Target</a>
 <br><br>
@@ -59,48 +38,22 @@
     {% endif %}
     <dd class="col-sm-6">{{ target_name }}</dd>
   {% endfor %}
-  {% for key, value in target.as_dict.items %}
-  {% if value and key != 'name' and key != 'epoch'%}
-  <dt class="col-sm-6">{% verbose_name target key %}</dt>
-  <dd class="col-sm-6">{{ value|truncate_number }}</dd>
-  {% endif %}
-  {% if key == 'ra' %}
-    <dt class="col-sm-6">&nbsp;</dt>
-    <dd class="col-sm-6">{{ value|deg_to_sexigesimal:"hms" }}</dd>
-  {% endif%}
-  {% if key == 'dec' %}
-    <dt class="col-sm-6">&nbsp;</dt>
-    <dd class="col-sm-6">{{ value|deg_to_sexigesimal:"dms" }}</dd>
-  {% endif%}
-  {% endfor %}
+    <dt class="col-sm-6">RA</dt>
+    <dd class="col-sm-6">{{ target.ra|deg_to_sexigesimal:"hms" }}</dd>
+    <dt class="col-sm-6">Dec</dt>
+    <dd class="col-sm-6">{{ target.dec|deg_to_sexigesimal:"dms" }}</dd>
 </dl>
 <dl class="row">
-{% for key, value in target.extra_fields.items  %}
-  {% if key == 'Alive' %}
-    <dt class="col-sm-6">{{ key }}</dt>
-    <dd class="col-sm-6">{{ value }}</dd>
-  {% endif %}
-  {% if key == 'Observing_mode' %}
-    <dt class="col-sm-6">{{ key }}</dt>
-    <dd class="col-sm-6">{{ value }}</dd>
-  {% endif %}
- {% if key == 'TAP_priority' %}
-    <dt class="col-sm-6">{{ key }}</dt>
-    <dd class="col-sm-6">{{ value }}&#8723;{{ target.extra_fields.TAP_priority_error }}</dd>
-  {% endif %}
- {% if key == 'TAP_priority_longtE' %}
-    <dt class="col-sm-6">{{ key }}</dt>
-    <dd class="col-sm-6">{{ value }}&#8723;{{ target.extra_fields.TAP_priority_longtE_error }}</dd>
-  {% endif %}
- {% if key == 'Interferometry_candidate' %}
-    <dt class="col-sm-6">{{ key }}</dt>
-    <dd class="col-sm-6">{{ value }}</dd>
-  {% endif %}
-  {% if key == 'Spectras' %}
-    <dt class="col-sm-6">{{ key }}</dt>
-    <dd class="col-sm-6">{{ value }}</dd>
-  {% endif %}
-{% endfor %}
+    <dt class="col-sm-6">Alive</dt>
+    <dd class="col-sm-6">{{ target.alive }}</dd>
+    <dt class="col-sm-6">Observing mode</dt>
+    <dd class="col-sm-6">{{ target.observing_mode }}</dd>
+    <dt class="col-sm-6">TAP priority</dt>
+    <dd class="col-sm-6">{{ target.tap_priority }}&#8723;{{ target.tap_priority_error }}</dd>
+    <dt class="col-sm-6">TAP priority longtE</dt>
+    <dd class="col-sm-6">{{ target.tap_priority_longtE }}&#8723;{{ target.tap_priority_longtE_error }}</dd>
+    <dt class="col-sm-6">Interferometry candidate</dt>
+    <dd class="col-sm-6">{{ target.interferometry_candidate }}</dd>
 </dl>
 
 {% classification_form %}
@@ -108,53 +61,45 @@
 <font size="5"><b>Paczy&#324ski parameters</b></font>
 <dl class="row">
 <dt class="col-sm-6">{{ 't0' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.t0 }}&#8723;{{ target.extra_fields.t0_error }}</dd>
+<dd class="col-sm-6">{{ target.t0 }}&#8723;{{ target.t0_error }}</dd>
 <dt class="col-sm-6">{{ 'u0' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.u0 }}&#8723;{{ target.extra_fields.u0_error }}</dd>
+<dd class="col-sm-6">{{ target.u0 }}&#8723;{{ target.u0_error }}</dd>
 <dt class="col-sm-6">{{ 'tE' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.tE }}&#8723;{{ target.extra_fields.tE_error }}</dd>
+<dd class="col-sm-6">{{ target.tE }}&#8723;{{ target.tE_error }}</dd>
 <dt class="col-sm-6">{{ 'piEN' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.piEN }}&#8723;{{ target.extra_fields.piEN_error }}</dd>
+<dd class="col-sm-6">{{ target.piEN }}&#8723;{{ target.piEN_error }}</dd>
 <dt class="col-sm-6">{{ 'piEE' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.piEE }}&#8723;{{ target.extra_fields.piEE_error }}</dd>
+<dd class="col-sm-6">{{ target.piEE }}&#8723;{{ target.piEE_error }}</dd>
 <dt class="col-sm-6">{{ 'rho' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.rho }}&#8723;{{ target.extra_fields.rho_error }}</dd>
+<dd class="col-sm-6">{{ target.rho }}&#8723;{{ target.rho_error }}</dd>
 <dt class="col-sm-6">{{ 's' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.s }}&#8723;{{ target.extra_fields.s_error }}</dd>
+<dd class="col-sm-6">{{ target.s }}&#8723;{{ target.s_error }}</dd>
 <dt class="col-sm-6">{{ 'q' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.q }}&#8723;{{ target.extra_fields.q_error }}</dd>
+<dd class="col-sm-6">{{ target.q }}&#8723;{{ target.q_error }}</dd>
 <dt class="col-sm-6">{{ 'alpha' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.alpha }}&#8723;{{ target.extra_fields.alpha_error }}</dd>
-<dt class="col-sm-6">{{ 'Source_magnitude' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.Source_magnitude }}&#8723;{{ target.extra_fields.Source_mag_error }}</dd>
+<dd class="col-sm-6">{{ target.alpha }}&#8723;{{ target.alpha_error }}</dd>
+<dt class="col-sm-6">{{ 'Source magnitude' }}</dt>
+<dd class="col-sm-6">{{ target.source_magnitude }}&#8723;{{ target.source_mag_error }}</dd>
 <dt class="col-sm-6">{{ 'Blend_magnitude' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.Blend_magnitude }}&#8723;{{ target.extra_fields.Blend_mag_error }}</dd>
-<dt class="col-sm-6">{{ 'Baseline_magnitude' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.Baseline_magnitude }}&#8723;{{ target.extra_fields.Baseline_mag_error }}</dd>
-<dt class="col-sm-6">{{ 'Mag_now' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.Mag_now }}</dd>
+<dd class="col-sm-6">{{ target.blend_magnitude }}&#8723;{{ target.blend_mag_error }}</dd>
+<dt class="col-sm-6">{{ 'Baseline magnitude' }}</dt>
+<dd class="col-sm-6">{{ target.baseline_magnitude }}&#8723;{{ target.baseline_mag_error }}</dd>
+<dt class="col-sm-6">{{ 'Mag now' }}</dt>
+<dd class="col-sm-6">{{ target.mag_now }}</dd>
 <dt class="col-sm-6">{{ 'chi2' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.chi2 }}</dd>
-<dt class="col-sm-6">{{ 'red_chi2' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.red_chi2 }}</dd>
-<dt class="col-sm-6">{{ 'KS_test' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.KS_test }}</dd>
-<dt class="col-sm-6">{{ 'SW_test' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.SW_test }}</dd>
-<dt class="col-sm-6">{{ 'AD_test' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.AD_test }}</dd>
-<dt class="col-sm-6">{{ 'Latest_data_HJD' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.Latest_data_HJD }}</dd>
-<dt class="col-sm-6">{{ 'Latest_data_UTC' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.Latest_data_UTC }}</dd>
-<dt class="col-sm-6">{{ 'Last_fit_JD' }}</dt>
-<dd class="col-sm-6">{{ target.extra_fields.Last_fit }}</dd>
-
-</dl>
-<h4>Tags</h4>
-<dl class="row">
-{% for key, value in target.tags.items %}
-  <dt class="col-sm-6">{{ key }}</dt>
-  <dd class="col-sm-6">{{ value }}</dd>
-{% endfor %}
+<dd class="col-sm-6">{{ target.chi2 }}</dd>
+<dt class="col-sm-6">{{ 'red chi2' }}</dt>
+<dd class="col-sm-6">{{ target.red_chi2 }}</dd>
+<dt class="col-sm-6">{{ 'KS test' }}</dt>
+<dd class="col-sm-6">{{ target.ks_test }}</dd>
+<dt class="col-sm-6">{{ 'SW test' }}</dt>
+<dd class="col-sm-6">{{ target.sw_test }}</dd>
+<dt class="col-sm-6">{{ 'AD test' }}</dt>
+<dd class="col-sm-6">{{ target.ad_test }}</dd>
+<dt class="col-sm-6">{{ 'Latest data HJD' }}</dt>
+<dd class="col-sm-6">{{ target.latest_data_HJD }}</dd>
+<dt class="col-sm-6">{{ 'Latest data UTC' }}</dt>
+<dd class="col-sm-6">{{ target.latest_data_utc }}</dd>
+<dt class="col-sm-6">{{ 'Last fit JD' }}</dt>
+<dd class="col-sm-6">{{ target.last_fit }}</dd>
 </dl>

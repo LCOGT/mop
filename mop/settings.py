@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'tom_dataproducts',
     'silk',
     'mop',
+    'microlensing_targets'
 ]
 
 SITE_ID = 1
@@ -261,6 +262,8 @@ FACILITIES = {
 
 # Define the valid data product types for your TOM. Be careful when removing items, as previously valid types will no
 # longer be valid, and may cause issues unless the offending records are modified.
+TARGET_MODEL_CLASS = 'microlensing_targets.models.MicrolensingTarget'
+
 DATA_TYPES = (
     ('SPECTROSCOPY', 'Spectroscopy'),
     ('PHOTOMETRY', 'Photometry')
@@ -330,7 +333,8 @@ HARVESTERS = {
 #     {'name': 'eligible', 'type': 'boolean'},
 #     {'name': 'dicovery_date', 'type': 'datetime'}
 # ]
-EXTRA_FIELDS = [{'name': 'Alive', 'type': 'boolean', 'default':True},
+EXTRA_FIELDS = [
+                {'name': 'Alive', 'type': 'boolean', 'default':True},
                 {'name': 'Classification', 'type': 'string', 'default': 'Microlensing PSPL'},
                 {'name': 'Category', 'type': 'string', 'default': 'Microlensing stellar/planet'},
                 {'name': 'Observing_mode', 'type': 'string', 'default': ' No'},
