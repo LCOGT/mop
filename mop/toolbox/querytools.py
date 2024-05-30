@@ -15,42 +15,58 @@ def fetch_alive_events_outside_HCZ(with_atomic=True):
     """
 
     if with_atomic:
-        ts1 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-            key='Classification', value__icontains='Microlensing'
-        )
-        ts2 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-            key='Alive', value=True
-        )
-        ts3 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-            key='Sky_location', value__icontains='Outside HCZ'
+        # ts1 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
+        #     key='Classification', value__icontains='Microlensing'
+        # )
+        # ts2 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
+        #     key='Alive', value=True
+        # )
+        # ts3 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
+        #     key='Sky_location', value__icontains='Outside HCZ'
+        # )
+
+        ts = Target.objects.select_for_update(skip_locked=True).filter(
+            classification__icontains='Microlensing',
+            alive=True,
+            sky_location__icontains='Outsize HCZ'
         )
 
     else:
-        ts1 = TargetExtra.objects.prefetch_related('target').filter(
-            key='Classification', value__icontains='Microlensing'
+        # ts1 = TargetExtra.objects.prefetch_related('target').filter(
+        #     key='Classification', value__icontains='Microlensing'
+        # )
+        # ts2 = TargetExtra.objects.prefetch_related('target').filter(
+        #     key='Alive', value=True
+        # )
+        # ts3 = TargetExtra.objects.prefetch_related('target').filter(
+        #     key='Sky_location', value__icontains='Outside HCZ'
+        # )
+
+        ts = Target.objects.filter(
+            classification__icontains='Microlensing',
+            alive=True,
+            sky_location__icontains='Outsize HCZ'
         )
-        ts2 = TargetExtra.objects.prefetch_related('target').filter(
-            key='Alive', value=True
-        )
-        ts3 = TargetExtra.objects.prefetch_related('target').filter(
-            key='Sky_location', value__icontains='Outside HCZ'
-        )
-    logger.info('queryTools: Initial queries selected '
-                + str(ts1.count()) + ' events classified as microlensing, '
-                + str(ts2.count()) + ' events currently Alive, and '
-                + str(ts3.count()) + ' events outside the HCZ')
+
+    # logger.info('queryTools: Initial queries selected '
+    #             + str(ts1.count()) + ' events classified as microlensing, '
+    #             + str(ts2.count()) + ' events currently Alive, and '
+    #             + str(ts3.count()) + ' events outside the HCZ')
+    logger.info('queryTools: Selected ' + str(ts.count()) + ' alive microlensing events outside the HCZ')
+
     utilities.checkpoint()
 
     # This doesn't directly produce a queryset of targets, instead it returns a queryset of target IDs.
     # So we have to extract the corresponding targets:
-    targets1 = [x.target for x in ts1]
-    targets2 = [x.target for x in ts2]
-    targets3 = [x.target for x in ts3]
-    target_set = list(set(targets1).intersection(
-        set(targets2)
-    ).intersection(
-        set(targets3)
-    ))
+    # targets1 = [x.target for x in ts1]
+    # targets2 = [x.target for x in ts2]
+    # targets3 = [x.target for x in ts3]
+    # target_set = list(set(targets1).intersection(
+    #     set(targets2)
+    # ).intersection(
+    #     set(targets3)
+    # ))
+    target_set = list(set(ts))
 
     return target_set
 
@@ -141,71 +157,98 @@ def fetch_data_for_targetset(target_list, check_need_to_fit=True, fetch_photomet
 
     return target_data
 
-def fetch_priority_targets(priority_key, priority_threshold):
+def fetch_priority_targets(priority_threshold, event_type='stellar'):
     """Function to fetch a list of Targets currently assigned a priority value higher than
     the given threshold.  Different priority keys are specified in the extra_fields and can
     be used as selection keys. """
 
     # First fetch a list of TargetExtra entries where the priority exceeds the threshold.
     # This returns a list of Target pk interger values.
-    ts1 = TargetExtra.objects.prefetch_related('target').filter(
-        key=priority_key, float_value__gt=priority_threshold
-    ).exclude(
-        value=np.nan
-    ).exclude(
-        value__exact=''
-    ).exclude(
-        value__exact='None'
-    )
-    ts2 = TargetExtra.objects.prefetch_related('target').filter(
-        key='Sky_location', value__icontains='Outside HCZ'
-    )
-    ts3 = TargetExtra.objects.prefetch_related('target').filter(
-        key='Classification', value__icontains='Microlensing'
-    )
-    ts4 = TargetExtra.objects.prefetch_related('target').filter(
-        key='YSO', value=False
-    )
-    ts5 = TargetExtra.objects.prefetch_related('target').filter(
-        key='QSO', value=False
-    )
-    ts6 = TargetExtra.objects.prefetch_related('target').filter(
-        key='galaxy', value=False
-    )
-    ts7 = TargetExtra.objects.prefetch_related('target').filter(
-        key='Alive', value=True
-    )
+    # ts1 = TargetExtra.objects.prefetch_related('target').filter(
+    #     key=priority_key, float_value__gt=priority_threshold
+    # ).exclude(
+    #     value=np.nan
+    # ).exclude(
+    #     value__exact=''
+    # ).exclude(
+    #     value__exact='None'
+    # )
+    # ts2 = TargetExtra.objects.prefetch_related('target').filter(
+    #     key='Sky_location', value__icontains='Outside HCZ'
+    # )
+    # ts3 = TargetExtra.objects.prefetch_related('target').filter(
+    #     key='Classification', value__icontains='Microlensing'
+    # )
+    # ts4 = TargetExtra.objects.prefetch_related('target').filter(
+    #     key='YSO', value=False
+    # )
+    # ts5 = TargetExtra.objects.prefetch_related('target').filter(
+    #     key='QSO', value=False
+    # )
+    # ts6 = TargetExtra.objects.prefetch_related('target').filter(
+    #     key='galaxy', value=False
+    # )
+    # ts7 = TargetExtra.objects.prefetch_related('target').filter(
+    #     key='Alive', value=True
+    # )
 
-    logger.info('QueryTools: Got ' + str(ts1.count()) + ' targets above priority threshold, '
-          + str(ts2.count()) + ' targets outside the HCZ, '
-          + str(ts3.count()) + ' targets classified as microlensing, '
-          + str(ts4.count()) + ' targets not YSOs, '
-          + str(ts5.count()) + ' targets not QSOs, '
-          + str(ts6.count()) + ' targets not galaxies, '
-          + str(ts7.count()) + ' targets that are currently Alive')
+    # With the custom Targets model we can search directly on the Target table,
+    # but note that this doesn't exclude Nan or None values
+    if event_type == 'stellar':
+        ts = Target.objects.filter(
+            tap_priority__gt=priority_threshold,
+            sky_location__icontains='Outside HCZ',
+            classification__icontains='Microlensing',
+        ).exclude(
+            YSO=True,
+            QSO=True,
+            galaxy=True,
+            alive=False
+        )
+    else:
+        ts = Target.objects.filter(
+            tap_priority_longte__gt=priority_threshold,
+            sky_location__icontains='Outside HCZ',
+            classification__icontains='Microlensing',
+        ).exclude(
+            YSO=True,
+            QSO=True,
+            galaxy=True,
+            alive=False
+        )
+
+    # logger.info('QueryTools: Got ' + str(ts1.count()) + ' targets above priority threshold, '
+    #       + str(ts2.count()) + ' targets outside the HCZ, '
+    #       + str(ts3.count()) + ' targets classified as microlensing, '
+    #       + str(ts4.count()) + ' targets not YSOs, '
+    #       + str(ts5.count()) + ' targets not QSOs, '
+    #       + str(ts6.count()) + ' targets not galaxies, '
+    #       + str(ts7.count()) + ' targets that are currently Alive')
+    logger.info('queryTools: Got ' + str(ts.count()) + ' priority alive events outside the HCZ')
 
     # Find the intersection of the target sets:
-    targets1 = [x.target for x in ts1]
-    targets2 = [x.target for x in ts2]
-    targets3 = [x.target for x in ts3]
-    targets4 = [x.target for x in ts4]
-    targets5 = [x.target for x in ts5]
-    targets6 = [x.target for x in ts6]
-    targets7 = [x.target for x in ts7]
+    # targets1 = [x.target for x in ts1]
+    # targets2 = [x.target for x in ts2]
+    # targets3 = [x.target for x in ts3]
+    # targets4 = [x.target for x in ts4]
+    # targets5 = [x.target for x in ts5]
+    # targets6 = [x.target for x in ts6]
+    # targets7 = [x.target for x in ts7]
 
-    target_list = list(set(targets1).intersection(
-        set(targets2)
-    ).intersection(
-        set(targets3)
-    ).intersection(
-        set(targets4)
-    ).intersection(
-        set(targets5)
-    ).intersection(
-        set(targets6)
-    ).intersection(
-        set(targets7)
-    ))
+    # target_list = list(set(targets1).intersection(
+    #     set(targets2)
+    # ).intersection(
+    #     set(targets3)
+    # ).intersection(
+    #     set(targets4)
+    # ).intersection(
+    #     set(targets5)
+    # ).intersection(
+    #     set(targets6)
+    # ).intersection(
+    #     set(targets7)
+    # ))
+    target_list = list(set(ts))
     logger.info('QueryTools: identified ' + str(len(target_list)) + ' targets')
 
     return target_list
@@ -222,27 +265,28 @@ def get_gaia_alive_events():
     logger.info('queryTools: checkpoint 1')
     utilities.checkpoint()
 
-   # Search TargetExtras to identify alive microlensing events outside the HCZ
-    ts1 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-        key='Classification', value__icontains='Microlensing'
+    # Search for alive Gaia microlensing events outside the HCZ
+    # Since we need to search all TargetName entries here, we can't do a reverse foreign key look-up
+    # for properties on the custom Target model because the TargetName model class inherits only
+    # the BaseTarget model.
+    qs1 = Target.objects.select_for_update(skip_locked=True).filter(
+        classification__icontains='Microlensing',
+        sky_location__icontains='Outside HCZ',
+        alive=True,
     )
-    ts2 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-        key='Alive', value=True
+    qs2 = TargetName.objects.select_for_update(skip_locked=True).filter(
+        name__icontains='Gaia'
     )
-    logger.info('queryTools: Initial queries selected '
-                + str(ts1.count()) + ' events classified as microlensing, '
-                + str(ts2.count()) + ' events currently Alive')
+    logger.info('queryTools: Initial query selected ' + str(qs1.count()) + ' alive events and '
+                + str(qs2.count()) + ' Gaia events')
     t2 = datetime.datetime.utcnow()
     utilities.checkpoint()
 
-    # This doesn't directly produce a queryset of targets, instead it returns a queryset of target IDs.
-    # So we have to extract the corresponding targets.
-    # In the process, filter out any events that are not from Gaia
-    targets1 = [x.target for x in ts1 if 'Gaia' in x.target.name]
-    targets2 = [x.target for x in ts2 if 'Gaia' in x.target.name]
-    target_list = list(set(targets1).intersection(set(targets2)))
+    # Identify targets at the intersection of these queries
+    gaia_targets = [x.target for x in qs2]
+    target_list = list(set(qs1).intersection(set(gaia_targets)))
 
-    logger.info('queryTools: Initial target list has ' + str(len(target_list)) + ' entries')
+    logger.info('queryTools: target list has ' + str(len(target_list)) + ' entries')
 
     # Now gather any TargetExtra and ReducedDatums associated with these targets.
     # This is managed as a dictionary of MicrolensingEvent objects

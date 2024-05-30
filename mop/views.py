@@ -212,8 +212,8 @@ class PriorityTargetsView(ListView):
         if self.request.user.is_authenticated:
 
             # Query for matching TargetExtra entries returns a list of Target PKs
-            qs_stars = querytools.fetch_priority_targets('TAP_priority', 10.0)
-            qs_bh = querytools.fetch_priority_targets('TAP_priority_longtE', 10.0)
+            qs_stars = querytools.fetch_priority_targets(10.0, 'stellar')
+            qs_bh = querytools.fetch_priority_targets(10.0, 'long_tE')
 
             logger.info('Priority querysets initially find ' \
                         + str(len(qs_stars)) + ' stellar candidate events and ' \
@@ -248,26 +248,26 @@ class PriorityTargetsView(ListView):
         logger.info('PRIORITYTARGETS started extract at ' + str(t1))
         utilities.checkpoint()
 
-        key_list = ['t0', 't0_error', 'u0', 'u0_error', 'tE', 'tE_error', 'Mag_now', 'Baseline_magnitude']
+        key_list = ['t0', 't0_error', 'u0', 'u0_error', 'tE', 'tE_error', 'mag_now', 'baseline_magnitude']
 
-        selected_targets = querytools.fetch_data_for_targetset(targetset, check_need_to_fit=False, fetch_photometry=False)
+        #selected_targets = querytools.fetch_data_for_targetset(targetset, check_need_to_fit=False, fetch_photometry=False)
 
         priority = []
         target_data = []
-        for t, mulens in selected_targets.items():
-            target_info = {'name': mulens.name, 'id': mulens.target.id}
+        for mulens in targetset:
+            target_info = {'name': mulens.name, 'id': mulens.id}
 
             if target_category == 'stellar':
-                target_info['priority'] = round(float(mulens.TAP_priority),3)
+                target_info['priority'] = round(float(mulens.tap_priority),3)
                 # Not all entries have an uncertainty set, due to older versions of the code not storing it
                 try:
-                    target_info['priority_error'] = round(float(mulens.TAP_priority_error),3)
+                    target_info['priority_error'] = round(float(mulens.tap_priority_error),3)
                 except AttributeError:
                     target_info['priority_error'] = np.nan
             else:
-                target_info['priority'] = round(float(mulens.TAP_priority_longtE),3)
+                target_info['priority'] = round(float(mulens.tap_priority_longte),3)
                 try:
-                    target_info['priority_error'] = round(float(mulens.TAP_priority_longtE_error),3)
+                    target_info['priority_error'] = round(float(mulens.tap_priority_longte_error),3)
                 except AttributeError:
                     target_info['priority_error'] = np.nan
 
@@ -306,66 +306,6 @@ class PriorityTargetsView(ListView):
         utilities.checkpoint()
 
         return sorted_targets
-
-
-    def check_classification(self, target):
-        """Method to check that the listed events are actually microlensing
-        NOW DEPRECIATED"""
-
-        if 'microlensing' in str(target.extra_fields['Classification']).lower():
-            criteria = [True]
-        else:
-            return False
-
-        # Records True for each condition if it is NOT the classification
-        bool_keys = ['is_YSO', 'is_QSO', 'is_galaxy']
-        for key in bool_keys:
-            if key in target.extra_fields.keys():
-                if 'false' in str(target.extra_fields[key]).lower():
-                    value = True
-                else:
-                    value = False
-            else:
-                value = True
-            criteria.append(value)
-
-        return all(criteria)
-
-    def check_valid_target(self, target):
-        """
-        Method to verify that a Target is Alive and not flagged as a known variable before it is
-        included in the Priority Targets table
-        NOW DEPRECIATED
-        """
-
-        if 'Alive' not in target.extra_fields.keys():
-            return False
-
-        if not target.extra_fields['Alive']:
-            return False
-
-        if 'is_YSO' in target.extra_fields.keys() and type(target.extra_fields['is_YSO']) == type(True):
-            if target.extra_fields['is_YSO']:
-                return False
-        elif 'is_YSO' in target.extra_fields.keys() and type(target.extra_fields['is_YSO']) == type('str'):
-            if 'true' in str(target.extra_fields['is_YSO']).lower():
-                return False
-
-        if 'is_QSO' in target.extra_fields.keys() and type(target.extra_fields['is_QSO']) == type(True):
-            if target.extra_fields['is_QSO']:
-                return False
-        elif 'is_QSO' in target.extra_fields.keys() and type(target.extra_fields['is_QSO']) == type('str'):
-            if 'true' in str(target.extra_fields['is_QSO']).lower():
-                return False
-
-        if 'is_galaxy' in target.extra_fields.keys() and type(target.extra_fields['is_galaxy']) == type(True):
-            if target.extra_fields['is_galaxy']:
-                return False
-        elif 'is_galaxy' in target.extra_fields.keys() and type(target.extra_fields['is_galaxy']) == type('str'):
-            if 'true' in str(target.extra_fields['is_galaxy']).lower():
-                return False
-
-        return True
 
 class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
     """
@@ -459,10 +399,7 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
 
                         # Extract any requested extra parameters for this object, if available
                         for param in settings.SELECTION_EXTRA_FIELDS:
-                            if param in object.extra_fields.keys():
-                                target_data.append(object.extra_fields[param])
-                            else:
-                                target_data.append(None)
+                            target_data.append(getattr(object, param))
                         objects.append(object)
                         observable_targets.append(target_data)
                         logger.info('FacilitySelectView: Got observable target ' + object.name)

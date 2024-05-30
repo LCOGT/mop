@@ -415,9 +415,9 @@ EXTRA_FIELDS = [
                 {'name': 'TNS_class', 'type': 'string', 'default': 'None'}]
 
 SELECTION_EXTRA_FIELDS = [
-    'Mag_now',
-    'TAP_priority',
-    'TAP_priority_longtE',
+    'mag_now',
+    'tap_priority',
+    'tap_priority_longte',
 ]
 
 # Define MATCH_MANAGERS here. This is a dictionary that contains a dotted module path to the desired match manager
