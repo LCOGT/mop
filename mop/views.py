@@ -114,7 +114,7 @@ class ActiveObsView(ListView):
             context     dict    Context data for webpage template
         """
         # Parameters to extract from the observation records
-        target_keys = ['tE', 't0', 'Mag_now', 'Category', 'TAP_priority', 'TAP_priority_longtE']
+        target_keys = ['tE', 't0', 'mag_now', 'category', 'tap_priority', 'tap_priority_longte']
 
         context = super().get_context_data(*args, **kwargs)
 
@@ -127,39 +127,36 @@ class ActiveObsView(ListView):
             utcnow = datetime.utcnow()
             obs_qs = ObservationRecord.objects.filter(scheduled_start__gt=utc_threshold,
                                                       scheduled_end__gt=utcnow)
-
+            
             # Build lists of the ObservationRecords and Targets, while respecting
             # user access permissions
             targets = {}
             for obs in obs_qs:
                 if self.request.user.has_perm('tom_observations.view_observation'):
                     if 'requests' in obs.parameters.keys():
-                        for request in obs.parameters['requests']:
-                            obs_data = {}
-                            obs_data['start'] = request['windows'][0]['start']
-                            obs_data['end'] = request['windows'][0]['end']
-                            obs_data['facility'] = 'LCO'
-                            obs_data['observation_type'] = obs.parameters['observation_type']
-                            obs_data['ipp_value'] = obs.parameters['ipp_value']
-                            for c, config in enumerate(request['configurations']):
-                                obs_data['c_' + str(c+1) + '_instrument_type'] = config['instrument_type']
-                                for ic,inst_config in enumerate(config['instrument_configs']):
-                                    obs_data['c_' + str(c+1) + '_ic_' + str(ic+1) + '_filter'] = inst_config['optical_elements']['filter']
-                                    obs_data['c_' + str(c+1) + '_ic_' + str(ic+1) + '_exposure_time'] = inst_config['exposure_time']
-                                    obs_data['c_' + str(c+1) + '_ic_' + str(ic+1) + '_exposure_count'] = inst_config['exposure_count']
+                        obs_data = self.get_obs_params(obs.parameters['requests'][0])
+                    else:
+                        obs_data = self.get_obs_params(obs.parameters, request=False)
+                    obs_data['observation_type'] = obs.parameters['observation_type']
+                    obs_data['ipp_value'] = obs.parameters['ipp_value']
 
-                        if obs.target.name in targets.keys():
-                            target_data = targets[obs.target.name]
-                        else:
-                            target_data = {'name': obs.target.name, 'obs_list': []}
+                    # Here we have to go and fetch the Target again because the target attribute of the
+                    # ObservationRecord relates to the BaseTarget not the custom target, and so
+                    # doesn't have the attributes we need to extract.  However, they have the same PKs.
+                    if obs.target.name in targets.keys():
+                        target_data = targets[obs.target.name]
+                    else:
+                        target_data = {'name': obs.target.name, 'obs_list': []}
+                        t = Target.objects.get(pk=obs.target.pk)
+                        if t:
                             for key in target_keys:
-                                try:
-                                    target_data[key] = obs.target.extra_fields[key]
-                                except KeyError:
-                                    target_data[key] = 'None'
+                                target_data[key] = getattr(t, key)
+                        else:
+                            for key in target_keys:
+                                target_data[key] = 'None'
 
-                        target_data['obs_list'].append(obs_data)
-                        targets[obs.target.name] = target_data
+                    target_data['obs_list'].append(obs_data)
+                    targets[obs.target.name] = target_data
 
             context['targets'] = targets.values()
             
@@ -185,6 +182,35 @@ class ActiveObsView(ListView):
         context['query_string'] = self.request.META['QUERY_STRING']
 
         return context
+
+    def get_obs_params(self, obs_params, request=True):
+        """Method to extract the required information from the parameter dictionary stored in an ObservationRecord"""
+
+        obs_data = {}
+        if request:
+            obs_data['start'] = obs_params['windows'][0]['start']
+            obs_data['end'] = obs_params['windows'][0]['end']
+            obs_data['facility'] = 'LCO'
+            for c, config in enumerate(obs_params['configurations']):
+                obs_data['c_' + str(c + 1) + '_instrument_type'] = config['instrument_type']
+                for ic, inst_config in enumerate(config['instrument_configs']):
+                    obs_data['c_' + str(c + 1) + '_ic_' + str(ic + 1) + '_filter'] = inst_config['optical_elements'][
+                        'filter']
+                    obs_data['c_' + str(c + 1) + '_ic_' + str(ic + 1) + '_exposure_time'] = inst_config['exposure_time']
+                    obs_data['c_' + str(c + 1) + '_ic_' + str(ic + 1) + '_exposure_count'] = inst_config['exposure_count']
+        else:
+            obs_data['start'] = obs_params['start']
+            obs_data['end'] = obs_params['end']
+            obs_data['facility'] = obs_params['facility']
+            obs_data['c_1_instrument_type'] = obs_params['c_1_instrument_type']
+            obs_data['c_1_ic_1_filter'] = obs_params['c_1_ic_1_filter']
+            obs_data['c_1_ic_2_filter'] = obs_params['c_1_ic_2_filter']
+            obs_data['c_1_ic_1_exposure_time'] = obs_params['c_1_ic_1_exposure_time']
+            obs_data['c_1_ic_2_exposure_time'] = obs_params['c_1_ic_2_exposure_time']
+            obs_data['c_1_ic_1_exposure_count'] = obs_params['c_1_ic_1_exposure_count']
+            obs_data['c_1_ic_2_exposure_count'] = obs_params['c_1_ic_2_exposure_count']
+
+        return obs_data
 
 class PriorityTargetsView(ListView):
     template_name = 'priority_targets_list.html'
