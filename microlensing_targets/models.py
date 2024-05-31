@@ -107,6 +107,7 @@ class MicrolensingTarget(BaseTarget):
 
     def get_target_names(self, qs):
         """Attributes the names associated with this target"""
+        self.targetnames = []
         for name in qs:
             self.targetnames.append(name.name)
 

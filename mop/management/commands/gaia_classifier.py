@@ -36,16 +36,16 @@ class Command(BaseCommand):
                     # fit parameters are ignored until they are model fitted.
                     # Fitted targets will have their class set to microlensing by default
 
-                    if mulens.extras['u0'].value != 0.0 \
-                        and mulens.extras['t0'].value != 0.0 \
-                        and mulens.extras['tE'].value != 0.0 \
-                        and event.ra != None and event.dec != None:
+                    if mulens.u0 != 0.0 \
+                        and mulens.t0 != 0.0 \
+                        and mulens.tE != 0.0 \
+                        and mulens.ra != None and mulens.dec != None:
 
                         # Test for an invalid blend magnitude:
-                        valid_blend_mag = classifier_tools.check_valid_blend(float(mulens.extras['Blend_magnitude'].value))
+                        valid_blend_mag = classifier_tools.check_valid_blend(float(mulens.blend_magnitude))
 
                         # Test for a suspiciously large u0:
-                        valid_u0 = classifier_tools.check_valid_u0(float(mulens.extras['u0'].value))
+                        valid_u0 = classifier_tools.check_valid_u0(float(mulens.u0))
 
                         # Test for low-amplitude change in photometry:
                         valid_dmag = classifier_tools.check_valid_dmag(mulens)
@@ -65,14 +65,13 @@ class Command(BaseCommand):
                             mulens.store_parameter_set(update_extras)
                             logger.info(mulens.name+': Reset as unclassified variable')
 
-                        if 'red_chi2' in event.extra_fields.keys():
-                            if not valid_chisq:
-                                update_extras={
-                                    'Classification': 'Unclassified poor fit',
-                                    'Category': 'Unclassified'
-                                }
-                                mulens.store_parameter_set(update_extras)
-                                logger.info(event.name+': Reset as unclassified poor fit')
+                        if not valid_chisq:
+                            update_extras={
+                                'Classification': 'Unclassified poor fit',
+                                'Category': 'Unclassified'
+                            }
+                            mulens.store_parameter_set(update_extras)
+                            logger.info(event + ': Reset as unclassified poor fit')
 
             elif classifier == 2:
                 for event, mulens in target_data.items():

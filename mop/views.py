@@ -127,7 +127,7 @@ class ActiveObsView(ListView):
             utcnow = datetime.utcnow()
             obs_qs = ObservationRecord.objects.filter(scheduled_start__gt=utc_threshold,
                                                       scheduled_end__gt=utcnow)
-            
+
             # Build lists of the ObservationRecords and Targets, while respecting
             # user access permissions
             targets = {}

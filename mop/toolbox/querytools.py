@@ -1,6 +1,7 @@
 from tom_dataproducts.models import ReducedDatum
 from tom_targets.models import Target,TargetExtra,TargetName, TargetList
 from microlensing_targets.models import MicrolensingTarget
+from django.db.models import Q
 from mop.toolbox import utilities
 import logging
 import datetime
@@ -269,22 +270,16 @@ def get_gaia_alive_events():
     # Since we need to search all TargetName entries here, we can't do a reverse foreign key look-up
     # for properties on the custom Target model because the TargetName model class inherits only
     # the BaseTarget model.
-    qs1 = Target.objects.select_for_update(skip_locked=True).filter(
+    qs = Target.objects.filter(
+        Q(name__icontains='Gaia') | Q(aliases__name__icontains='Gaia'),
         classification__icontains='Microlensing',
         sky_location__icontains='Outside HCZ',
-        alive=True,
+        alive=True
     )
-    qs2 = TargetName.objects.select_for_update(skip_locked=True).filter(
-        name__icontains='Gaia'
-    )
-    logger.info('queryTools: Initial query selected ' + str(qs1.count()) + ' alive events and '
-                + str(qs2.count()) + ' Gaia events')
+    target_list = list(set(qs))
+    logger.info('queryTools: Initial query selected ' + str(qs.count()) + ' alive Gaia events')
     t2 = datetime.datetime.utcnow()
     utilities.checkpoint()
-
-    # Identify targets at the intersection of these queries
-    gaia_targets = [x.target for x in qs2]
-    target_list = list(set(qs1).intersection(set(gaia_targets)))
 
     logger.info('queryTools: target list has ' + str(len(target_list)) + ' entries')
 

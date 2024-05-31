@@ -192,7 +192,7 @@ def check_valid_dmag(mulens):
             if lc[idx].min() < peak_mag:
                 peak_mag = lc[idx].min()
 
-        delta_mag = float(mulens.extras['Baseline_magnitude'].value) - peak_mag
+        delta_mag = float(mulens.baseline_magnitude) - peak_mag
 
         if delta_mag < 0.5:
             return False
@@ -202,9 +202,9 @@ def check_valid_dmag(mulens):
     return True
 
 def check_valid_chi2sq(mulens):
-    if 'red_chi2' in mulens.extras.keys():
-        if float(mulens.extras['red_chi2'].value) > 50.0 \
-                or float(mulens.extras['red_chi2'].value) < 0.0:
+    if mulens.red_chi2:
+        if float(mulens.red_chi2) > 50.0 \
+                or float(mulens.red_chi2) < 0.0:
             return False
 
     else:
