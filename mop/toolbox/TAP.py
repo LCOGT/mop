@@ -120,10 +120,10 @@ def set_target_sky_location(target):
     event_status = event_in_HCZ(target.ra, target.dec, KMTNet_fields)
 
     if event_status:
-        sky_location = 'In HCZ'
+        target.sky_location = 'In HCZ'
     else:
-        sky_location = 'Outside HCZ'
-    target.save(extras={'Sky_location': sky_location})
+        target.sky_location = 'Outside HCZ'
+    target.save()
 
 def TAP_regular_mode(in_the_Bulge,survey_cadence,sdssi_baseline,tE_fit):
 

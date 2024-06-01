@@ -62,15 +62,14 @@ class MOPGaia(gaia.GaiaBroker):
                         'filter': 'G'
                         }
 
-                        rd, _ = ReducedDatum.objects.get_or_create(
+                        rd, created = ReducedDatum.objects.get_or_create(
                                 timestamp=jd.to_datetime(timezone=TimezoneInfo()),
                                 value=value,
                                 source_name=self.name,
                                 source_location=alert_url,
                                 data_type='photometry',
                                 target=target)
-
-                        rd.save()
+                        
 
             (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(target)
             extras = {'Latest_data_HJD': t_last_jd, 'Latest_data_UTC': t_last_date}

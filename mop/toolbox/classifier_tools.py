@@ -131,39 +131,34 @@ def check_known_variable(target, coord=None):
     if not coord:
         coord = SkyCoord(target.ra, target.dec, frame='icrs', unit=(u.deg, u.deg))
 
-    yso = check_YSO(coord)
-    qso = check_QSO(coord)
-    gal = check_galaxy(coord)
+    target.YSO = check_YSO(coord)
+    target.QSO = check_QSO(coord)
+    target.galaxy = check_galaxy(coord)
     tns_results = check_tns(coord)
-
-    extra_params = {
-        'YSO': yso,
-        'QSO': qso,
-        'galaxy': gal,
-        'TNS_name': tns_results['TNS_name'],
-        'TNS_class': tns_results['TNS_class']
-    }
+    target.TNS_name = tns_results['TNS_name']
+    target.TNS_class = tns_results['TNS_class']
 
     # If any of these flags are true, the target cannot be a microlensing target,
     # so re-classify
-    if yso:
-        extra_params['Classification'] = 'Variable star'
-        extra_params['Category'] = 'Stellar activity'
-    if qso or gal:
-        extra_params['Classification'] = 'Extra-galactic variable'
-    if qso:
-        extra_params['Category'] = 'Active Galactic Nucleus'
-    elif gal:
-        extra_params['Category'] = 'Galaxy'
-    if 'none' not in str(extra_params['TNS_name']).lower():
-        if 'none' not in str(extra_params['TNS_class']).lower():
-            extra_params['Classification'] = extra_params['TNS_class']
-            extra_params['Category'] = extra_params['TNS_class']
-        # else:
-        #     extra_params['Classification'] = 'Known transient'
-        #     extra_params['Category'] = 'Unclassified'
+    if target.YSO:
+        target.classification = 'Variable star'
+        target.category = 'Stellar activity'
+    if target.QSO or target.galaxy:
+        target.classification = 'Extra-galactic variable'
+    if target.QSO:
+        target.category = 'Active Galactic Nucleus'
+    elif target.galaxy:
+        target.category = 'Galaxy'
 
-    target.save(extras=extra_params)
+    if 'none' not in str(target.TNS_name).lower():
+        if 'none' not in str(target.TNS_class).lower():
+            target.classification = target.TNS_class
+            target.category = target.TNS_class
+        # else:
+        #     target.classification = 'Known transient'
+        #     target.category = 'Unclassified'
+
+    target.save()
 
 def check_valid_blend(blend_field):
     if blend_field == None or blend_field == 0.0:
