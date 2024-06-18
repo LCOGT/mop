@@ -114,7 +114,10 @@ class MicrolensingTarget(BaseTarget):
 
     def get_reduced_data(self, qs):
         """Extracts the timeseries data from a QuerySet of ReducedDatums, and
-        creates the necessary arrays"""
+        creates the necessary arrays.
+        Note that the queryset of ReducedDatums must be provided separately and not
+        derived from a qeruy
+        """
 
         # Store the complete set of results
         self.red_data = qs
@@ -211,45 +214,6 @@ class MicrolensingTarget(BaseTarget):
 
         return self.need_to_fit, reason
 
-
-    def store_model_lightcurve(self, model):
-        """Method to store in the TOM the timeseries lightcurve corresponding to a fitted model.
-        The input is a model fit object from PyLIMA"""
-
-        tz = pytz.timezone('utc')
-        model_time = datetime.utcnow().replace(tzinfo=tz)
-
-        # Extract the model lightcurve timeseries from the PyLIMA fit object
-        data = {
-            'lc_model_time': model.lightcurve_magnitude['time'].value.tolist(),
-            'lc_model_magnitude': model.lightcurve_magnitude['mag'].value.tolist()
-        }
-
-        # If there is no existing model for this target, create one
-        if not self.existing_model:
-            rd = ReducedDatum.objects.create(
-                timestamp=model_time,
-                value=data,
-                source_name='MOP',
-                source_location=self.name,
-                data_type='lc_model',
-                target=self
-            )
-
-            rd.save()
-            self.existing_model = rd
-
-        # If there is a pre-existing model, update it
-        else:
-            self.existing_model.timestamp = model_time
-            self.existing_model.value = data
-            self.existing_model.source_name = 'MOP'
-            self.existing_model.source_location = self.name
-            self.existing_model.data_type = 'lc_model'
-            self.existing_model.target = self
-            self.existing_model.defaults = {'value': data}
-            self.existing_model.save()
-
     def store_model_parameters(self, model_params):
         """Function to store the fitted model parameters in the TOM"""
 
@@ -263,12 +227,13 @@ class MicrolensingTarget(BaseTarget):
                       'ks_test', 'ad_test', 'sw_test']
 
         for key in parameters:
-            if key == 'fit_covariance':
-                data = json.dumps(model_params['Fit_covariance'].tolist())
-            else:
-                data = model_params[key]
-            setattr(self, key, data)
-            self.save()
+            if key in model_params.keys():
+                if key == 'fit_covariance':
+                    data = json.dumps(model_params['fit_covariance'].tolist())
+                else:
+                    data = model_params[key]
+                setattr(self, key, data)
+        self.save()
 
     def store_parameter_set(self, parameters):
         """Method to store a flexible set of target attributes"""

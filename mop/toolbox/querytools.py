@@ -307,3 +307,20 @@ def get_targetlist_alive_events(targetlist_name='all'):
         target_set = list(set(target_set).intersection(set(targets)))
 
     return target_set
+
+def get_alive_events_with_old_model(max_model_age):
+    """
+    Fetch the Targets that are alive, classified as microlensing and which have a last_fit date older
+    than the threshold max_model_age
+    """
+
+    # The cutoff for the maximum allowed model fit age needs to be a Time object:
+    cutoff = Time(datetime.datetime.utcnow() - datetime.timedelta(hours=options['run_every'])).jd
+
+    ts = Target.objects.select_for_update(skip_locked=True).filter(
+        alive=True,
+        classification__icontains='Microlensing',
+        last_fit__lte=cutoff
+    )
+
+    return ts

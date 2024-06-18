@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'tom_dataproducts',
     'mop',
     "tests",
+    'microlensing_targets'
 ]
 
 DATA_PRODUCT_TYPES = {
@@ -98,6 +99,8 @@ EXTRA_FIELDS = [{'name':'Alive','type':'boolean', 'default':True},
                 {'name':'AD_test','type':'number','default':0},
                 {'name':'Latest_data_HJD','type':'number','default':0},
                 {'name':'Latest_data_UTC','type':'datetime','default':''}]
+
+TARGET_MODEL_CLASS = 'microlensing_targets.models.MicrolensingTarget'
 
 TARGET_PERMISSIONS_ONLY=True
 
