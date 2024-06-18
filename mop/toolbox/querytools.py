@@ -4,6 +4,7 @@ from django.db.models import Q
 from mop.toolbox import utilities
 import logging
 import datetime
+from astropy.time import Time, TimeDelta
 from django.db import connection
 import numpy as np
 
@@ -311,11 +312,11 @@ def get_targetlist_alive_events(targetlist_name='all'):
 def get_alive_events_with_old_model(max_model_age):
     """
     Fetch the Targets that are alive, classified as microlensing and which have a last_fit date older
-    than the threshold max_model_age
+    than the threshold max_model_age [hours]
     """
 
     # The cutoff for the maximum allowed model fit age needs to be a Time object:
-    cutoff = Time(datetime.datetime.utcnow() - datetime.timedelta(hours=options['run_every'])).jd
+    cutoff = Time(datetime.datetime.utcnow() - datetime.timedelta(hours=max_model_age)).jd
 
     ts = Target.objects.select_for_update(skip_locked=True).filter(
         alive=True,
