@@ -26,18 +26,21 @@ class TestClassMicrolens(TestCase):
         lightcurve_file = path.join(cwd, 'tests/data/Gaia23cnu.csv')
         photometry = generate_test_ReducedDatums(st1, lightcurve_file, 'G')
 
-        self.model_params = {'t': 2460237.0,
-                             't0': 2460217.09,
-                             'u0': 0.34,
-                             'te': 126.4,
-                             'Source_magnitude': 16.92,
-                             'Blend_magnitude': 16.50,
-                             'Baseline_magnitude': 15.94,
-                             'chi2': 6135.256,
-                             'red_chi2': 6.35,
-                             }
+        st1.t0 = 2460217.09
+        st1.u0 = 0.34
+        st1.te = 126.4
+        st1.source_magnitude = 16.92
+        st1.blend_magnitude = 16.50
+        st1.baseline_magnitude = 15.94
+        st1.chi2 = 6135.256
+        st1.red_chi2 = 6.35
+        st1.save()
+
+        st1.datasets = photometry
+        
         self.params = {
             'target': st1,
+            't': 2460237.0,
             'lightcurve_file': lightcurve_file,
             'photometry': photometry,
             'Latest_data_HJD': 2460207.09
@@ -62,26 +65,28 @@ class TestClassMicrolens(TestCase):
         self.assertEqual(is_galaxy, False)
 
     def test_valid_blend(self):
-        valid_blend = classifier_tools.check_valid_blend(self.model_params['Blend_magnitude'])
+        valid_blend = classifier_tools.check_valid_blend(self.params['target'])
 
         assert (type(valid_blend) == type(True))
         self.assertEqual(valid_blend, True)
 
     def test_valid_u0(self):
-        valid_u0 = classifier_tools.check_valid_u0(self.model_params['u0'])
+        target = self.params['target']
+        valid_u0 = classifier_tools.check_valid_u0(target.u0)
 
         assert (type(valid_u0) == type(True))
         self.assertEqual(valid_u0, True)
 
     def test_valid_dmag(self):
-        photometry = gaia_classifier.retrieve_target_photometry(self.params['target'])
-        valid_dmag = classifier_tools.check_valid_dmag(self.model_params['Baseline_magnitude'], photometry)
+        target = self.params['target']
+        #photometry = gaia_classifier.retrieve_target_photometry(target)
+        valid_dmag = classifier_tools.check_valid_dmag(target)
 
         assert (type(valid_dmag) == type(True))
         self.assertEqual(valid_dmag, True)
 
     def test_valid_chi2sq(self):
-        valid_chi2sq = classifier_tools.check_valid_chi2sq(self.model_params)
+        valid_chi2sq = classifier_tools.check_valid_chi2sq(self.params['target'])
 
         assert (type(valid_chi2sq) == type(True))
         self.assertEqual(valid_chi2sq, True)
@@ -92,7 +97,7 @@ def generate_test_ReducedDatums(target, lightcurve_file, tel_label):
     single target
     """
 
-    data = []
+    lc = []
     ts_jds = np.loadtxt(lightcurve_file, delimiter=',', skiprows=2, usecols=1)
     mags = np.loadtxt(lightcurve_file, delimiter=',', skiprows=2, usecols=2, dtype='str')
 
@@ -113,8 +118,8 @@ def generate_test_ReducedDatums(target, lightcurve_file, tel_label):
                 target=target)
 
             if created:
-                rd.save()
-                data.append(rd)
+                lc.append( [float(ts_jds[i]), float(mags[i]), gaia_mop.estimateGaiaError(float(mags[i]))] )
+    data = {'G': np.array(lc) }
 
     return data
 
@@ -124,22 +129,18 @@ class TestCheckKnownVariable(TestCase):
         st1.name = 'Gaia23avo'
         st1.ra = 20.4233
         st1.dec = 11.8307
+        st1.YSO = False
+        st1.QSO = True
+        st1.galaxy = True
+        st1.save()
         self.target = st1
-        self.is_YSO = False
-        self.is_QSO = True
-        self.is_galaxy = True
-        self.classification = 'Extra-galactic variable'
-        self.category = 'Active Galactic Nucleus'
+        self.results = {
+            'classification': 'Extra-galactic variable',
+            'category': 'Active Galactic Nucleus'
+        }
 
     def test_check_known_variable(self):
         classifier_tools.check_known_variable(self.target, coord=None)
 
-        t = Target.objects.get(name = self.target.name)
-
-        print(t.extra_fields)
-
-        assert(t.extra_fields['YSO'] == self.is_YSO)
-        assert(t.extra_fields['QSO'] == self.is_QSO)
-        assert(t.extra_fields['galaxy'] == self.is_galaxy)
-        assert(t.extra_fields['Classification'] == self.classification)
-        assert(t.extra_fields['Category'] == self.category)
+        assert(self.target.classification == self.results['classification'])
+        assert(self.target.category == self.results['category'])

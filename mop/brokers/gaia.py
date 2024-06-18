@@ -1,6 +1,4 @@
 from tom_dataproducts.models import ReducedDatum
-from tom_targets.models import Target,TargetExtra
-from microlensing_targets.models import MicrolensingTarget
 from astroquery.vizier import Vizier
 from astropy.coordinates import Angle
 import astropy.units as u

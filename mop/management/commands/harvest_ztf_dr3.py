@@ -39,7 +39,7 @@ class Command(BaseCommand):
         if all_events == 'all':
             list_of_targets = Target.objects.filter()
         if all_events == 'alive':
-            list_of_targets = Target.objects.filter(targetextra__in=TargetExtra.objects.filter(key='Alive', value=True))
+            list_of_targets = Target.objects.filter(alive=True)
         if all_events[0] == '[':
             years = all_events[1:-1].split(',')
             events = Target.objects.filter()
@@ -50,7 +50,7 @@ class Command(BaseCommand):
 
             list_of_targets = list(list_of_targets)
             random.shuffle(list_of_targets)
-        if 'OGLE' in all_events or 'MOA' in all_events or 'Gaia' in all_events:
+        if 'OGLE' in all_events or 'MOA' in all_events or 'Gaia' in all_events or 'ZTF' in all_events:
             list_of_targets = Target.objects.filter(name = all_events)
 
         logger.info('ZTF HARVESTER: Identified '+str(len(list_of_targets))+' targets to retrieve data for')
@@ -102,11 +102,6 @@ class Command(BaseCommand):
                                     source_location='IRSA',
                                     data_type='photometry',
                                     target=target)
-
-                                rd.save()
-
-                            else:
-                                pass
 
                         except:
                             pass

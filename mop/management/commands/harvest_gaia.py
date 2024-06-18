@@ -71,10 +71,11 @@ class MOPGaia(gaia.GaiaBroker):
                                 data_type='photometry',
                                 target=target)
 
-
             (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(target)
-            extras = {'Latest_data_HJD': t_last_jd, 'Latest_data_UTC': t_last_date}
-            target.save(extras=extras)
+            target.latest_data_hjd = t_last_jd
+            target.latest_data_utc = t_last_date
+            target.save()
+
         except requests.exceptions.HTTPError:
             pass
 

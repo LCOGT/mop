@@ -69,8 +69,6 @@ class MOABroker(GenericBroker):
                    target, created = Target.objects.get_or_create(name=name,ra=cible.ra.degree,dec=cible.dec.degree,
                                    type='SIDEREAL',epoch=2000)
                    if created:
-
-                       target.save()
                        utilities.add_gal_coords(target)
                        TAP.set_target_sky_location(target)
                        classifier_tools.check_known_variable(target, coord=cible)
@@ -141,20 +139,13 @@ class MOABroker(GenericBroker):
                     data_type='photometry',
                     target=target)
 
-                    if created:
-
-                        rd.save()
-
-                    else:
-                        # photometry already there (I hope!)
-                        #break
-                        pass
                 except:
                         pass
 
             (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(target)
-            extras = {'Latest_data_HJD': t_last_jd, 'Latest_data_UTC': t_last_date}
-            target.save(extras=extras)
+            target.latest_data_hjd = t_last_jd
+            target.latest_data_utc = t_last_date
+            target.save()
 
             print(target.name,'Ingest done!')
     def to_generic_alert(self, alert):

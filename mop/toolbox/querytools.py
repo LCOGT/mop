@@ -1,6 +1,5 @@
 from tom_dataproducts.models import ReducedDatum
-from tom_targets.models import Target,TargetExtra,TargetName, TargetList
-from microlensing_targets.models import MicrolensingTarget
+from tom_targets.models import Target, TargetName, TargetList
 from django.db.models import Q
 from mop.toolbox import utilities
 import logging
