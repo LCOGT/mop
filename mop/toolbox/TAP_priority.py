@@ -201,6 +201,10 @@ def check_long_priority(long_priority, long_priority_error,
     :param time_now: Current time in JD
     '''
 
+    # Check for conditions which will cause numerical instability
+    if long_priority_error < 1e-5:
+        return None
+
     # Criterion on the priority uncertainty depends on whether the event has reached the
     # peak or not, with greater flexibility allowed prior to the peak
     criterion1 = (long_priority > 10.0)

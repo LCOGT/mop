@@ -16,16 +16,6 @@ def fetch_alive_events_outside_HCZ(with_atomic=True):
     """
 
     if with_atomic:
-        # ts1 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-        #     key='Classification', value__icontains='Microlensing'
-        # )
-        # ts2 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-        #     key='Alive', value=True
-        # )
-        # ts3 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-        #     key='Sky_location', value__icontains='Outside HCZ'
-        # )
-
         ts = Target.objects.select_for_update(skip_locked=True).filter(
             classification__icontains='Microlensing',
             alive=True,
@@ -33,40 +23,16 @@ def fetch_alive_events_outside_HCZ(with_atomic=True):
         )
 
     else:
-        # ts1 = TargetExtra.objects.prefetch_related('target').filter(
-        #     key='Classification', value__icontains='Microlensing'
-        # )
-        # ts2 = TargetExtra.objects.prefetch_related('target').filter(
-        #     key='Alive', value=True
-        # )
-        # ts3 = TargetExtra.objects.prefetch_related('target').filter(
-        #     key='Sky_location', value__icontains='Outside HCZ'
-        # )
-
         ts = Target.objects.filter(
             classification__icontains='Microlensing',
             alive=True,
             sky_location__icontains='Outsize HCZ'
         )
 
-    # logger.info('queryTools: Initial queries selected '
-    #             + str(ts1.count()) + ' events classified as microlensing, '
-    #             + str(ts2.count()) + ' events currently Alive, and '
-    #             + str(ts3.count()) + ' events outside the HCZ')
     logger.info('queryTools: Selected ' + str(ts.count()) + ' alive microlensing events outside the HCZ')
 
     utilities.checkpoint()
 
-    # This doesn't directly produce a queryset of targets, instead it returns a queryset of target IDs.
-    # So we have to extract the corresponding targets:
-    # targets1 = [x.target for x in ts1]
-    # targets2 = [x.target for x in ts2]
-    # targets3 = [x.target for x in ts3]
-    # target_set = list(set(targets1).intersection(
-    #     set(targets2)
-    # ).intersection(
-    #     set(targets3)
-    # ))
     target_set = list(set(ts))
 
     return target_set

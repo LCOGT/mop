@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from tom_dataproducts.models import ReducedDatum
-from tom_targets.models import Target,TargetExtra,TargetList
+from tom_targets.models import TargetList
 from astropy.time import Time, TimeDelta
 from mop.toolbox import TAP
 from mop.toolbox import TAP_priority
@@ -8,7 +8,6 @@ from mop.toolbox import obs_control
 from mop.toolbox import omegaII_strategy
 from mop.toolbox import interferometry_prediction
 from mop.toolbox import querytools, utilities
-from mop.toolbox.mop_classes import MicrolensingEvent
 import datetime
 import json
 import numpy as np
@@ -87,7 +86,7 @@ class Command(BaseCommand):
                         tE_pspl_error = float(mulens.tE_error)
                         red_chi2 = float(mulens.red_chi2)
 
-                        covariance = load_covar_matrix(mulens.Fit_covariance)
+                        covariance = load_covar_matrix(mulens.fit_covariance)
 
                         sane = TAP.sanity_check_model_parameters(t0_pspl, t0_pspl_error, u0_pspl,
                                                                  tE_pspl, tE_pspl_error, red_chi2,
@@ -140,14 +139,12 @@ class Command(BaseCommand):
                         utilities.checkpoint()
 
                         # Exclude events that are within the High Cadence Zone
-                        # event_in_the_Bulge = TAP.event_in_the_Bulge(event.ra, event.dec)
-                        event_in_HCZ = TAP.event_in_HCZ(event.ra, event.dec, KMTNet_fields)
-                        if event_in_HCZ:
-                            sky_location = 'In HCZ'
+                        logger.info('runTAP: Event sky location: ' + str(mulens.sky_location))
+                        logger.info('runTAP: Event alive? ' + repr(mulens.alive))
+                        if 'Outside HCZ' in mulens.sky_location or 'Unknown' in mulens.sky_location:
+                            event_in_HCZ = False
                         else:
-                            sky_location = 'Outside HCZ'
-                        logger.info('runTAP: Event in HCZ: ' + str(event_in_HCZ))
-                        logger.info('runTAP: Event alive? ' + repr(mulens.Alive))
+                            event_in_HCZ = True
 
                         # If the event is in the HCZ, set the MOP flag to not observe it
                         if (event_in_HCZ):# (event_in_the_Bulge or)  & (event.extra_fields['Baseline_magnitude']>17):
@@ -155,7 +152,7 @@ class Command(BaseCommand):
                             logger.info('runTAP: Event in HCZ')
 
                         # If the event is flagged as not alive, then it is over, and should also not be observed
-                        elif not event.extra_fields['Alive']:
+                        elif not mulens.alive:
                             observing_mode = 'No'
                             logger.info('runTAP: Event not Alive')
 
@@ -164,16 +161,16 @@ class Command(BaseCommand):
                         else:
                             logger.info('runTAP: Event should be observed')
                             # Check target for visibility
-                            visible = obs_control.check_visibility(event, Time.now().decimalyear, verbose=False)
+                            visible = obs_control.check_visibility(mulens, Time.now().decimalyear, verbose=False)
                             logger.info('runTAP: Event visible? ' + repr(visible))
 
                             if visible:
                                 if mag_now:
-                                    logger.info('runTAP: mag_baseline: ' + str(mulens.Baseline_magnitude))
+                                    logger.info('runTAP: mag_baseline: ' + str(mulens.baseline_magnitude))
                                     observing_mode = TAP.TAP_observing_mode(planet_priority, planet_priority_error,
                                                                         long_priority, long_priority_error,
                                                                         tE_pspl, tE_pspl_error, mag_now,
-                                                                        float(mulens.Baseline_magnitude), red_chi2,
+                                                                        float(mulens.baseline_magnitude), red_chi2,
                                                                         t0_pspl, time_now)
 
                                 else:
@@ -184,7 +181,8 @@ class Command(BaseCommand):
                                     tap_list.targets.add(event)
 
                                     # Get the observational configurations for the event, based on the OMEGA-II strategy:
-                                    obs_configs = omegaII_strategy.determine_obs_config(event, observing_mode,
+                                    XXXX GOT HERE
+                                    obs_configs = omegaII_strategy.determine_obs_config(mulens, observing_mode,
                                                                                         mag_now, time_now,
                                                                                         t0_pspl, tE_pspl)
                                     logger.info('runTAP: Determined observation configurations: ' + repr(obs_configs))
