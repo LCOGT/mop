@@ -41,7 +41,6 @@ class TestObsConfig(TestCase):
 
     def test_determine_obs_config(self):
         for test_target in self.params:
-            default_config = omegaII_strategy.get_default_obs_config(test_target['target'])
             configs = omegaII_strategy.determine_obs_config(test_target['target'],
                                                         test_target['observing_mode'],
                                                         test_target['current_mag'],

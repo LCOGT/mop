@@ -15,11 +15,10 @@ class TestInterferomeinterferometry_predictiontryFunctions(TestCase):
         self.st = SiderealTargetFactory.create()
         self.st.ra = 274.2974
         self.st.dec = -22.3452
-        extra_params = {'u0': 0.08858,
-                        'u0_error': 0.0003,
-                        'Baseline_magnitude': 17.989,
-                        }
-        self.st.save(extras=extra_params)
+        self.st.u0 = 0.08858
+        self.st.u0_error = 0.0003
+        self.st.baseline_magnitude = 17.989
+        self.st.save()
         neighbours = gaia.query_gaia_dr3(self.st, radius=Angle(5.0/3600.0, "deg"))
         test_star = {'Gmag': 14.0,
                      'BPRP': 0.3,
@@ -57,7 +56,7 @@ class TestInterferomeinterferometry_predictiontryFunctions(TestCase):
             data_type='lc_model',
             target=self.st
         )
-        rd.save()
+
     def test_convert_Gmag_to_JHK(self):
 
         (J, H, K) = interferometry_prediction.convert_Gmag_to_JHK(self.params['test_catalog'][0]['Gmag'],

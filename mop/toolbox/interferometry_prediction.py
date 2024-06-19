@@ -306,9 +306,7 @@ def evaluate_target_for_interferometry(target):
 
     # Extract the necessary target parameters and sanity check.  For reasons I don't understand,
     # u0_error is sometimes stored as a tag rather than an extra parameter during testing.
-    u0 = utilities.fetch_extra_param(target, 'u0')
-    u0_error = utilities.fetch_extra_param(target, 'u0_error')
-    if u0 == None or u0_error == None:
+    if target.u0 == None or target.u0_error == None:
         logger.info('INTERFERO: Insufficient u0 info to evaluate target')
         return
 
@@ -326,7 +324,7 @@ def evaluate_target_for_interferometry(target):
     if len(neighbours) > 0:
         G_lens = neighbours['Gmag'][0]
         BPRP_lens = neighbours['BP-RP'][0]
-        peak_phot = estimate_target_peak_phot_uncertainties(G_lens, BPRP_lens, u0, u0_error)
+        peak_phot = estimate_target_peak_phot_uncertainties(G_lens, BPRP_lens, target.u0, target.u0_error)
         logger.info('INTERFERO: Calculated uncertainties Gmag=' + str(G_lens)
                     + '+/-' + str(peak_phot['Gerror']) + 'mag')
 
@@ -369,34 +367,37 @@ def evaluate_target_for_interferometry(target):
 
 def store_gaia_search_results(target, neighbours, peak_phot, BPRP_lens, mode, guide, J, H, K, interval):
     extras = {
-        'Gaia_Source_ID': neighbours['Gaia_Source_ID'][0],
-        'Gmag': peak_phot['G'], 'Gmag_error': peak_phot['Gerror'],
-        'RPmag': neighbours['RPmag'][0], 'RPmag_error': neighbours['RPmag_error'][0],
-        'BPmag': neighbours['BPmag'][0], 'BPmag_error': neighbours['BPmag_error'][0],
-        'BP-RP': BPRP_lens, 'BP-RP_error': neighbours['BP-RP_error'][0],
-        'Reddening(BP-RP)': neighbours['Reddening(BP-RP)'][0],
-        'Extinction_G': neighbours['Extinction_G'][0],
-        'Distance': neighbours['Distance'][0],
-        'Teff': neighbours['Teff'][0],
+        'gaia_source_id': neighbours['Gaia_Source_ID'][0],
+        'gmag': peak_phot['G'], 'Gmag_error': peak_phot['Gerror'],
+        'rpmag': neighbours['RPmag'][0], 'RPmag_error': neighbours['RPmag_error'][0],
+        'bpmag': neighbours['BPmag'][0], 'BPmag_error': neighbours['BPmag_error'][0],
+        'bprp': BPRP_lens, 'BP-RP_error': neighbours['BP-RP_error'][0],
+        'reddening_bprp': neighbours['Reddening(BP-RP)'][0],
+        'extinction_g': neighbours['Extinction_G'][0],
+        'distance': neighbours['Distance'][0],
+        'teff': neighbours['Teff'][0],
         'logg': neighbours['logg'][0],
-        '[Fe/H]': neighbours['[Fe/H]'][0],
-        'RUWE': neighbours['RUWE'][0],
-        'Interferometry_mode': mode,
-        'Interferometry_guide_star': guide,
-        'Mag_base_J': J[0],
-        'Mag_base_H': H[0],
-        'Mag_base_K': K[0],
-        'Mag_peak_J': peak_phot['J'],
-        'Mag_peak_J_error': peak_phot['Jerror'],
-        'Mag_peak_H': peak_phot['H'],
-        'Mag_peak_H_error': peak_phot['Herror'],
-        'Mag_peak_K': peak_phot['K'],
-        'Mag_peak_K_error': peak_phot['Kerror'],
-        'Interferometry_interval': interval
+        'metallicity': neighbours['[Fe/H]'][0],
+        'ruwe': neighbours['RUWE'][0],
+        'interferometry_mode': mode,
+        'interferometry_guide_star': guide,
+        'mag_base_J': J[0],
+        'mag_base_H': H[0],
+        'mag_base_K': K[0],
+        'mag_peak_J': peak_phot['J'],
+        'mag_peak_J_error': peak_phot['Jerror'],
+        'mag_peak_H': peak_phot['H'],
+        'mag_peak_H_error': peak_phot['Herror'],
+        'mag_peak_K': peak_phot['K'],
+        'mag_peak_K_error': peak_phot['Kerror'],
+        'interferometry_interval': interval
     }
-    target.save(extras=extras)
+    target.store_parameter_set(extras)
 
     # Repackage data into a convenient form for storage
+    # Note that the column headings used here are different from the MicrolensingTarget attribute
+    # names because these data are displayed in tabular form in the UI, and so reflect the
+    # columns from the Gaia catalogue.
     datum = {
         'Gaia_Source_ID': [str(x) for x in neighbours['Gaia_Source_ID']],
         'Gmag': [x for x in neighbours['Gmag']],
@@ -547,7 +548,7 @@ def predict_period_above_brightness_threshold(target, Kbase, Kthreshold=14.0):
     model_time = datetime.strptime('2018-06-29 08:15:27.243860', '%Y-%m-%d %H:%M:%S.%f')
     qs = ReducedDatum.objects.filter(source_name='MOP', data_type='lc_model',
                                     timestamp=model_time, source_location=target.name)
-    mag_base = target.extra_fields['Baseline_magnitude']
+    mag_base = target.baseline_magnitude
     interval = np.nan
 
     # This calculation can only be made if a valid model has been fitted
