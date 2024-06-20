@@ -87,14 +87,17 @@ def merge_classification(primary_value, matching_values):
 
     # Prioritize binary microlensing events
     for classification in priority_order:
-        if classification in primary_value or classification in matching_values:
+        if primary_value != None:
+            if 'None' not in primary_value and classification in primary_value:
+                return classification
+        if classification in matching_values:
             return classification
 
     # If we get here, the entries are either None or non-standard.  Prioritize any user-entered value:
-    if 'None' not in primary_value:
+    if primary_value != None and 'None' not in primary_value:
         return primary_value
     for classification in matching_values:
-        if 'None' not in classification:
+        if classification != None and 'None' not in classification:
             return classification
 
     # If we get here, then we have no idea what this event is.

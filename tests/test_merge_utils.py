@@ -354,6 +354,11 @@ class TestMergeExtraParams(TestCase):
         result = merge_utils.merge_classification(primary_value, matching_values)
         assert(result == 'Microlensing PSPL')
 
+        # Case 4: Unknown classification should return the correct default
+        primary_value = None
+        matching_values = [None]
+        result = merge_utils.merge_classification(primary_value, matching_values)
+        assert(result == 'Microlensing PSPL')
 
     def test_merge_category(self):
 
