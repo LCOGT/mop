@@ -51,7 +51,7 @@ def TAP_observing_mode(planet_priority, planet_priority_error,
         return 'regular_long_event'
 
     else:
-        return None
+        return 'No'
 
 def calculate_exptime_floyds(magin):
     """

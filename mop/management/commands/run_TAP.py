@@ -174,7 +174,7 @@ class Command(BaseCommand):
                                                                         t0_pspl, time_now)
 
                                 else:
-                                    observing_mode = None
+                                    observing_mode = 'No'
                                 logger.info('runTAP: Observing mode: ' + mulens.name + ' ' + str(observing_mode))
 
                                 if observing_mode in ['priority_stellar_event', 'priority_long_event', 'regular_long_event']:
@@ -206,7 +206,7 @@ class Command(BaseCommand):
 
                             else:
                                 logger.info('runTAP: Target ' + mulens.name + ' not currently visible')
-                                observing_mode = None
+                                observing_mode = 'No'
 
                         ### Spectroscopy
                         observe_spectro = False
@@ -232,7 +232,7 @@ class Command(BaseCommand):
                                          'tap_priority_longte_error': np.around(long_priority_error, 5),
                                          'category': category,
                                          'mag_now': mag_now,
-                                         'observing_mode': observing_mode, 'sky_location': sky_location}
+                                         'observing_mode': observing_mode, 'sky_location': mulens.sky_location}
                         mulens.store_parameter_set(update_extras)
 
                         t8 = datetime.datetime.utcnow()
@@ -269,7 +269,7 @@ class Command(BaseCommand):
 
                 except Exception as e:
                     logger.warning('runTAP: Cannot perform TAP for target ' + mulens.name)
-                    logger.warning('Exception: ' + e)
+                    logger.warning('Exception: ' + repr(e))
             logger.info('runTAP: Completed run')
             t10 = datetime.datetime.utcnow()
             logger.info('runTAP: Time taken to complete ' + str(t10 - t1))
