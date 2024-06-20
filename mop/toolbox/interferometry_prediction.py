@@ -349,10 +349,10 @@ def evaluate_target_for_interferometry(target):
                      'K': None, 'Kerror': None}
         interval = None
         extras = {
-                'Interferometry_mode': 'No',
-                'Interferometry_guide_star': 0,
+                'interferometry_mode': 'No',
+                'interferometry_guide_star': 0,
         }
-        target.save(extras=extras)
+        target.store_parameter_set(extras)
         logger.info('INTERFERO: No interferometry possible without neighbouring stars')
 
     # Query the Guide Star Catalog for candidate AO and FT stars
@@ -545,24 +545,23 @@ def predict_peak_brightness(mag_base, mag_base_error, u0, u0_error):
 def predict_period_above_brightness_threshold(target, Kbase, Kthreshold=14.0):
     # Search MOP to see if an existing model is already stored.  The model_time parameter is hardwired into
     # mop.toolbox.fittools.  Unclear why.
-    model_time = datetime.strptime('2018-06-29 08:15:27.243860', '%Y-%m-%d %H:%M:%S.%f')
+    ##model_time = datetime.strptime('2018-06-29 08:15:27.243860', '%Y-%m-%d %H:%M:%S.%f')
     qs = ReducedDatum.objects.filter(source_name='MOP', data_type='lc_model',
-                                    timestamp=model_time, source_location=target.name)
+                                     source_location=target.name)
     mag_base = target.baseline_magnitude
     interval = np.nan
 
     # This calculation can only be made if a valid model has been fitted
     if qs.count() > 0 and not np.isnan(mag_base) and mag_base > 0.0:
-
         ts = np.array(qs[0].value['lc_model_time'])
         mags = np.array(qs[0].value['lc_model_magnitude'])
 
         # Estimate the K-band lightcurve
         Klc = Kbase + (mags - mag_base)
-
+        
         # Calulate how many days the lightcurve spends brighter than Kthreshold
         idx = np.where(Klc <= Kthreshold)[0]
-
+        
         if len(idx) > 0 and len(idx) < len(mags):
             interval = ts[idx].max() - ts[idx].min()
         elif len(idx) > 0 and len(idx) == len(mags):
@@ -579,5 +578,5 @@ def gravity_target_selection(target, Kpeak, interval, gsc_table, Kthreshold=14.0
     if Kpeak <= Kthreshold \
             and (interval > 0.0 or np.isinf(interval)) \
             and nao > 0 and nft > 0:
-        extras = {'Interferometry_candidate': True}
-        target.save(extras=extras)
+        extras = {'interferometry_candidate': True}
+        target.store_parameter_set(extras)
