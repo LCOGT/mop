@@ -321,8 +321,9 @@ def merge_names(primary_target, matching_targets):
             target=primary_target, name=t.name
         )
         if created:
-            new_name.save()
-        logger.info(' -> Alias created for ' + primary_target.name + ': ' + t.name)
+            logger.info(' -> Alias created for ' + primary_target.name + ': ' + t.name)
+        else:
+            logger.info(' -> Alias exists for ' + primary_target.name + ': ' + t.name)
 
 def sanity_check_data_sources(t, datums_qs):
     """
