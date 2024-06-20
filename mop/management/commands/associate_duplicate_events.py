@@ -26,6 +26,9 @@ class Command(BaseCommand):
 
         if len(target_selection) == 0:
             raise IOError('No targets found matching selection ' + options['target'])
+        else:
+            nselected = target_selection.count()
+            logger.info('Identified ' + str(nselected) + ' targets to check')
 
         radius = float(options['radius'])
         duplicate_targets = {}
@@ -38,10 +41,11 @@ class Command(BaseCommand):
                 exit()
 
         # Loop over all targets currently in the database:
-        for working_target in target_selection:
+        for j,working_target in enumerate(target_selection):
 
             # First check whether this target has already been marked as a duplicate of another:
             if working_target not in duplicate_targets.keys():
+                logger.info('Working on target ' + working_target.name + ', ' + str(j) + ' out of ' + str(nselected))
                 logger.info(
                     'Searching for duplicates within ' + options['radius']+'arcsec of ' + working_target.name
                     + ' RA=' + str(working_target.ra)
