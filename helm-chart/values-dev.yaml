@@ -28,13 +28,20 @@ replicaCount: 1
 # PostgreSQL database configuration is used from values.yaml
 
 # MOP Container CPU/Memory Resource Requests/Limits
+#resources:
+#  requests:
+#    cpu: 10m
+#    memory: 256Mi
+#  limits:
+#    cpu: 1000m
+#    memory: 1024Mi
 resources:
   requests:
-    cpu: 10m
-    memory: 256Mi
+    cpu: 500m
+    memory: 768Mi
   limits:
-    cpu: 1000m
-    memory: 1024Mi
+    cpu: 2
+    memory: 2Gi
 
 # HTTP Router Configuration
 ingress:
