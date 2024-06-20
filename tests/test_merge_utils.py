@@ -487,13 +487,37 @@ class TestMergeExtraParams(TestCase):
     def test_merge_names(self):
         aliases = TargetName.objects.filter(target=self.primary_target)
 
-        result = merge_utils.merge_names(self.primary_target, self.matching_targets)
+        merge_utils.merge_names(self.primary_target, self.matching_targets)
 
         aliases = TargetName.objects.filter(target=self.primary_target)
 
         name_set = [x.name for x in aliases]
 
         for t in self.matching_targets:
+            assert(t.name in name_set)
+
+        # Test special case of nearby targets which are close to the boundary of the typical 2" search radius
+        t1 = SiderealTargetFactory.create()
+        t1.name = 'MOA-2023-BLG-119'
+        t1.ra = 270.77190417
+        t1.dec = -29.73846667
+        t2 = SiderealTargetFactory.create()
+        t2.name = 'MOA-2023-BLG-123'
+        t2.ra = 270.77113333
+        t2.dec = -29.73841111
+        t3 = SiderealTargetFactory.create()
+        t3.name = 'OGLE-2023-BLG-0363'
+        t3.ra = 270.771375
+        t3.dec = -29.73827778
+
+        # t3 is already an alias of t2:
+        tn = TargetName.objects.create(target=t2, name=t3.name)
+
+        merge_utils.merge_names(t1, [t2, t3])
+
+        aliases = TargetName.objects.filter(target=t1)
+        name_set = [x.name for x in aliases]
+        for t in [t2, t3]:
             assert(t.name in name_set)
 
     def test_merge_data_products(self):

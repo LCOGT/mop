@@ -1,6 +1,7 @@
 from tom_targets.models import Target, TargetName, TargetExtra
 from tom_dataproducts.models import DataProduct, ReducedDatum
 import logging
+from django.db.utils import IntegrityError
 
 logger = logging.getLogger(__name__)
 
@@ -316,14 +317,27 @@ def merge_names(primary_target, matching_targets):
     """
 
     for t in matching_targets:
-        # Create aliases for the primary target
-        new_name, created = TargetName.objects.get_or_create(
-            target=primary_target, name=t.name
-        )
-        if created:
-            logger.info(' -> Alias created for ' + primary_target.name + ': ' + t.name)
-        else:
-            logger.info(' -> Alias exists for ' + primary_target.name + ': ' + t.name)
+        try:
+            # Create aliases for the primary target
+            new_name, created = TargetName.objects.get_or_create(
+                target=primary_target, name=t.name
+            )
+            if created:
+                logger.info(' -> Alias created for ' + primary_target.name + ': ' + t.name)
+            else:
+                logger.info(' -> Alias exists for ' + primary_target.name + ': ' + t.name)
+
+        # Catch rare cases where three targets are in close proximity but sufficiently separated
+        # that only one neighbour lies within the search radius of any one target.
+        # E.g. MOA-2023-BLG-119, MOA-2023-BLG-123 and OGLE-2023-BLG-0363.
+        # An IntegrityError here occurs because we are trying to create an alias for a target which is already an
+        # alias of a different target, and TargetNames are required to be unique.
+        except IntegrityError:
+            # Get the existing targetname entry for the matching target,
+            # and update it to point to the new primary target
+            tn = TargetName.objects.get(name=t.name)
+            tn.target = primary_target
+            tn.save()
 
 def sanity_check_data_sources(t, datums_qs):
     """
