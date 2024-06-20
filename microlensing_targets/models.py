@@ -240,6 +240,9 @@ class MicrolensingTarget(BaseTarget):
 
         for key, data in parameters.items():
             if key == 'fit_covariance':
-                data = json.dumps(data.tolist())
+                if type(data) == type(np.array([])):
+                    data = json.dumps(data.tolist())
+                else:
+                    data = json.dumps(data)
             setattr(self, key, data)
             self.save()
