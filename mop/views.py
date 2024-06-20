@@ -45,8 +45,8 @@ class MOPTargetDetailView(TargetDetailView):
         context = super().get_context_data(*args, **kwargs)
         context['class_form'] = TargetClassificationForm()
         target = self.get_object()
-        target_data = querytools.fetch_data_for_targetset([target], check_need_to_fit=False)
-        context['mulens'] = target_data[target]
+        target_data = querytools.fetch_data_for_targetset([target], check_need_to_fit=False, fetch_photometry=True)
+        context['target'] = target_data[target.name]
 
         t2 = datetime.utcnow()
         logger.info('GET_CONTEXT took ' + str(t2 - t1))
@@ -114,7 +114,7 @@ class ActiveObsView(ListView):
             context     dict    Context data for webpage template
         """
         # Parameters to extract from the observation records
-        target_keys = ['tE', 't0', 'Mag_now', 'Category', 'TAP_priority', 'TAP_priority_longtE']
+        target_keys = ['tE', 't0', 'mag_now', 'category', 'tap_priority', 'tap_priority_longte']
 
         context = super().get_context_data(*args, **kwargs)
 
@@ -134,32 +134,29 @@ class ActiveObsView(ListView):
             for obs in obs_qs:
                 if self.request.user.has_perm('tom_observations.view_observation'):
                     if 'requests' in obs.parameters.keys():
-                        for request in obs.parameters['requests']:
-                            obs_data = {}
-                            obs_data['start'] = request['windows'][0]['start']
-                            obs_data['end'] = request['windows'][0]['end']
-                            obs_data['facility'] = 'LCO'
-                            obs_data['observation_type'] = obs.parameters['observation_type']
-                            obs_data['ipp_value'] = obs.parameters['ipp_value']
-                            for c, config in enumerate(request['configurations']):
-                                obs_data['c_' + str(c+1) + '_instrument_type'] = config['instrument_type']
-                                for ic,inst_config in enumerate(config['instrument_configs']):
-                                    obs_data['c_' + str(c+1) + '_ic_' + str(ic+1) + '_filter'] = inst_config['optical_elements']['filter']
-                                    obs_data['c_' + str(c+1) + '_ic_' + str(ic+1) + '_exposure_time'] = inst_config['exposure_time']
-                                    obs_data['c_' + str(c+1) + '_ic_' + str(ic+1) + '_exposure_count'] = inst_config['exposure_count']
+                        obs_data = self.get_obs_params(obs.parameters['requests'][0])
+                    else:
+                        obs_data = self.get_obs_params(obs.parameters, request=False)
+                    obs_data['observation_type'] = obs.parameters['observation_type']
+                    obs_data['ipp_value'] = obs.parameters['ipp_value']
 
-                        if obs.target.name in targets.keys():
-                            target_data = targets[obs.target.name]
-                        else:
-                            target_data = {'name': obs.target.name, 'obs_list': []}
+                    # Here we have to go and fetch the Target again because the target attribute of the
+                    # ObservationRecord relates to the BaseTarget not the custom target, and so
+                    # doesn't have the attributes we need to extract.  However, they have the same PKs.
+                    if obs.target.name in targets.keys():
+                        target_data = targets[obs.target.name]
+                    else:
+                        target_data = {'name': obs.target.name, 'obs_list': []}
+                        t = Target.objects.get(pk=obs.target.pk)
+                        if t:
                             for key in target_keys:
-                                try:
-                                    target_data[key] = obs.target.extra_fields[key]
-                                except KeyError:
-                                    target_data[key] = 'None'
+                                target_data[key] = getattr(t, key)
+                        else:
+                            for key in target_keys:
+                                target_data[key] = 'None'
 
-                        target_data['obs_list'].append(obs_data)
-                        targets[obs.target.name] = target_data
+                    target_data['obs_list'].append(obs_data)
+                    targets[obs.target.name] = target_data
 
             context['targets'] = targets.values()
             
@@ -185,6 +182,35 @@ class ActiveObsView(ListView):
         context['query_string'] = self.request.META['QUERY_STRING']
 
         return context
+
+    def get_obs_params(self, obs_params, request=True):
+        """Method to extract the required information from the parameter dictionary stored in an ObservationRecord"""
+
+        obs_data = {}
+        if request:
+            obs_data['start'] = obs_params['windows'][0]['start']
+            obs_data['end'] = obs_params['windows'][0]['end']
+            obs_data['facility'] = 'LCO'
+            for c, config in enumerate(obs_params['configurations']):
+                obs_data['c_' + str(c + 1) + '_instrument_type'] = config['instrument_type']
+                for ic, inst_config in enumerate(config['instrument_configs']):
+                    obs_data['c_' + str(c + 1) + '_ic_' + str(ic + 1) + '_filter'] = inst_config['optical_elements'][
+                        'filter']
+                    obs_data['c_' + str(c + 1) + '_ic_' + str(ic + 1) + '_exposure_time'] = inst_config['exposure_time']
+                    obs_data['c_' + str(c + 1) + '_ic_' + str(ic + 1) + '_exposure_count'] = inst_config['exposure_count']
+        else:
+            obs_data['start'] = obs_params['start']
+            obs_data['end'] = obs_params['end']
+            obs_data['facility'] = obs_params['facility']
+            obs_data['c_1_instrument_type'] = obs_params['c_1_instrument_type']
+            obs_data['c_1_ic_1_filter'] = obs_params['c_1_ic_1_filter']
+            obs_data['c_1_ic_2_filter'] = obs_params['c_1_ic_2_filter']
+            obs_data['c_1_ic_1_exposure_time'] = obs_params['c_1_ic_1_exposure_time']
+            obs_data['c_1_ic_2_exposure_time'] = obs_params['c_1_ic_2_exposure_time']
+            obs_data['c_1_ic_1_exposure_count'] = obs_params['c_1_ic_1_exposure_count']
+            obs_data['c_1_ic_2_exposure_count'] = obs_params['c_1_ic_2_exposure_count']
+
+        return obs_data
 
 class PriorityTargetsView(ListView):
     template_name = 'priority_targets_list.html'
@@ -212,8 +238,8 @@ class PriorityTargetsView(ListView):
         if self.request.user.is_authenticated:
 
             # Query for matching TargetExtra entries returns a list of Target PKs
-            qs_stars = querytools.fetch_priority_targets('TAP_priority', 10.0)
-            qs_bh = querytools.fetch_priority_targets('TAP_priority_longtE', 10.0)
+            qs_stars = querytools.fetch_priority_targets(10.0, 'stellar')
+            qs_bh = querytools.fetch_priority_targets(10.0, 'long_tE')
 
             logger.info('Priority querysets initially find ' \
                         + str(len(qs_stars)) + ' stellar candidate events and ' \
@@ -248,26 +274,26 @@ class PriorityTargetsView(ListView):
         logger.info('PRIORITYTARGETS started extract at ' + str(t1))
         utilities.checkpoint()
 
-        key_list = ['t0', 't0_error', 'u0', 'u0_error', 'tE', 'tE_error', 'Mag_now', 'Baseline_magnitude']
+        key_list = ['t0', 't0_error', 'u0', 'u0_error', 'tE', 'tE_error', 'mag_now', 'baseline_magnitude']
 
-        selected_targets = querytools.fetch_data_for_targetset(targetset, check_need_to_fit=False, fetch_photometry=False)
+        #selected_targets = querytools.fetch_data_for_targetset(targetset, check_need_to_fit=False, fetch_photometry=False)
 
         priority = []
         target_data = []
-        for t, mulens in selected_targets.items():
-            target_info = {'name': mulens.name, 'id': mulens.target.id}
+        for mulens in targetset:
+            target_info = {'name': mulens.name, 'id': mulens.id}
 
             if target_category == 'stellar':
-                target_info['priority'] = round(float(mulens.TAP_priority),3)
+                target_info['priority'] = round(float(mulens.tap_priority),3)
                 # Not all entries have an uncertainty set, due to older versions of the code not storing it
                 try:
-                    target_info['priority_error'] = round(float(mulens.TAP_priority_error),3)
+                    target_info['priority_error'] = round(float(mulens.tap_priority_error),3)
                 except AttributeError:
                     target_info['priority_error'] = np.nan
             else:
-                target_info['priority'] = round(float(mulens.TAP_priority_longtE),3)
+                target_info['priority'] = round(float(mulens.tap_priority_longte),3)
                 try:
-                    target_info['priority_error'] = round(float(mulens.TAP_priority_longtE_error),3)
+                    target_info['priority_error'] = round(float(mulens.tap_priority_longte_error),3)
                 except AttributeError:
                     target_info['priority_error'] = np.nan
 
@@ -306,66 +332,6 @@ class PriorityTargetsView(ListView):
         utilities.checkpoint()
 
         return sorted_targets
-
-
-    def check_classification(self, target):
-        """Method to check that the listed events are actually microlensing
-        NOW DEPRECIATED"""
-
-        if 'microlensing' in str(target.extra_fields['Classification']).lower():
-            criteria = [True]
-        else:
-            return False
-
-        # Records True for each condition if it is NOT the classification
-        bool_keys = ['is_YSO', 'is_QSO', 'is_galaxy']
-        for key in bool_keys:
-            if key in target.extra_fields.keys():
-                if 'false' in str(target.extra_fields[key]).lower():
-                    value = True
-                else:
-                    value = False
-            else:
-                value = True
-            criteria.append(value)
-
-        return all(criteria)
-
-    def check_valid_target(self, target):
-        """
-        Method to verify that a Target is Alive and not flagged as a known variable before it is
-        included in the Priority Targets table
-        NOW DEPRECIATED
-        """
-
-        if 'Alive' not in target.extra_fields.keys():
-            return False
-
-        if not target.extra_fields['Alive']:
-            return False
-
-        if 'is_YSO' in target.extra_fields.keys() and type(target.extra_fields['is_YSO']) == type(True):
-            if target.extra_fields['is_YSO']:
-                return False
-        elif 'is_YSO' in target.extra_fields.keys() and type(target.extra_fields['is_YSO']) == type('str'):
-            if 'true' in str(target.extra_fields['is_YSO']).lower():
-                return False
-
-        if 'is_QSO' in target.extra_fields.keys() and type(target.extra_fields['is_QSO']) == type(True):
-            if target.extra_fields['is_QSO']:
-                return False
-        elif 'is_QSO' in target.extra_fields.keys() and type(target.extra_fields['is_QSO']) == type('str'):
-            if 'true' in str(target.extra_fields['is_QSO']).lower():
-                return False
-
-        if 'is_galaxy' in target.extra_fields.keys() and type(target.extra_fields['is_galaxy']) == type(True):
-            if target.extra_fields['is_galaxy']:
-                return False
-        elif 'is_galaxy' in target.extra_fields.keys() and type(target.extra_fields['is_galaxy']) == type('str'):
-            if 'true' in str(target.extra_fields['is_galaxy']).lower():
-                return False
-
-        return True
 
 class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
     """
@@ -459,10 +425,7 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
 
                         # Extract any requested extra parameters for this object, if available
                         for param in settings.SELECTION_EXTRA_FIELDS:
-                            if param in object.extra_fields.keys():
-                                target_data.append(object.extra_fields[param])
-                            else:
-                                target_data.append(None)
+                            target_data.append(getattr(object, param))
                         objects.append(object)
                         observable_targets.append(target_data)
                         logger.info('FacilitySelectView: Got observable target ' + object.name)

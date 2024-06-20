@@ -53,6 +53,7 @@ class Command(BaseCommand):
                         # fit parameters are ignored until they are model fitted.
                         # Fitted targets will have their class set to microlensing by default
 
+<<<<<<< HEAD
                         if type(mulens.extras['u0'].value) != str \
                                 and mulens.extras['u0'].value != 0.0 and not np.isnan(mulens.extras['u0'].value)\
                             and type(mulens.extras['t0'].value) != str \
@@ -66,35 +67,44 @@ class Command(BaseCommand):
 
                             # Test for a suspiciously large u0:
                             valid_u0 = classifier_tools.check_valid_u0(float(mulens.extras['u0'].value))
+=======
+                    if mulens.u0 != 0.0 \
+                        and mulens.t0 != 0.0 \
+                        and mulens.tE != 0.0 \
+                        and mulens.ra != None and mulens.dec != None:
 
-                            # Test for low-amplitude change in photometry:
-                            valid_dmag = classifier_tools.check_valid_dmag(mulens)
+                        # Test for an invalid blend magnitude:
+                        valid_blend_mag = classifier_tools.check_valid_blend(float(mulens.blend_magnitude))
 
-                            # Test for suspicious reduced chi squared value
-                            valid_chisq = classifier_tools.check_valid_chi2sq(mulens)
+                        # Test for a suspiciously large u0:
+                        valid_u0 = classifier_tools.check_valid_u0(float(mulens.u0))
 
-                            # If a target fails all three criteria, set its classification
-                            # to 'Unclassified variable'.  Note that TAP will consider scheduling
-                            # observations for any object with 'microlensing' in the
-                            # classification
-                            if not valid_blend_mag or not valid_u0 or not valid_dmag:
-                                update_extras={
-                                    'Classification': 'Unclassified variable',
-                                    'Category': 'Unclassified'
-                                }
-                                mulens.store_parameter_set(update_extras)
-                                logger.info(mulens.name+': Reset as unclassified variable')
+                        # Test for low-amplitude change in photometry:
+                        valid_dmag = classifier_tools.check_valid_dmag(mulens)
 
-                            if 'red_chi2' in event.extra_fields.keys():
-                                if not valid_chisq:
-                                    update_extras={
-                                        'Classification': 'Unclassified poor fit',
-                                        'Category': 'Unclassified'
-                                    }
-                                    mulens.store_parameter_set(update_extras)
-                                    logger.info(event.name+': Reset as unclassified poor fit')
-                        else:
-                            logger.info(event.name + ': Fitted model parameters are invalid, cannot evaluate')
+                        # Test for suspicious reduced chi squared value
+                        valid_chisq = classifier_tools.check_valid_chi2sq(mulens)
+
+                        # If a target fails all three criteria, set its classification
+                        # to 'Unclassified variable'.  Note that TAP will consider scheduling
+                        # observations for any object with 'microlensing' in the
+                        # classification
+                        if not valid_blend_mag or not valid_u0 or not valid_dmag:
+                            update_extras={
+                                'Classification': 'Unclassified variable',
+                                'Category': 'Unclassified'
+                            }
+                            mulens.store_parameter_set(update_extras)
+                            logger.info(mulens.name+': Reset as unclassified variable')
+
+                        if not valid_chisq:
+                            update_extras={
+                                'Classification': 'Unclassified poor fit',
+                                'Category': 'Unclassified'
+                            }
+                            mulens.store_parameter_set(update_extras)
+                            logger.info(event + ': Reset as unclassified poor fit')
+
                     else:
                         logger.info(event.name + ': Classified as microlensing binary, will not override')
                         

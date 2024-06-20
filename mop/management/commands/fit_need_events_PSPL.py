@@ -3,7 +3,7 @@ from tom_dataproducts.models import ReducedDatum
 from tom_targets.models import Target,TargetExtra
 from django.db import transaction
 from astropy.time import Time
-from mop.toolbox import fittools, utilities
+from mop.toolbox import fittools, utilities, querytools
 from mop.toolbox.mop_classes import MicrolensingEvent
 import datetime
 import os
@@ -45,7 +45,7 @@ def run_fit(mulens, cores=0, verbose=False):
 
         if mulens.ndata > 10:
             (model_params, model_telescope) = fittools.fit_pspl_omega2(
-                mulens.target.ra, mulens.target.dec, mulens.datasets)
+                mulens.ra, mulens.dec, mulens.datasets)
             logger.info('FIT: completed modeling process for '+mulens.name)
 
             t8 = datetime.datetime.utcnow()
@@ -54,7 +54,7 @@ def run_fit(mulens, cores=0, verbose=False):
 
             # Store model lightcurve
             if model_telescope:
-                mulens.store_model_lightcurve(model_telescope)
+                fittools.store_model_lightcurve(mulens, model_telescope)
                 logger.info('FIT: Stored model lightcurve for event '+mulens.name)
             else:
                 logger.warning('FIT: No valid model fit produced so not model lightcurve for event '+mulens.name)
@@ -72,8 +72,8 @@ def run_fit(mulens, cores=0, verbose=False):
             if verbose: logger.info('Time taken chk 6: ' + str(t10 - t9))
 
             # Store model parameters
-            model_params['Last_fit'] = Time(datetime.datetime.utcnow()).jd
-            model_params['Alive'] = alive
+            model_params['last_fit'] = Time(datetime.datetime.utcnow()).jd
+            model_params['alive'] = alive
             mulens.store_model_parameters(model_params)
             logger.info('FIT: Stored model parameters for event ' + mulens.name)
 
@@ -87,7 +87,7 @@ def run_fit(mulens, cores=0, verbose=False):
             # Determine whether or not an event is still active based on the
             # current time relative to its t0 and tE, and the date it was last observed
             alive = fittools.check_event_alive(float(mulens.t0), float(mulens.tE), mulens.last_observation)
-            mulens.store_parameter_set({'Alive': alive})
+            mulens.store_parameter_set({'alive': alive})
 
             # Return True because no further processing is required
             return True
@@ -111,52 +111,16 @@ class Command(BaseCommand):
             logger.info('FIT_NEED_EVENTS: Starting checkpoint: ')
             utilities.checkpoint()
 
-            # Cutoff date: N hours ago (from the "--run-every=N" hours command line argument)
-            cutoff = Time(datetime.datetime.utcnow() - datetime.timedelta(hours=options['run_every'])).jd
-
-            # Find alive microlensing targets for which the fits need to be updated
-            # We really want the intersection of three querysets: those targets that have separate
-            # TargetExtras meeting all criteria.  Using prefetch_related targets here because
-            # it is massively more efficient in time and DB connections, together with select_for_update
-            # to skip any Target being accessed by another process.
-            ts1 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-                key='Classification', value__icontains='Microlensing'
-                )
-            ts2 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-                key='Alive', value__icontains=True
-                )
-            ts3 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-                key='Last_fit', value__lte=cutoff
-            )
-
-            # This is taken care of at a later stage of selection.
-            #ts4 = TargetExtra.objects.prefetch_related('target').select_for_update(skip_locked=True).filter(
-            #    key='Latest_data_HJD', value__gt=cutoff
-            #)
+            # Fetch a list of alive microlensing targets that were last modelled more than
+            # the maximum allowed model age:
+            ts = querytools.get_alive_events_with_old_model(options['run_every'])
             logger.info('FIT_NEED_EVENTS: Initial queries selected '
-                        + str(ts1.count()) + ' events classified as microlensing, '
-                        + str(ts2.count()) + ' events currently Alive, '
-                        + str(ts3.count()) + ' events last modeled before ' + repr(cutoff))
-
-            # This doesn't directly produce a queryset of targets, instead it returns a queryset of target IDs.
-            # So we have to extract the corresponding targets:
-            targets1 = [x.target for x in ts1]
-            targets2 = [x.target for x in ts2]
-            targets3 = [x.target for x in ts3]
-            #targets4 = [x.target for x in ts4]
-            target_list = list(set(targets1).intersection(
-                set(targets2)
-            ).intersection(
-                set(targets3)
-            ))
-
-            logger.info('FIT_NEED_EVENTS: Initial target list has ' + str(len(target_list)) + ' entries')
+                        + str(ts.count()) + ' alive microlensing events last modeled before '
+                        + repr(options['run_every']) + 'hrs ago')
+            target_list = list(set(ts))
 
             utilities.checkpoint()
 
-            target_extras = TargetExtra.objects.filter(
-                target__in=target_list
-            )
             datums = ReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
 
             t2 = datetime.datetime.utcnow()
@@ -166,16 +130,15 @@ class Command(BaseCommand):
 
             logger.info('FIT_NEED_EVENTS: Reviewing target list to identify those that need remodeling')
             target_data = {}
-            for i,t in enumerate(target_list):
+            for i,mulens in enumerate(target_list):
 
                 # Catch for events where the RA, Dec is not set - source of this error unknown
                 try:
-                    mulens = MicrolensingEvent(t)
                     if type(mulens.ra) == float:
-                        mulens.set_extra_params(target_extras.filter(target=t))
-                        mulens.set_reduced_data(datums.filter(target=t))
+                        mulens.get_reduced_data(datums.filter(target=mulens))
+
                         (status, reason) = mulens.check_need_to_fit()
-                        logger.info('FIT_NEED_EVENTS: Need to fit ' + t.name
+                        logger.info('FIT_NEED_EVENTS: Need to fit ' + mulens.name
                                     + ': ' + repr(status) + ', reason: ' + reason)
 
                         # If the event is to be fitted, this will take care of evaluating whether or
@@ -183,19 +146,19 @@ class Command(BaseCommand):
                         # If the event is not to be fitted for any reason, we need to check whether or not
                         # it is still alive.
                         if mulens.need_to_fit:
-                            target_data[t] = mulens
+                            target_data[mulens.name] = mulens
 
                         else:
                             if mulens.t0 and mulens.tE:
                                 alive = fittools.check_event_alive(float(mulens.t0),
                                                                    float(mulens.tE),
                                                                    mulens.last_observation)
-                                if alive != bool(mulens.Alive):
-                                    update_extras = {'Alive': alive}
+                                if alive != bool(mulens.alive):
+                                    update_extras = {'alive': alive}
                                     mulens.store_parameter_set(update_extras)
                                     logger.info('Updated Alive status to ' + repr(alive))
 
-                        logger.info('FIT_NEED_EVENTS: evaluated target ' + t.name + ', '
+                        logger.info('FIT_NEED_EVENTS: evaluated target ' + mulens.name + ', '
                                     + str(i) + ' out of ' + str(len(target_list)))
                         utilities.checkpoint()
 
@@ -203,14 +166,14 @@ class Command(BaseCommand):
                         logger.info('FIT_NEED_EVENTS: Event with invalid RA, Dec, skipping')
 
                 except ValueError:
-                    logger.info('FIT_NEED_EVENTS: Could not create an Event object for ' + t.name + ', skipping')
+                    logger.info('FIT_NEED_EVENTS: Could not create an Event object for ' + mulens.name + ', skipping')
 
             t3 = datetime.datetime.utcnow()
             logger.info('FIT_NEED_EVENTS: Collated data for ' + str(len(target_data)) + ' targets in ' + str(t3 - t2))
             utilities.checkpoint()
 
             # Loop through all targets in the set
-            for i, (t, mulens) in enumerate(target_data.items()):
+            for i, (target_name, mulens) in enumerate(target_data.items()):
                 logger.info('FIT_NEED_EVENTS: modeling target ' + mulens.name + ', '
                             + str(i) + ' out of ' + str(len(target_data)))
 

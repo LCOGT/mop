@@ -15,9 +15,7 @@ import os
 import ast
 import tempfile
 
-
-
-
+import mop.match_managers.matching_event_manager
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,6 +31,7 @@ DEBUG = ast.literal_eval(os.getenv('DJANGO_DEBUG', 'False'))
 
 ALLOWED_HOSTS = ['*']
 
+TOM_NAME = 'MOP'
 
 # Application definition
 
@@ -63,6 +62,7 @@ INSTALLED_APPS = [
     'tom_dataproducts',
     'silk',
     'mop',
+    'microlensing_targets'
 ]
 
 SITE_ID = 1
@@ -120,11 +120,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
-
-
-
-
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -264,6 +262,8 @@ FACILITIES = {
 
 # Define the valid data product types for your TOM. Be careful when removing items, as previously valid types will no
 # longer be valid, and may cause issues unless the offending records are modified.
+TARGET_MODEL_CLASS = 'microlensing_targets.models.MicrolensingTarget'
+
 DATA_TYPES = (
     ('SPECTROSCOPY', 'Spectroscopy'),
     ('PHOTOMETRY', 'Photometry')
@@ -282,7 +282,6 @@ DATA_PRODUCT_TYPES = {
 }
 
 DATA_PROCESSORS = {
-
     'photometry': 'mop.processors.photometry_processor.PhotometryProcessor',
     'spectroscopy': 'mop.processors.spectroscopy_processor.SpectroscopyProcessor',
 }
@@ -311,6 +310,12 @@ BROKERS = {
     }
 }
 
+HARVESTERS = {
+    'TNS': {
+        'api_key': os.environ.get('TNS_API_KEY','dummy'),
+    }
+}
+
 #'tom_antares.antares.AntaresBroker',
 #BROKER_CREDENTIALS = {}
 
@@ -328,7 +333,8 @@ BROKERS = {
 #     {'name': 'eligible', 'type': 'boolean'},
 #     {'name': 'dicovery_date', 'type': 'datetime'}
 # ]
-EXTRA_FIELDS = [{'name': 'Alive', 'type': 'boolean', 'default':True},
+EXTRA_FIELDS = [
+                {'name': 'Alive', 'type': 'boolean', 'default':True},
                 {'name': 'Classification', 'type': 'string', 'default': 'Microlensing PSPL'},
                 {'name': 'Category', 'type': 'string', 'default': 'Microlensing stellar/planet'},
                 {'name': 'Observing_mode', 'type': 'string', 'default': ' No'},
@@ -409,10 +415,20 @@ EXTRA_FIELDS = [{'name': 'Alive', 'type': 'boolean', 'default':True},
                 {'name': 'TNS_class', 'type': 'string', 'default': 'None'}]
 
 SELECTION_EXTRA_FIELDS = [
-    'Mag_now',
-    'TAP_priority',
-    'TAP_priority_longtE',
+    'mag_now',
+    'tap_priority',
+    'tap_priority_longte',
 ]
+
+# Define MATCH_MANAGERS here. This is a dictionary that contains a dotted module path to the desired match manager
+# for a given model.
+# For example:
+# MATCH_MANAGERS = {
+#    "Target": "my_custom_code.match_managers.MyCustomTargetMatchManager"
+# }
+#MATCH_MANAGERS = {
+#    "Target": "mop.match_managers.matching_event_manager.EventMatchManager"
+#}
 
 TARGET_PERMISSIONS_ONLY=True
 
@@ -427,7 +443,9 @@ OPEN_URLS = ['/mop/Home']
 HOOKS = {
     'target_post_save': 'tom_common.hooks.target_post_save',
     'observation_change_state': 'tom_common.hooks.observation_change_state',
-    'data_product_post_upload': 'tom_dataproducts.hooks.data_product_post_upload'
+    'data_product_post_upload': 'tom_dataproducts.hooks.data_product_post_upload',
+    'data_product_post_save': 'tom_dataproducts.hooks.data_product_post_save',
+    'multiple_data_products_post_save': 'tom_dataproducts.hooks.multiple_data_products_post_save',
 }
 
 AUTO_THUMBNAILS = False
@@ -438,6 +456,10 @@ THUMBNAIL_DEFAULT_SIZE = (200, 200)
 
 HINTS_ENABLED = True
 HINT_LEVEL = 20
+
+# Default Plotly theme setting, can set to any valid theme:
+# 'plotly', 'plotly_white', 'plotly_dark', 'ggplot2', 'seaborn', 'simple_white', 'none'
+PLOTLY_THEME = 'plotly_white'
 
 try:
     from local_settings import * # noqa

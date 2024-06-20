@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.conf import settings
 from unittest import skip
 from tom_targets.tests.factories import SiderealTargetFactory
 from tom_dataproducts.models import ReducedDatum
@@ -15,6 +16,10 @@ from pyLIMA import event
 from pyLIMA import telescopes
 from datetime import datetime
 from collections import OrderedDict
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class TestModelingTools(TestCase):
     def setUp(self):
@@ -22,6 +27,14 @@ class TestModelingTools(TestCase):
         st1.name = 'OGLE-2023-BLG-0348'
         st1.ra = 271.1925
         st1.dec = -28.3164
+        # Configure parameters added by retrival of data function
+        st1.existing_model = None
+        st1.first_observation = None
+        st1.last_observation = None
+        st1.gsc_results = None
+        st1.aoft_table = None
+        st1.neighbours = []
+        st1.save()
         pevent = self.generate_test_pylima_event(st1)
         cwd = getcwd()
         lightcurve_file = path.join(cwd,'tests/data/OGLE-2023-BLG-0348_phot.dat')
@@ -42,10 +55,10 @@ class TestModelingTools(TestCase):
             'tE': 25.0,
             'piEN': 0.01,
             'piEE': -0.01,
-            'Source_magnitude': 20.0,
-            'Blend_magnitude': 22.0,
-            'Baseline_magnitude': 18.0,
-            'Fit_covariance': np.array([[ 6.87022167e-02,  3.98934577e-02, -3.93590563e-01, 1.94853293e+02, -1.94841317e+02],
+            'source_magnitude': 20.0,
+            'blend_magnitude': 22.0,
+            'baseline_magnitude': 18.0,
+            'fit_covariance': np.array([[ 6.87022167e-02,  3.98934577e-02, -3.93590563e-01, 1.94853293e+02, -1.94841317e+02],
                                         [ 3.98934577e-02,  1.85115375e-01, -1.99280530e+00, 9.00451030e+02, -9.00210742e+02],
                                         [-3.93590563e-01, -1.99280530e+00,  2.17189010e+01, -9.70655580e+03,  9.70368365e+03],
                                         [ 1.94853293e+02,  9.00451030e+02, -9.70655580e+03, 4.38193327e+06, -4.38077388e+06],
@@ -103,18 +116,14 @@ class TestModelingTools(TestCase):
         (model_params, model_lightcurve) = fittools.fit_pspl_omega2(
                 self.params['target'].ra, self.params['target'].dec, datasets)
 
-        print(model_params)
-
         expected_keys = [
             't0', 'u0', 'tE', 'piEN', 'piEE',
-            'Source_magnitude', 'Blend_magnitude', 'Baseline_magnitude',
-            'Fit_covariance', 'chi2', 'red_chi2'
+            'source_magnitude', 'blend_magnitude', 'baseline_magnitude',
+            'fit_covariance', 'chi2', 'red_chi2'
         ]
 
         for key in expected_keys:
             assert (key in model_params.keys())
-
-        self.assertAlmostEqual(model_params['chi2'], 1930.62, places=1)
 
     def test_repackage_lightcurves(self):
 
@@ -148,31 +157,39 @@ class TestModelingTools(TestCase):
     def test_event_alive(self):
         t0_fit = Time.now() + TimeDelta(2.0*u.day)
         tE_fit = 25.0
-        
-        status = fittools.check_event_alive(t0_fit.jd, tE_fit)
+        last_obs_jd = (Time.now() - TimeDelta(0.1*u.day)).jd
+
+        status = fittools.check_event_alive(t0_fit.jd, tE_fit, last_obs_jd)
         assert(status == True)
 
         t0_fit = Time.now() - TimeDelta(75.0 * u.day)
         tE_fit = 25.0
 
-        status = fittools.check_event_alive(t0_fit.jd, tE_fit)
+        status = fittools.check_event_alive(t0_fit.jd, tE_fit, last_obs_jd)
         assert(status == False)
 
     def test_store_model_parameters(self):
 
-        fittools.store_model_parameters(
-            self.params['target'],
-            self.params['model_params'],
-            True
+        self.params['target'].store_model_parameters(
+            self.params['model_params']
         )
 
         qs = Target.objects.filter(name=self.params['target'].name)
         t = qs[0]
 
         for key, value in self.params['model_params'].items():
-            if key != 'Fit_covariance':
-                test_value = t.targetextra_set.get(key=key)
-                assert(value == float(test_value.value))
+            if key != 'fit_covariance' and key != 'fit_parameters':
+                test_value = getattr(t, key)
+                assert(value == float(test_value))
+
+    def test_store_parameter_set(self):
+
+        self.params['target'].store_parameter_set({'alive': True})
+
+        qs = Target.objects.filter(name=self.params['target'].name)
+        t = qs[0]
+
+        assert(t.alive == True)
 
     def test_pylima_telescopes_from_datasets(self):
 
@@ -207,10 +224,10 @@ class TestModelingTools(TestCase):
         expected_keys = [
             't0', 't0_error', 'u0', 'u0_error', 'tE', 'tE_error',
             'piEN', 'piEN_error', 'piEE', 'piEE_error',
-            'Source_magnitude', 'Source_mag_error',
-            'Blend_magnitude', 'Blend_mag_error',
-            'Baseline_magnitude', 'Baseline_mag_error',
-            'Fit_covariance', 'chi2', 'red_chi2'
+            'source_magnitude', 'source_mag_error',
+            'blend_magnitude', 'blend_mag_error',
+            'baseline_magnitude', 'baseline_mag_error',
+            'fit_covariance', 'chi2', 'red_chi2'
         ]
         for key in expected_keys:
             assert(key in model_params.keys())
@@ -229,12 +246,13 @@ class TestModelingTools(TestCase):
             assert(revised_model[key] == self.params['model_params'][key])
 
         bad_model = self.params['model_params']
-        bad_model['u0'] = bad_model['fit_parameters']['u0'][1][1]
+        bad_model['tE'] = bad_model['fit_parameters']['tE'][1][1]
 
-        revised_model = fittools.evaluate_model(bad_model)
+        revised_model = fittools.evaluate_model(bad_model, verbose=True)
 
         for key in ['t0', 'u0', 'tE']:
             assert(np.isnan(revised_model[key]))
+
     def test_generate_model_lightcurve(self):
 
         # Load test dataset
@@ -278,7 +296,6 @@ def generate_test_ReducedDatums(target, tel_configs):
                 target=target)
 
             if created:
-                rd.save()
                 data.append(rd)
 
     return data

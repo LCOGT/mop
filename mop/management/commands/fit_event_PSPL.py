@@ -28,14 +28,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         tstart = datetime.datetime.utcnow()
-        t, created = Target.objects.get_or_create(name= options['target_name'])
-        logger.info('Fitting single event: '+t.name)
+        mulens, created = Target.objects.get_or_create(name= options['target_name'])
+        logger.info('Fitting single event: '+mulens.name)
 
         try:
-            mulens = MicrolensingEvent(t)
-            mulens.set_extra_params(TargetExtra.objects.filter(target=t))
-            mulens.set_reduced_data(
-                ReducedDatum.objects.filter(target=t).order_by("timestamp")
+            mulens.get_reduced_data(
+                ReducedDatum.objects.filter(target=mulens).order_by("timestamp")
             )
 
             if len(mulens.red_data) > 0:

@@ -51,7 +51,7 @@ def TAP_observing_mode(planet_priority, planet_priority_error,
         return 'regular_long_event'
 
     else:
-        return None
+        return 'No'
 
 def calculate_exptime_floyds(magin):
     """
@@ -120,10 +120,10 @@ def set_target_sky_location(target):
     event_status = event_in_HCZ(target.ra, target.dec, KMTNet_fields)
 
     if event_status:
-        sky_location = 'In HCZ'
+        target.sky_location = 'In HCZ'
     else:
-        sky_location = 'Outside HCZ'
-    target.save(extras={'Sky_location': sky_location})
+        target.sky_location = 'Outside HCZ'
+    target.save()
 
 def TAP_regular_mode(in_the_Bulge,survey_cadence,sdssi_baseline,tE_fit):
 
@@ -207,28 +207,19 @@ def TAP_telescope_class(sdss_i_mag):
 #   return mag_now
 
 def TAP_mag_now(mulens):
-    lightcurve = ReducedDatum.objects.filter(target=mulens.target, data_type='lc_model')
+    lightcurve = ReducedDatum.objects.filter(target=mulens, data_type='lc_model')
     time_now = Time(datetime.datetime.now()).jd
 
     if mulens.existing_model:
         closest_mag = np.argmin(np.abs(lightcurve[0].value['lc_model_time']-time_now))
         mag_now =  lightcurve[0].value['lc_model_magnitude'][closest_mag]
 
-        mulens.Mag_now = round(mag_now,3)
-        if 'Mag_now' in mulens.extras.keys():
-            mulens.extras['Mag_now'].value = round(mag_now,3)
-        else:
-            ep = TargetExtra.objects.create(
-                target = mulens.target,
-                key = 'Mag_now',
-                value = round(mag_now,3)
-            )
-            ep.save()
-            mulens.extras['Mag_now'] = ep
-
+        mulens.mag_now = round(mag_now,3)
+        mulens.save()
+        
     else:
         mag_now = None
-        mulens.Mag_now = None
+        mulens.mag_now = None
 
     return mag_now
    
@@ -329,20 +320,8 @@ def categorize_event_timescale(mulens, threshold=75.0):
     category = 'Microlensing stellar/planet'
 
     if float(mulens.tE) >= threshold:
-        category = 'Microlensing long-tE'
-
-    if 'Category' in mulens.extras.keys():
-        mulens.extras['Category'].value = category
-        mulens.Category = category
-    else:
-        ep = TargetExtra.objects.create(
-            target=mulens.target,
-            key='Category',
-            value=category
-        )
-        ep.save()
-        mulens.extras['Category'] = ep
-        mulens.Category = category
+        mulens.category = 'Microlensing long-tE'
+        mulens.save()
 
     return category
 

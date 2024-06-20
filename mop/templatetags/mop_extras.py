@@ -26,13 +26,13 @@ def mop_pylima_model(mulens):
     """
     t1 = datetime.utcnow()
     logger.info('PYLIMA MODEL EXTRACT started ' + str(t1))
-    pylima_model_products = mulens.target.dataproduct_set.filter(data_product_type='pylima_model')
+    pylima_model_products = mulens.dataproduct_set.filter(data_product_type='pylima_model')
     t2 = datetime.utcnow()
     logger.info('PyLIMA model load took ' + str(t2 - t1))
     utilities.checkpoint()
 
     return {
-        'target': mulens.target,
+        'target': mulens,
         'pylima_model_products': pylima_model_products
     }
 
@@ -122,10 +122,24 @@ def mop_photometry(mulens):
     utilities.checkpoint()
 
     return {
-        'target': mulens.target,
+        'target': mulens,
         'plot': offline.plot(fig, output_type='div', show_link=False)
     }
 
+def check_model_valid(mulens):
+
+    try:
+        u0 = float(mulens.u0)
+        u0_error = float(mulens.u0_error)
+    except AttributeError:
+        u0 = None
+        u0 = None
+    if u0 == None or u0_error == None or u0 == 0.0 or u0_error == 0.0:
+        model_valid = False
+    else:
+        model_valid = True
+
+    return model_valid
 
 @register.inclusion_tag('tom_dataproducts/partials/interferometry_data.html')
 def interferometry_data(mulens):
@@ -134,47 +148,9 @@ def interferometry_data(mulens):
     logger.info('MOP INTERFEROMETRY started at: ' + str(t1))
     utilities.checkpoint()
 
-    # Gather extra_param key values for target's Gaia catalog data
-    #u0 = utilities.fetch_extra_param(target, 'u0')
-    #u0_error = utilities.fetch_extra_param(target, 'u0_error')
-    try:
-        u0 = float(mulens.u0)
-        u0_error = float(mulens.u0_error)
-    except AttributeError:
-        u0 = None
-        u0 = None
-    if u0 == None or u0_error == None or u0 == 0.0 or u0_error == 0.0:
-        context['model_valid'] = False
-    else:
-        context['model_valid'] = True
+    # Check for a valid model fit:
+    context['model_valid'] = check_model_valid(mulens)
 
-    def clean_key_string(key):
-        return key.replace('[','').replace(']','').replace('/','_').replace('(','_').replace(')','_').replace('-','_')
-
-    key_list = ['Gaia_Source_ID',
-                'Gmag', 'Gmag_error', 'RPmag', 'RPmag_error', 'BPmag', 'BPmag_error', 'BP-RP', 'BP-RP_error',
-                'Reddening(BP-RP)', 'Extinction_G', 'Distance', 'Teff', 'logg', '[Fe/H]', 'RUWE',
-                'Interferometry_mode', 'Interferometry_guide_star', 'Interferometry_interval',
-                'Mag_base_J', 'Mag_base_H', 'Mag_base_K', 'Mag_peak_J', 'Mag_peak_J_error',
-                'Mag_peak_H', 'Mag_peak_H_error', 'Mag_peak_K', 'Mag_peak_K_error',
-                't0', 't0_error', 'Interferometry_candidate'
-                ]
-    bool_keys = ['Interferometry_candidate']
-
-    for key in key_list:
-        clean_key = clean_key_string(key)
-        if key in mulens.extras.keys():
-            value = mulens.extras[key].value
-            if key in bool_keys and value != None:
-                if value:
-                    context[clean_key] = 'True'
-                else:
-                    context[clean_key] = 'False'
-            else:
-                context[clean_key] = value
-        else:
-            context[clean_key] = None
-            
     if mulens.existing_model:
         context['t0_date'] = str(convert_JD_to_UTC(mulens.t0))
     else:
@@ -309,6 +285,8 @@ def interferometry_data(mulens):
         context['nftstars'] = 0
         context['AOstars'] = []
 
+    context['target'] = mulens
+
     t2 = datetime.utcnow()
     utilities.checkpoint()
     logger.info('MOP INTERFEROMETRY took ' + str(t2 - t1))
@@ -400,6 +378,9 @@ def gaia_neighbours_data(mulens):
     utilities.checkpoint()
     context = {}
 
+    # Check for a valid model fit:
+    context['model_valid'] = check_model_valid(mulens)
+
     # Gather the ReducedData for the neighbouring stars
     # Unpack the QuerySet returned into a more convenient format for display
     neighbours = []
@@ -462,10 +443,8 @@ def mulens_target_data(target, request):
 
     t1 = datetime.utcnow()
     utilities.checkpoint()
-    extras = {k['name']: target.extra_fields.get(k['name'], '') for k in settings.EXTRA_FIELDS if not k.get('hidden')}
     target_data = {
         'target': target,
-        'extras': extras,
         'request': request
     }
 
@@ -494,47 +473,46 @@ def classification_form(context):
     default_categories = [x[0] for x in class_form.fields['category'].choices]
 
     # If there is no request associated with the call to this function, try and extract the classification
-    # parameters from the target extras
-    class_data = {'classification': None, 'text_class': None, 'category': None, 'text_category': None}
-    if not request:
-        for key in ['Classification', 'Category']:
-            if key in context['extras'].keys():
-                class_data[key.lower()] = context['extras'][key]
+    # parameters from the target attributes
+    class_data = {
+        'classification': target.classification,
+        'text_class': None,
+        'category': target.category,
+        'text_category': None
+    }
 
     # If the user has set values for any of the form fields, then populate the class_form with those values
-    else:
+    if request:
         if any(request.GET.get(x) for x in class_data.keys()):
-            class_data['classification'] = get_request_param('classification', 'Classification', request, context['extras'])
+            class_data['classification'] = get_request_param('classification', 'classification', request, target)
             class_data['text_class'] = request.GET.get('text_class', '')
-            class_data['category'] = get_request_param('category', 'Category', request, context['extras'])
+            class_data['category'] = get_request_param('category', 'category', request, target)
             class_data['text_category'] = request.GET.get('text_category', '')
-        else:
-            for key in ['Classification', 'Category']:
-                if key in context['extras'].keys():
-                    class_data[key.lower()] = context['extras'][key]
 
     class_form = TargetClassificationForm(class_data)
 
     if class_form.is_valid() and request:
         extras = {
-            'Classification': class_data['classification'],
-            'Category': class_data['category']
+            'classification': class_data['classification'],
+            'category': class_data['category']
         }
 
         # If the user has entered their own text into the text fields, this takes priority, otherwise
         # take the option set from the select menu
         if len(class_form.cleaned_data['text_class']) > 0:
-            extras['Classification'] = class_form.cleaned_data['text_class']
+            extras['classification'] = class_form.cleaned_data['text_class']
         elif len(class_form.cleaned_data['classification']) > 0:
-            extras['Classification'] = class_form.cleaned_data['classification']
+            extras['classification'] = class_form.cleaned_data['classification']
 
         if len(class_form.cleaned_data['text_category']) > 0:
-            extras['Category'] = class_form.cleaned_data['text_category']
+            extras['category'] = class_form.cleaned_data['text_category']
         elif len(class_form.cleaned_data['category']) > 0:
-            extras['Category'] = class_form.cleaned_data['category']
+            extras['category'] = class_form.cleaned_data['category']
 
-        # Save the updated extra_field parameters
-        target.save(extras=extras)
+        # Save the updated target model fields
+        for key, value in extras.items():
+            setattr(target, key, value)
+        target.save()
 
         # Return a refreshed, empty form:
         class_form = TargetClassificationForm()
@@ -544,11 +522,9 @@ def classification_form(context):
         'target': target,
         'categories': default_categories,
         'classifications': default_classes,
+        'current_category': target.category,
+        'current_classification': target.classification
     }
-    if 'Category' in target.extra_fields.keys():
-        result['current_category'] = target.extra_fields['Category']
-    if 'Classification' in target.extra_fields.keys():
-        result['current_classification'] = target.extra_fields['Classification']
 
     t2 = datetime.utcnow()
     logger.info('CLASS FORM took ' + str(t2 - t1))
@@ -556,12 +532,12 @@ def classification_form(context):
 
     return result
 
-def get_request_param(request_key, extras_key, request, extras):
+def get_request_param(request_key, param_key, request, target):
     """Fetch a parameter value from the request object, but fall back to the already-set extra-parameter
     value if the result is an empty string"""
 
     request_value = request.GET.get(request_key, '')
     if len(request_value) == 0:
-        request_value = extras[extras_key]
+        request_value = getattr(target, param_key)
 
     return request_value

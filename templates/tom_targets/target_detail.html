@@ -80,19 +80,19 @@
         {% target_groups target %}
       </div>
       <div class="tab-pane in active" id="photometry">
-        {% mop_photometry mulens %}
+        {% mop_photometry target %}
       </div>
       <div class="tab-pane" id="spectroscopy">
         {% spectroscopy_for_target target %}
       </div>
       <div class="tab-pane" id="pylima-model">
-        {% mop_pylima_model mulens %}
+        {% mop_pylima_model target %}
       </div>
       <div class="tab-pane" id="interferometry" style="width: 80em">
-        {% interferometry_data mulens %}
+        {% interferometry_data target %}
       </div>
       <div class="tab-pane" id="gaia_neighbours" style="width: 80em">
-        {% gaia_neighbours_data mulens %}
+        {% gaia_neighbours_data target %}
       </div>
       {% comments_enabled as comments_are_enabled %}
       <hr/>

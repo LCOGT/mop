@@ -1,5 +1,4 @@
 from tom_dataproducts.models import ReducedDatum
-from tom_targets.models import Target,TargetExtra
 from astroquery.vizier import Vizier
 from astropy.coordinates import Angle
 import astropy.units as u
@@ -26,9 +25,6 @@ def estimateGaiaError(mag) :
 def update_gaia_errors(target):
 
     datasets = ReducedDatum.objects.filter(target=target)
-
-
-
 
     for i in datasets:
 
@@ -64,28 +60,27 @@ def fetch_gaia_dr3_entry(target):
 
     if len(results) > 0:
 
-        extra_params = target.extra_fields
-
-        #extra_params = {}
         fields = {
-            'Gmag': 'Gmag',
-            'e_Gmag': 'Gmag_error',
-            'RPmag': 'RPmag',
-            'e_RPmag': 'RPmag_error',
-            'BPmag': 'BPmag',
-            'e_BPmag': 'BPmag_error',
-            'BP-RP': 'BP-RP',
-            'E(BP-RP)': 'Reddening(BP-RP)',
-            'AG': 'Extinction_G',
-            'Dist':'Distance',
-            'Teff': 'Teff',
+            'Gmag': 'gmag',
+            'e_Gmag': 'gmag_error',
+            'RPmag': 'rpmag',
+            'e_RPmag': 'rpmag_error',
+            'BPmag': 'bpmag',
+            'e_BPmag': 'bpmag_error',
+            'BP-RP': 'bprp',
+            'E(BP-RP)': 'reddening_bprp',
+            'AG': 'extinction_g',
+            'Dist':'distance',
+            'Teff': 'teff',
             'logg': 'logg',
-            '[Fe/H]': '[Fe/H]',
-            'RUWE': 'RUWE'}
+            '[Fe/H]': 'metallicity',
+            'RUWE': 'ruwe'}
+
         for cat_field, mop_field in fields.items():
             try:
                 if results[0][0][cat_field]:
-                    extra_params[mop_field] = results[0][0][cat_field]
+                    setattr(target, mop_field, results[0][0][cat_field])
             except KeyError:
                 pass
-        target.save(extras = extra_params)
+
+        target.save()

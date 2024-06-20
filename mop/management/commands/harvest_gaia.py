@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.core.exceptions import ValidationError
+from microlensing_targets.models import MicrolensingTarget
 from tom_alerts.brokers import gaia
 from tom_targets.models import Target
 from mop.brokers import gaia as gaia_mop
@@ -71,15 +71,11 @@ class MOPGaia(gaia.GaiaBroker):
                                 data_type='photometry',
                                 target=target)
 
-                        if created:
-                            try:
-                                rd.save()
-                            except ValidationError:
-                                pass
-
             (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(target)
-            extras = {'Latest_data_HJD': t_last_jd, 'Latest_data_UTC': t_last_date}
-            target.save(extras=extras)
+            target.latest_data_hjd = t_last_jd
+            target.latest_data_utc = t_last_date
+            target.save()
+
         except requests.exceptions.HTTPError:
             pass
 
@@ -116,10 +112,16 @@ class Command(BaseCommand):
             #Create or load
             clean_alert = Gaia.to_generic_alert(alert)
             try:
-               target, created = Target.objects.get_or_create(name=clean_alert.name,ra=clean_alert.ra,dec=clean_alert.dec,type='SIDEREAL',epoch=2000)
+               target, created = MicrolensingTarget.objects.get_or_create(
+                   name=clean_alert.name,
+                   ra=clean_alert.ra,
+                   dec=clean_alert.dec,
+                   type='SIDEREAL',
+                   epoch=2000
+               )
             #seems to bug with the ra,dec if exists
             except:
-                  target, created = Target.objects.get_or_create(name=clean_alert.name)
+                  target, created = MicrolensingTarget.objects.get_or_create(name=clean_alert.name)
 
             if created:
                 new_alerts.append(target)

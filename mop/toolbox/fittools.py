@@ -9,6 +9,7 @@ from pyLIMA.models import PSPL_model
 from pyLIMA.outputs import pyLIMA_plots
 from astropy import units as unit
 from astropy.time import Time
+import pytz
 from scipy import stats
 import logging
 from datetime import datetime, timedelta
@@ -132,7 +133,7 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
         fit_tap2.fit()
         model2_params = gather_model_parameters(current_event, fit_tap2)
         # default null as in the former implementation
-        model2_params['Blend_magnitude'] = np.nan
+        model2_params['blend_magnitude'] = np.nan
         if verbose: logger.info('FITTOOLS: model 2 fitted parameters ' + repr(model2_params))
 
         # Evaluate the quality of this model
@@ -363,8 +364,8 @@ def gather_model_parameters(pevent, model_fit):
 
     # Retrieve the flux parameters, converting from PyLIMA's key nomenclature to MOPs
     key_map = {
-        'fsource_Tel_0': 'Source_magnitude',
-        'fblend_Tel_0': 'Blend_magnitude'
+        'fsource_Tel_0': 'source_magnitude',
+        'fblend_Tel_0': 'blend_magnitude'
     }
 
     flux_index = []
@@ -377,35 +378,35 @@ def gather_model_parameters(pevent, model_fit):
             model_params[mop_key] = np.nan
 
     # Retrieve the flux uncertainties and convert to magnitudes
-    model_params['Source_mag_error'] = np.around(
+    model_params['source_mag_error'] = np.around(
                                                 fluxerror_to_magerror(model_params['fsource_Tel_0'],
                                                              model_params['fsource_Tel_0_error']),
                                                 3)
     if 'fblend_Tel_0' in model_params.keys():
-        model_params['Blend_mag_error'] = np.around(
+        model_params['blend_mag_error'] = np.around(
                                                 fluxerror_to_magerror(model_params['fblend_Tel_0'],
                                                              model_params['fblend_Tel_0_error']),
                                                 3)
     else:
-        model_params['Blend_mag_error'] = np.nan
+        model_params['blend_mag_error'] = np.nan
 
     # If the model fitted contains valid entries for both source and blend flux,
     # use these to calculate the baseline magnitude.  Otherwise, use the source magnitude
-    if not np.isnan(model_params['Source_magnitude']) \
-           and not np.isnan(model_params['Blend_magnitude']):
+    if not np.isnan(model_params['source_magnitude']) \
+           and not np.isnan(model_params['blend_magnitude']):
         unlensed_flux = model_fit.fit_results["best_model"][flux_index[0]] \
                             + model_fit.fit_results["best_model"][flux_index[1]]
         unlensed_flux_error = np.sqrt(
                                 (model_params['fsource_Tel_0_error']**2 + model_params['fblend_Tel_0_error']**2)
                                 + (model_params['fsource_Tel_0_error']*model_params['fblend_Tel_0_error'])
                             )
-        model_params['Baseline_magnitude'] = np.around(flux_to_mag(unlensed_flux), 3)
-        model_params['Baseline_mag_error'] = np.around(fluxerror_to_magerror(unlensed_flux,unlensed_flux_error), 3)
+        model_params['baseline_magnitude'] = np.around(flux_to_mag(unlensed_flux), 3)
+        model_params['baseline_mag_error'] = np.around(fluxerror_to_magerror(unlensed_flux,unlensed_flux_error), 3)
     else:
-        model_params['Baseline_magnitude'] = model_params['Source_magnitude']
-        model_params['Baseline_mag_error'] = model_params['Source_mag_error']
+        model_params['baseline_magnitude'] = model_params['source_magnitude']
+        model_params['baseline_mag_error'] = model_params['source_mag_error']
 
-    model_params['Fit_covariance'] = model_fit.fit_results["covariance_matrix"]
+    model_params['fit_covariance'] = model_fit.fit_results["covariance_matrix"]
 
     model_params['fit_parameters'] = model_fit.fit_parameters
 
@@ -417,19 +418,19 @@ def gather_model_parameters(pevent, model_fit):
         res = model_fit.model_residuals(model_fit.fit_results['best_model'])
         sw_test = stats.normal_Shapiro_Wilk(
             (np.ravel(res[0]['photometry'][0]) / np.ravel(res[1]['photometry'][0])))
-        model_params['SW_test'] = np.around(sw_test[0],3)
+        model_params['sw_test'] = np.around(sw_test[0],3)
         ad_test = stats.normal_Anderson_Darling(
             (np.ravel(res[0]['photometry'][0]) / np.ravel(res[1]['photometry'][0])))
-        model_params['AD_test'] = np.around(ad_test[0],3)
+        model_params['ad_test'] = np.around(ad_test[0],3)
         ks_test = stats.normal_Kolmogorov_Smirnov(
             (np.ravel(res[0]['photometry'][0]) / np.ravel(res[1]['photometry'][0])))
-        model_params['KS_test'] = np.around(ks_test[0],3)
+        model_params['ks_test'] = np.around(ks_test[0],3)
         model_params['chi2_dof'] = np.sum((np.ravel(res[0]['photometry'][0]) / np.ravel(res[1]['photometry'][0])) ** 2) / (
                 len(np.ravel(res[0]['photometry'][0])) - 5)
     except:
-        model_params['SW_test'] = np.nan
-        model_params['AD_test'] = np.nan
-        model_params['KS_test'] = np.nan
+        model_params['sw_test'] = np.nan
+        model_params['ad_test'] = np.nan
+        model_params['ks_test'] = np.nan
         model_params['chi2_dof'] = np.nan
 
     return model_params
@@ -441,10 +442,10 @@ def test_quality_of_model_fit(model_params):
 
     fit_no_blend = False
 
-    cov_fit = model_params['Fit_covariance']
+    cov_fit = model_params['fit_covariance']
 
-    if (np.abs(model_params['Blend_magnitude']) < 3.0 * cov_fit[4, 4] ** 0.5) or\
-            (np.abs(model_params['Source_magnitude']) < 3.0 * cov_fit[3, 3] ** 0.5) or\
+    if (np.abs(model_params['blend_magnitude']) < 3.0 * cov_fit[4, 4] ** 0.5) or\
+            (np.abs(model_params['source_magnitude']) < 3.0 * cov_fit[3, 3] ** 0.5) or\
             (np.abs(model_params['tE']) < 3. * cov_fit[2, 2] ** 0.5):
 
         fit_no_blend = True
@@ -497,7 +498,7 @@ def generate_model_lightcurve(pevent, model_params):
     pspl = PSPL_model.PSPLmodel(pevent, parallax=['None', 0.])
 
     params = []
-    parameters = ['t0', 'u0', 'tE', 'Source_magnitude', 'Blend_magnitude']
+    parameters = ['t0', 'u0', 'tE', 'source_magnitude', 'blend_magnitude']
     for key in parameters:
         value = model_params[key]
         if 'magnitude' in key:
@@ -520,3 +521,45 @@ def generate_model_lightcurve(pevent, model_params):
     model_telescope.lightcurve_magnitude = model_telescope.lightcurve_magnitude[mask]
 
     return model_telescope
+
+def store_model_lightcurve(mulens, model):
+    """Function to store in the TOM the timeseries lightcurve corresponding to a fitted model.
+    The input is a model fit object from PyLIMA.
+
+    Note that this function has to be separate from the MicrolensingTarget class because it uses the
+    ReducedDatum objects.  Circular imports result if you try to import ReducedDatums from the Target object"""
+
+    tz = pytz.timezone('utc')
+    model_time = datetime.utcnow().replace(tzinfo=tz)
+
+    # Extract the model lightcurve timeseries from the PyLIMA fit object
+    data = {
+        'lc_model_time': model.lightcurve_magnitude['time'].value.tolist(),
+        'lc_model_magnitude': model.lightcurve_magnitude['mag'].value.tolist()
+    }
+
+    # If there is no existing model for this target, create one
+    if not mulens.existing_model:
+        rd = ReducedDatum.objects.create(
+            timestamp=model_time,
+            value=data,
+            source_name='MOP',
+            source_location=mulens.name,
+            data_type='lc_model',
+            target=mulens
+        )
+
+        mulens.existing_model = rd
+
+    # If there is a pre-existing model, update it
+    else:
+        mulens.existing_model.timestamp = model_time
+        mulens.existing_model.value = data
+        mulens.existing_model.source_name = 'MOP'
+        mulens.existing_model.source_location = mulens.name
+        mulens.existing_model.data_type = 'lc_model'
+        mulens.existing_model.target = mulens
+        mulens.existing_model.defaults = {'value': data}
+        mulens.existing_model.save()
+
+    return mulens

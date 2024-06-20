@@ -178,7 +178,7 @@ class TestObsConfig(TestCase):
         assert(type(pending_obs['Gaia21ccu']) == type([]))
         for entry in pending_obs['Gaia21ccu']:
             assert(type(entry) == type({}))
-            for key in ['id', 'instrument_type', 'filters', 'exptimes', 'expcounts']:
+            for key in ['id', 'instrument_type', 'filters', 'exposure_times', 'exposure_counts']:
                 assert(key in entry.keys())
     def test_extract_obs_request_info(self):
 

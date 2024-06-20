@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from tom_dataproducts.models import ReducedDatum
-from tom_targets.models import Target,TargetExtra,TargetList
+from tom_targets.models import TargetList
 from astropy.time import Time, TimeDelta
 from mop.toolbox import TAP
 from mop.toolbox import TAP_priority
@@ -8,7 +8,6 @@ from mop.toolbox import obs_control
 from mop.toolbox import omegaII_strategy
 from mop.toolbox import interferometry_prediction
 from mop.toolbox import querytools, utilities
-from mop.toolbox.mop_classes import MicrolensingEvent
 import datetime
 import json
 import numpy as np
@@ -87,7 +86,7 @@ class Command(BaseCommand):
                         tE_pspl_error = float(mulens.tE_error)
                         red_chi2 = float(mulens.red_chi2)
 
-                        covariance = load_covar_matrix(mulens.Fit_covariance)
+                        covariance = load_covar_matrix(mulens.fit_covariance)
 
                         sane = TAP.sanity_check_model_parameters(t0_pspl, t0_pspl_error, u0_pspl,
                                                                  tE_pspl, tE_pspl_error, red_chi2,
@@ -140,14 +139,12 @@ class Command(BaseCommand):
                         utilities.checkpoint()
 
                         # Exclude events that are within the High Cadence Zone
-                        # event_in_the_Bulge = TAP.event_in_the_Bulge(event.ra, event.dec)
-                        event_in_HCZ = TAP.event_in_HCZ(event.ra, event.dec, KMTNet_fields)
-                        if event_in_HCZ:
-                            sky_location = 'In HCZ'
+                        logger.info('runTAP: Event sky location: ' + str(mulens.sky_location))
+                        logger.info('runTAP: Event alive? ' + repr(mulens.alive))
+                        if 'Outside HCZ' in mulens.sky_location or 'Unknown' in mulens.sky_location:
+                            event_in_HCZ = False
                         else:
-                            sky_location = 'Outside HCZ'
-                        logger.info('runTAP: Event in HCZ: ' + str(event_in_HCZ))
-                        logger.info('runTAP: Event alive? ' + repr(mulens.Alive))
+                            event_in_HCZ = True
 
                         # If the event is in the HCZ, set the MOP flag to not observe it
                         if (event_in_HCZ):# (event_in_the_Bulge or)  & (event.extra_fields['Baseline_magnitude']>17):
@@ -155,7 +152,7 @@ class Command(BaseCommand):
                             logger.info('runTAP: Event in HCZ')
 
                         # If the event is flagged as not alive, then it is over, and should also not be observed
-                        elif not event.extra_fields['Alive']:
+                        elif not mulens.alive:
                             observing_mode = 'No'
                             logger.info('runTAP: Event not Alive')
 
@@ -164,27 +161,27 @@ class Command(BaseCommand):
                         else:
                             logger.info('runTAP: Event should be observed')
                             # Check target for visibility
-                            visible = obs_control.check_visibility(event, Time.now().decimalyear, verbose=False)
+                            visible = obs_control.check_visibility(mulens, Time.now().decimalyear, verbose=False)
                             logger.info('runTAP: Event visible? ' + repr(visible))
 
                             if visible:
                                 if mag_now:
-                                    logger.info('runTAP: mag_baseline: ' + str(mulens.Baseline_magnitude))
+                                    logger.info('runTAP: mag_baseline: ' + str(mulens.baseline_magnitude))
                                     observing_mode = TAP.TAP_observing_mode(planet_priority, planet_priority_error,
                                                                         long_priority, long_priority_error,
                                                                         tE_pspl, tE_pspl_error, mag_now,
-                                                                        float(mulens.Baseline_magnitude), red_chi2,
+                                                                        float(mulens.baseline_magnitude), red_chi2,
                                                                         t0_pspl, time_now)
 
                                 else:
-                                    observing_mode = None
-                                logger.info('runTAP: Observing mode: ' + event.name + ' ' + str(observing_mode))
+                                    observing_mode = 'No'
+                                logger.info('runTAP: Observing mode: ' + mulens.name + ' ' + str(observing_mode))
 
                                 if observing_mode in ['priority_stellar_event', 'priority_long_event', 'regular_long_event']:
-                                    tap_list.targets.add(event)
+                                    tap_list.targets.add(mulens)
 
                                     # Get the observational configurations for the event, based on the OMEGA-II strategy:
-                                    obs_configs = omegaII_strategy.determine_obs_config(event, observing_mode,
+                                    obs_configs = omegaII_strategy.determine_obs_config(mulens, observing_mode,
                                                                                         mag_now, time_now,
                                                                                         t0_pspl, tE_pspl)
                                     logger.info('runTAP: Determined observation configurations: ' + repr(obs_configs))
@@ -201,26 +198,26 @@ class Command(BaseCommand):
                                     # Submit the set of observation requests:
                                     # Currently observations are restricted to OGLE events only until the Gaia classifier
                                     # is updated
-                                    if 'live_obs' in options['observe'] and ('OGLE' in event.name or 'Gaia' in event.name):
-                                        obs_control.submit_lco_obs_request(obs_requests, event)
+                                    if 'live_obs' in options['observe'] and ('OGLE' in mulens.name or 'Gaia' in mulens.name):
+                                        obs_control.submit_lco_obs_request(obs_requests, mulens)
                                         logger.info('runTAP: SUBMITTING OBSERVATIONS')
                                     else:
                                         logger.warning('runTAP: WARNING: OBSERVATIONS SWITCHED OFF')
 
                             else:
-                                logger.info('runTAP: Target ' + event.name + ' not currently visible')
-                                observing_mode = None
+                                logger.info('runTAP: Target ' + mulens.name + ' not currently visible')
+                                observing_mode = 'No'
 
                         ### Spectroscopy
                         observe_spectro = False
                         if observe_spectro:
-                            if (event.extra_fields['Spectras']<1) & (event.extra_fields['Observing_mode'] != 'No'):
-                                obs_control.build_and_submit_regular_spectro(event)
-                                logger.info('runTAP: Submitted spectroscopic observations for ' + event.name)
+                            if (mulens.spectras < 1) & (mulens.observing_mode != 'No'):
+                                obs_control.build_and_submit_regular_spectro(mulens)
+                                logger.info('runTAP: Submitted spectroscopic observations for ' + mulens.name)
 
                         ### Inteferometry
-                        interferometry_prediction.evaluate_target_for_interferometry(event)
-                        logger.info('runTAP: Evaluated ' + event.name + ' for interferometry')
+                        interferometry_prediction.evaluate_target_for_interferometry(mulens)
+                        logger.info('runTAP: Evaluated ' + mulens.name + ' for interferometry')
 
                         t7 = datetime.datetime.utcnow()
                         logger.info('runTAP: Time taken for obscontrol block' + str(t7 - t6))
@@ -229,52 +226,50 @@ class Command(BaseCommand):
                         ### Updating stored information
                         # Storing both types of priority as extra_params and also as ReducedDatums so
                         # that we can track the evolution of the priority as a function of time
-                        update_extras = {'TAP_priority': np.around(planet_priority, 5),
-                                         'TAP_priority_error': np.around(planet_priority_error, 5),
-                                         'TAP_priority_longtE': np.around(long_priority, 5),
-                                         'TAP_priority_longtE_error': np.around(long_priority_error, 5),
-                                         'Category': category,
-                                         'Mag_now': mag_now,
-                                         'Observing_mode': observing_mode, 'Sky_location': sky_location}
+                        update_extras = {'tap_priority': np.around(planet_priority, 5),
+                                         'tap_priority_error': np.around(planet_priority_error, 5),
+                                         'tap_priority_longte': np.around(long_priority, 5),
+                                         'tap_priority_longte_error': np.around(long_priority_error, 5),
+                                         'category': category,
+                                         'mag_now': mag_now,
+                                         'observing_mode': observing_mode, 'sky_location': mulens.sky_location}
                         mulens.store_parameter_set(update_extras)
 
                         t8 = datetime.datetime.utcnow()
                         logger.info('runTAP: Time taken to store extra parameters ' + str(t8 - t7))
                         utilities.checkpoint()
 
-                        data = {'tap_planet': planet_priority,
-                                'tap_planet_error': planet_priority_error,
-                                'tap_long': long_priority,
-                                'tap_long_error': long_priority_error
-                                }
+                        data = {
+                            'tap_planet': planet_priority,
+                            'tap_planet_error': planet_priority_error,
+                            'tap_long': long_priority,
+                            'tap_long_error': long_priority_error
+                            }
 
                         rd, created = ReducedDatum.objects.get_or_create(
                             timestamp=datetime.datetime.utcnow(),
                             value=data,
                             source_name='MOP',
-                            source_location=event.name,
+                            source_location=mulens.name,
                             data_type='TAP_priority',
-                            target=event)
-                        if created:
-                            rd.save()
+                            target=mulens)
+
 
                         rd, created = ReducedDatum.objects.get_or_create(
                             timestamp=datetime.datetime.utcnow(),
                             value=data,
                             source_name='MOP',
-                            source_location=event.name,
+                            source_location=mulens.name,
                             data_type='TAP_priority_longtE',
-                            target=event)
-                        if created:
-                            rd.save()
+                            target=mulens)
 
                         t9 = datetime.datetime.utcnow()
                         logger.info('runTAP: Time taken to store reduceddatums ' + str(t9 - t8))
                         utilities.checkpoint()
 
                 except Exception as e:
-                    logger.warning('runTAP: Cannot perform TAP for target ' + event.name)
-                    logger.warning('Exception: ' + e)
+                    logger.warning('runTAP: Cannot perform TAP for target ' + mulens.name)
+                    logger.warning('Exception: ' + repr(e))
             logger.info('runTAP: Completed run')
             t10 = datetime.datetime.utcnow()
             logger.info('runTAP: Time taken to complete ' + str(t10 - t1))

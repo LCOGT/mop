@@ -3,6 +3,7 @@ from tom_targets.tests.factories import SiderealTargetFactory
 from tom_dataproducts.models import ReducedDatum
 from .test_fittools import generate_test_ReducedDatums
 from mop.toolbox import TAP
+from unittest import skip
 from astropy.time import Time, TimeDelta
 from astropy import units as u
 import numpy as np
@@ -24,7 +25,9 @@ class TestObservingMode(TestCase):
                             'tE': 30.0,
                             'tE_error': 0.1,
                             'obs_mode': None,
-                            'red_chi2': 1.0
+                            'red_chi2': 1.0,
+                            't0': 2460004.97378,
+                            'time_now': 2460003.5
                         },
                         {
                             'planet_priority': 15.0,
@@ -36,7 +39,9 @@ class TestObservingMode(TestCase):
                             'tE': 30.0,
                             'tE_error': 0.1,
                             'obs_mode': 'priority_stellar_event',
-                            'red_chi2': 1.0
+                            'red_chi2': 1.0,
+                            't0': 2460004.97378,
+                            'time_now': 2460003.5
                         },
                         {
                             'planet_priority': 0.01,
@@ -48,7 +53,9 @@ class TestObservingMode(TestCase):
                             'tE': 300.0,
                             'tE_error': 0.1,
                             'obs_mode': 'priority_long_event',
-                            'red_chi2': 1.0
+                            'red_chi2': 1.0,
+                            't0': 2460004.97378,
+                            'time_now': 2460003.5
                         },
                         {
                             'planet_priority': 0.01,
@@ -60,7 +67,9 @@ class TestObservingMode(TestCase):
                             'tE': 300.0,
                             'tE_error': 0.1,
                             'obs_mode': 'regular_long_event',
-                            'red_chi2': 1.0
+                            'red_chi2': 1.0,
+                            't0': 2460004.97378,
+                            'time_now': 2460003.5
                         },
                         {
                             'planet_priority': np.nan,
@@ -72,7 +81,9 @@ class TestObservingMode(TestCase):
                             'tE': 30.0,
                             'tE_error': 0.1,
                             'obs_mode': None,
-                            'red_chi2': 5.3
+                            'red_chi2': 5.3,
+                            't0': 2460004.97378,
+                            'time_now': 2460003.5
                         },
                         ]
 
@@ -88,7 +99,9 @@ class TestObservingMode(TestCase):
                 event['tE_error'],
                 event['mag_now'],
                 event['mag_baseline'],
-                event['red_chi2']
+                event['red_chi2'],
+                event['t0'],
+                event['time_now']
             )
             self.assertEqual(obs_mode, event['obs_mode'])
 
@@ -131,7 +144,9 @@ class TestLightcurveData(TestCase):
 
         # Generate a test lightcurve model
         self.params['lc_model'] = generate_test_lc_model(self.params['target'])
+        st1.existing_model = self.params['lc_model']
 
+    @skip("This test is for a depreciated function")
     def test_TAP_time_last_datapoint(self):
         # Retrieve the photometry for the test target.  Note that we retrieve it here rather than
         # pass the photometry array into the test because the DB applies a TimeZone correction
@@ -183,21 +198,30 @@ class TestCheckBaselineSN(TestCase):
             't0' : 2460177.02487,
             'u0' : 0.00233,
             'tE' : 1973.49932,
-            'Source_magnitude' : 27.069,
-            'Blend_magnitude' : 18.666,
-            'Baseline_magnitude' : 18.666,
+            'source_magnitude' : 27.069,
+            'blend_magnitude' : 18.666,
+            'baseline_magnitude' : 18.666,
 
         }
-
+        for key, value in self.model_params.items():
+            setattr(st1, key, value)
+        st1.existing_model = None
+        st1.first_observation = st1.t0 - 0.5*st1.tE
+        st1.last_observation = None
+        st1.gsc_results = None
+        st1.aoft_table = None
+        st1.neighbours = []
+        st1.save()
+        
         self.params = {
             'target': st1,
             'lightcurve_file': lightcurve_file,
             'photometry': photometry,
-            'Latest_data_HJD': 2460281.0316
+            'latest_data_hjd': 2460281.0316
         }
 
     def test_TAP_baseline(self):
-        baseline_exist = TAP.TAP_check_baseline(self.params['target'], self.model_params['t0'], self.model_params['tE'])
+        baseline_exist = TAP.TAP_check_baseline(self.params['target'])
         assert (type(baseline_exist) == type(True))
         assert (baseline_exist == False)
 
@@ -213,21 +237,30 @@ class TestCheckBaselineUlens(TestCase):
             't0': 2460237.97106,
             'u0': 0.33528,
             'tE': 136.26916,
-            'Source_magnitude': 19.964,
-            'Blend_magnitude': 17.476,
-            'Baseline_magnitude': 17.371,
+            'source_magnitude': 19.964,
+            'blend_magnitude': 17.476,
+            'baseline_magnitude': 17.371,
 
         }
+        for key, value in self.model_params.items():
+            setattr(st1, key, value)
+        st1.existing_model = None
+        st1.first_observation = st1.t0 - 2.0*st1.tE
+        st1.last_observation = None
+        st1.gsc_results = None
+        st1.aoft_table = None
+        st1.neighbours = []
+        st1.save()
 
         self.params = {
             'target': st1,
             'lightcurve_file': lightcurve_file,
             'photometry': photometry,
-            'Latest_data_HJD': 2460248.3823
+            'latest_data_hjd': 2460248.3823
         }
 
     def test_TAP_baseline(self):
-        baseline_exist = TAP.TAP_check_baseline(self.params['target'], self.model_params['t0'], self.model_params['tE'])
+        baseline_exist = TAP.TAP_check_baseline(self.params['target'])
         assert (type(baseline_exist) == type(True))
         assert (baseline_exist == True)
 
@@ -254,8 +287,6 @@ def generate_test_lc_model(target):
         data_type='lc_model',
         target=target
     )
-
-    rd.save()
 
     return data
 
@@ -286,7 +317,6 @@ def generate_gaia_ReducedDatums(target, lightcurve_file, tel_label):
                 target=target)
 
             if created:
-                rd.save()
                 data.append(rd)
 
     return data

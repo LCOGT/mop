@@ -57,8 +57,8 @@ class TestOgleBroker(TestCase):
         status = broker.ingest_ogle_photometry(test_target, self.params['photometry'])
         assert(status == 'OK')
 
-        assert(test_target.extra_fields['Latest_data_HJD'] > 0.0)
-        assert(test_target.extra_fields['Latest_data_UTC'] != None)
+        assert(test_target.latest_data_hjd > 0.0)
+        assert(test_target.latest_data_utc != None)
 
     def generate_test_target(self, target_name=None):
 
@@ -86,11 +86,13 @@ class TestOgleBroker(TestCase):
 
     def test_random_selection_targets(self):
         list_of_targets = []
+        new_targets = []
         for target_name, coords in self.params['events'].items():
             t = self.generate_test_target(target_name=target_name)
             list_of_targets.append(t)
+            new_targets.append(t)
         ntargets = min(100, len(list_of_targets))
 
         broker = ogle.OGLEBroker()
-        selected_targets = broker.select_random_targets(list_of_targets, ntargets=ntargets)
+        selected_targets = broker.select_random_targets(list_of_targets, new_targets, ntargets=ntargets)
         assert(len(selected_targets) == ntargets)
