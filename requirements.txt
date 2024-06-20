@@ -1,4 +1,4 @@
-tomtoolkit==2.17.0
+tomtoolkit==2.19.0a2
 psycopg2===2.8.4
 gunicorn[gevent]==22.0.0
 factory_boy==2.12.0
