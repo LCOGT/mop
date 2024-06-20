@@ -250,8 +250,17 @@ def sanity_check_data_sources(t, datums_qs):
     data_sources = list(set([rd.source_name for rd in datums_qs]))
 
     for ds in data_sources:
+        # Test that the data_source has one of the expected labels
         if ds not in expected_sources and 'OMEGA' not in ds:
-            raise IOError('Target ' + t.name + ' has ReducedDatums from unknown source ' + ds)
+            # If it doesn't check that the name includes one of the identifiers from an accepted source.
+            # This allows labels such as "MOA_MOA-2023-BLG-457" which can happen due to the merge process itself
+            found_source = False
+            for source in expected_sources:
+                if source in ds:
+                    found_source = True
+
+            if not found_source:
+                raise IOError('Target ' + t.name + ' has ReducedDatums from unknown source ' + ds)
 
 def merge_data_products(primary_target, primary_datums, matching_targets, matching_dataproducts):
     """
