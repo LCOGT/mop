@@ -111,8 +111,10 @@ class Command(BaseCommand):
         chosen_extra: key for the selected TargetExtra.
         chosen_model_field: name of the selected Target field.
         """
+
         for extra in TargetExtra.objects.filter(key=chosen_extra):
             target = Target.objects.get(pk=extra.target.pk)
+            self.stdout.write('Converting ' + chosen_extra + ' to ' + chosen_model_field + ' for ' + target.name)
             if getattr(target, chosen_model_field, None) and 'true' not in str(options['override']).lower():
                 self.stdout.write(f"{self.style.ERROR('Warning:')} {target}.{chosen_model_field} "
                                   f"already has a value: {getattr(target, chosen_model_field)}. Skipping.")
@@ -258,7 +260,11 @@ class Command(BaseCommand):
         if not chosen_extras:
             chosen_extras = [self.prompt_extra_field(extra_field_keys)]
 
+        self.stdout.write('Chosen extras: ' + repr(chosen_extras))
+
         for i, chosen_extra in enumerate(chosen_extras):
+            self.stdout.write('Converting entries for ' + chosen_extra)
+
             # Check that inputs are valid.
             if chosen_extra not in extra_field_keys:
                 self.stdout.write(self.style.ERROR(f"Skipping {chosen_extra} since it is not a valid TargetExtra."))
@@ -280,7 +286,7 @@ class Command(BaseCommand):
                 if chosen_model_field not in model_field_keys:
                     self.stdout.write(f'{self.style.ERROR("Warning:")} Skipping {chosen_model_field} since it is not a '
                                   f'valid target field for {Target.__name__}.')
-                continue
+                    continue
 
             if options['confirm']:
                 confirmed = self.confirm_conversion(chosen_extra, chosen_model_field)
