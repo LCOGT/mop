@@ -125,21 +125,26 @@ class Command(BaseCommand):
         also retain the value from the primary target.  This includes the Sky location value and the results
         of cross-matching to the Gaia catalogue.  Similarly, TNS name and class are also based on a positional
         match and the primary target's values are retained.
+
+        The original version of this method was intended to work with unmigrated Targets and the extra_params
+        rather than custom MicrolensingTargets where these data are attributes.  Since in deployment it makes more
+        sense to convert the targets first and then associate duplicates, this method is updated to use
+        the attributes.
         """
 
         # Pre-fetch the extra parameters for the primary and matching targets
-        primary_extras = TargetExtra.objects.prefetch_related('target').filter(
-                            target=primary_target
-                        )
-        matching_extras = [TargetExtra.objects.prefetch_related('target').filter(
-                            target=t
-                        ) for t in matching_targets]
+        #primary_extras = TargetExtra.objects.prefetch_related('target').filter(
+        #                    target=primary_target
+        #                )
+        #matching_extras = [TargetExtra.objects.prefetch_related('target').filter(
+        #                    target=t
+        #                ) for t in matching_targets]
 
         # Merge the extra parameter entries for all matched targets
-        update_params = merge_utils.merge_extra_params(primary_extras, matching_extras)
+        update_params = merge_utils.merge_extra_params(primary_target, matching_targets)
 
         # Update the revise extra parameters for the primary target
-        primary_target.save(extras=update_params)
+        primary_target.store_parameter_set(update_params)
 
         logger.info(' -> Merged extra_params')
 

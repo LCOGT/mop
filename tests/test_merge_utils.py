@@ -9,6 +9,8 @@ from django.contrib.sites.models import Site
 from django.contrib.auth.models import User, Group
 from mop.management.commands import merge_utils
 import copy
+import numpy as np
+import json
 
 class TestMergeExtraParams(TestCase):
     """
@@ -388,16 +390,99 @@ class TestMergeExtraParams(TestCase):
 
     def test_merge_extra_params(self):
         # The inputs to this function need to be QuerySets rather than dictionaries
-        primary_extras = TargetExtra.objects.prefetch_related('target').filter(
-            target=self.primary_target
-        )
-        matching_extras = [TargetExtra.objects.prefetch_related('target').filter(
-            target=t
-        ) for t in self.matching_targets]
-        result = merge_utils.merge_extra_params(primary_extras, matching_extras)
+        #primary_extras = TargetExtra.objects.prefetch_related('target').filter(
+        #    target=self.primary_target
+        #)
+        #matching_extras = [TargetExtra.objects.prefetch_related('target').filter(
+        #    target=t
+        #) for t in self.matching_targets]
 
-        for key, value in self.update_params.items():
-            assert(str(result[key]) == str(value))
+        primary_target = self.primary_target
+        primary_extras = {
+            'alive': 'True',
+            'classification': 'Microlensing PSPL',
+            'category': 'Microlensing stellar/planet',
+            'observing_mode': 'No',
+            'sky_location': 'Outside HCZ',
+            't0': 2460250.35249, 't0_error': 12.5903,
+            'u0': 0.03534, 'u0_error': 0.02202,
+            'tE': 561.22371, 'tE_error': 345.92664,
+            'piEN': 0.0, 'piEN_error': 0.0,
+            'piEE': 0.0, 'piEE_error': 0.0,
+            'rho': 0.0, 'rho_error': 0.0,
+            's': 0.0, 's_error': 0.0,
+            'q': 0.0, 'q_error': 0.0,
+            'alpha': 0.0, 'alpha_error': 0.0,
+            'source_magnitude': 21.441, 'source_mag_error': 0.95,
+            'blend_magnitude': 17.083, 'blend_mag_error': 0.016,
+            'baseline_magnitude': 17.064, 'baseline_mag_error': 0.029,
+            'mag_now': 17.025974731225308,
+            'mag_now_passband': 'r',
+            'chi2': 442.668, 'red_chi2': 1.456,
+            'ks_test': 0.0, 'sw_test': 0.0, 'ad_test': 0.0,
+            'latest_data_hjd': 2460381.71751,
+            'latest_data_utc': datetime.strptime('2024-03-12 05:13:12', '%Y-%m-%d %H:%M:%S'),
+            'last_fit': 2460357.2341402094,
+            'gaia_source_id': '5932197868479814784',
+            'gmag': 14.794, 'gmag_error': 0.950,
+            'rpmag': 13.997, 'rpmag_error': 0.004,
+            'bpmag': 15.386, 'bpmag_error': 0.003,
+            'bprp': 1.389, 'bprp_error': 0.005,
+            'reddening_bprp': 0.434,
+            'extinction_g': 0.807,
+            'distance': 1633.447,
+            'teff': 5273.100,
+            'logg': 3.571,
+            'metallicity': -0.461,
+            'ruwe': 0.988,
+            'fit_covariance': np.array([[158.51576993236475, 0.16372556481462214, -3388.3607590059523, 2261.3296123477203, -2227.6127022007736, 244.02706784265388, 580.3463381396842], [0.1637255648188461, 0.00048501511377786424, -7.239103340213104, 4.29417346129722, -3.9776575909984615, 0.8190087230185701, 0.3767950063501391], [-3388.3607590577244, -7.239103340176121, 119665.23755300675, -72479.7371796398, 67520.33407888561, -12315.121823446232, -9827.661978948556], [2261.3296123745995, 4.294173461264639, -72479.73717947576, 44789.39465333189, -42390.148884754446, 7121.305330631102, 6917.413322829993], [-2227.6127022235464, -3.9776575909625453, 67520.3340786448, -42390.14888470157, 41126.37034912327, -6445.933227498593, -6974.959644178107], [244.02706784633108, 0.8190087230160944, -12315.121823448651, 7121.305330643988, -6445.933227516768, 60115.57018104401, -325475.47981646954], [580.3463381597052, 0.37679500635393676, -9827.661979167286, 6917.41332300709, -6974.959644367404, -325475.4798164549, 1814011.1049841202]]),
+            'tap_priority': 5.74586, 'tap_priority_error': 3.66766,
+            'tap_priority_longte': 74.82983, 'tap_priority_longte_error': 46.12355,
+            'interferometry_mode': 'Dual Field Wide',
+            'interferometry_guide_star': 1.0,
+            'interferometry_candidate': 'True',
+            'spectras': 0.0,
+            'mag_peak_J': 9.420, 'mag_peak_J_error': 0.950,
+            'mag_peak_H': 8.802, 'mag_peak_H_error': 0.950,
+            'mag_peak_K': 8.653, 'mag_peak_K_error': 0.950,
+            'mag_base_J': 13.063, 'mag_base_H': 12.445, 'mag_base_K': 12.295,
+            'interferometry_interval': 0.0,
+            'YSO': 'False', 'QSO': 'False', 'galaxy': 'False',
+            'TNS_name': 'None', 'TNS_class': 'None'
+        }
+        primary_target.store_parameter_set(primary_extras)
+
+        tmatch1 = self.matching_targets[0]
+        tmatch1_extras = copy.deepcopy(primary_extras)
+        tmatch1_extras['alive'] = 'True'
+        tmatch1_extras['classification'] = 'Unclassified poor fit'
+        tmatch1_extras['category'] = 'RR Lyrae'
+        tmatch1_extras['QSO'] = 'True'
+        tmatch1.store_parameter_set(tmatch1_extras)
+
+        tmatch2 = self.matching_targets[1]
+        tmatch2_extras = copy.deepcopy(primary_extras)
+        tmatch2_extras['alive'] = 'False'
+        tmatch2_extras['classification'] = 'Unclassified poor fit'
+        tmatch2_extras['category'] = 'Pulsator'
+        tmatch2_extras['QSO'] = 'False'
+        tmatch2.store_parameter_set(tmatch2_extras)
+
+        matching_targets = [tmatch1, tmatch2]
+
+        result = merge_utils.merge_extra_params(primary_target, matching_targets)
+
+        expected_result = tmatch1_extras = copy.deepcopy(primary_extras)
+        expected_result['category'] = 'Microlensing stellar/planet'
+        expected_result['QSO'] = 'True'
+
+        for key, value in expected_result.items():
+            if key != 'fit_covariance':
+                assert(str(result[key]) == str(value))
+            else:
+                data = json.loads(result[key])
+                data = np.array(data)
+                np.testing.assert_allclose(data, value, rtol=1e-2)
 
     def test_merge_names(self):
         aliases = TargetName.objects.filter(target=self.primary_target)
