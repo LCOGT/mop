@@ -48,7 +48,14 @@ class Command(BaseCommand):
                     + ', Dec=' + str(working_target.dec)
                             )
 
-                # Search for all targets near to the working target's coordinates:
+                # Search for all targets near to the working target's coordinates, sanity checking for
+                # targets with mal-formed coordinates:
+                try:
+                    ra = float(working_target.ra)
+                    dec = float(working_target.dec)
+                except TypeError:
+                    raise IOError('MAL-FORMED TARGET COORDINATES: ' + working_target.name + ', pk=' + str(working_target.pk))
+
                 nearby_targets = Target.matches.match_cone_search(
                     round(float(working_target.ra),5),
                     round(float(working_target.dec),5),
