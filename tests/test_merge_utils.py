@@ -592,3 +592,29 @@ class TestMergeExtraParams(TestCase):
             assert(entry in expected_obsrecords)
             assert(entry.target == self.primary_target)
 
+    def test_sanity_check_data_sources(self):
+
+        # This should not raise any errors
+        datums_qs = ReducedDatum.objects.filter(target=self.primary_target)
+
+        merge_utils.sanity_check_data_sources(self.primary_target, datums_qs)
+
+        # This should raise an OSError:
+        dp1 = DataProduct.objects.create(
+            target=self.primary_target,
+            observation_record=self.primary_observations['records'][0],
+            data='path/to/dataproduct',
+            data_product_type='photometry'
+        )
+        rd1 = ReducedDatum.objects.create(
+            target=self.primary_target,
+            data_product=dp1,
+            source_name='UNKNOWN',
+            data_type='photometry',
+            timestamp=datetime.utcnow(),
+            value={'datum': 1, 'filter': 'I'}
+        )
+        datums_qs = ReducedDatum.objects.filter(target=self.primary_target)
+
+        with self.assertRaises(OSError):
+            merge_utils.sanity_check_data_sources(self.primary_target, datums_qs)
