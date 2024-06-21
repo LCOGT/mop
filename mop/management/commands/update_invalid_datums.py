@@ -14,16 +14,18 @@ class Command(BaseCommand):
         data_list = ReducedDatum.objects.filter(data_product__in=dataproducts)
         print('Found ' + str(data_list.count()) + ' ReducedDatums to review')
 
-        for rd in data_list:
-            print('Reviewing rd ' + str(rd.pk) + ' source=' + rd.source_name)
+        for i,rd in enumerate(data_list):
+            print('Reviewing rd ' + str(rd.pk) + ' source=' + rd.source_name + ', ' + str(i)
+                  + ' out of ' + str(data_list.count()))
             print(rd.pk, rd.source_name, rd.source_location, rd.data_product)
 
-            rd_new = copy.deepcopy(rd)
+            if 'OMEGA' not in rd.source_name:
+                rd_new = copy.deepcopy(rd)
 
-            rd.delete()
+                rd.delete()
 
-            rd_new.source_name = 'OMEGA'
-            rd_new.source_location = 'MOP'
-            rd_new.save()
+                rd_new.source_name = 'OMEGA'
+                rd_new.source_location = 'MOP'
+                rd_new.save()
 
-            print('Updated ReducedDatum to ' + str(rd_new.pk))
+                print('Updated ReducedDatum to ' + str(rd_new.pk))
