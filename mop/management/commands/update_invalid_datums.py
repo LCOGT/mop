@@ -8,7 +8,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        data_list = ReducedDatum.objects.filter(source_name='Gaia')
+        data_list = ReducedDatum.objects.all()
         print('Found ' + str(data_list.count()) + ' ReducedDatums to review')
 
         for rd in data_list:
