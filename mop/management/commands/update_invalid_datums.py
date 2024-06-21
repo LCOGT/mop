@@ -14,7 +14,7 @@ class Command(BaseCommand):
         print('Found ' + str(data_list.count()) + ' ReducedDatums to review')
 
         for rd in data_list:
-
+            print('Reviewing rd ' + str(rd.pk) + ' source=' + rd.source_name)
             if len(rd.source_name) == 0 or rd.source_name == 'None' or rd.source_name == None:
 
                 print(rd.pk, rd.source_name, rd.source_location, rd.data_product)
