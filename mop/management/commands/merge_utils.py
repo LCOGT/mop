@@ -352,8 +352,9 @@ def sanity_check_data_sources(t, datums_qs):
                         'MOP']
 
     data_sources = list(set([rd.source_name for rd in datums_qs]))
+    data_pks = list(set([rd.pk for rd in datums_qs]))
 
-    for ds in data_sources:
+    for i,ds in enumerate(data_sources):
         # Test that the data_source has one of the expected labels
         if ds not in expected_sources and 'OMEGA' not in ds:
             # If it doesn't check that the name includes one of the identifiers from an accepted source.
@@ -364,7 +365,8 @@ def sanity_check_data_sources(t, datums_qs):
                     found_source = True
 
             if not found_source:
-                raise IOError('Target ' + t.name + ' has ReducedDatums from unknown source ' + ds)
+                raise IOError('Target ' + t.name + ' has ReducedDatum (pk=' + str(data_pks[i]) \
+                              + ') from unknown source ' + ds)
 
 def merge_data_products(primary_target, primary_datums, matching_targets, matching_dataproducts):
     """
