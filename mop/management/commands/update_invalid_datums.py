@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from tom_targets.models import Target
 from tom_dataproducts.models import ReducedDatum, DataProduct
+import copy
 
 class Command(BaseCommand):
 
@@ -16,8 +17,13 @@ class Command(BaseCommand):
         for rd in data_list:
             print('Reviewing rd ' + str(rd.pk) + ' source=' + rd.source_name)
             print(rd.pk, rd.source_name, rd.source_location, rd.data_product)
-            # Try to identify the origin of the data if possible
-            rd.source_name = 'OMEGA'
-            rd.source_location = 'MOP'
-            rd.save()
-            print('Updated ReducedDatum ' + str(rd.pk))
+
+            rd_new = copy.deepcopy(rd)
+
+            rd.delete()
+
+            rd_new.source_name = 'OMEGA'
+            rd_new.source_location = 'MOP'
+            rd_new.save()
+
+            print('Updated ReducedDatum to ' + str(rd_new.pk))
