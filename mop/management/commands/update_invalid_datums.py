@@ -19,8 +19,7 @@ class Command(BaseCommand):
 
                 print(rd.pk, rd.source_name, rd.source_location, rd.data_product)
                 # Try to identify the origin of the data if possible
-                if 'auto.csv' in rd.data_product.data:
-                    rd.source_name = 'OMEGA'
-                    rd.source_location = 'MOP'
-                    rd.save()
-                    print('Updated ReducedDatum ' + str(rd.pk))
+                rd.source_name = 'OMEGA'
+                rd.source_location = 'MOP'
+                rd.save()
+                print('Updated ReducedDatum ' + str(rd.pk))
