@@ -8,7 +8,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        data_list = ReducedDatum.objects.all()
+        dataproducts = DataProduct.objects.filter(data__icontains='auto.csv')
+
+        data_list = ReducedDatum.objects.filter(data_product__in=dataproducts)
         print('Found ' + str(data_list.count()) + ' ReducedDatums to review')
 
         for rd in data_list:
