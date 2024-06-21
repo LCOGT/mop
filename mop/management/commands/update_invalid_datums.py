@@ -15,11 +15,9 @@ class Command(BaseCommand):
 
         for rd in data_list:
             print('Reviewing rd ' + str(rd.pk) + ' source=' + rd.source_name)
-            if len(rd.source_name) == 0 or rd.source_name == 'None' or rd.source_name == None:
-
-                print(rd.pk, rd.source_name, rd.source_location, rd.data_product)
-                # Try to identify the origin of the data if possible
-                rd.source_name = 'OMEGA'
-                rd.source_location = 'MOP'
-                rd.save()
-                print('Updated ReducedDatum ' + str(rd.pk))
+            print(rd.pk, rd.source_name, rd.source_location, rd.data_product)
+            # Try to identify the origin of the data if possible
+            rd.source_name = 'OMEGA'
+            rd.source_location = 'MOP'
+            rd.save()
+            print('Updated ReducedDatum ' + str(rd.pk))
