@@ -19,7 +19,7 @@ class MicrolensingTarget(BaseTarget):
     alive = models.BooleanField(default=True)
     classification = models.CharField(max_length=50, default='Microlensing PSPL')
     category = models.CharField(max_length=50, default='Microlensing stellar/planet')
-    observing_mode = models.CharField(max_length=20, default=' No')
+    observing_mode = models.CharField(max_length=30, default=' No')
     sky_location = models.CharField(max_length=20, default='Unknown')
     t0 = models.FloatField(default=0)
     t0_error = models.FloatField(default=0)
