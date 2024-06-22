@@ -2,6 +2,7 @@ from tom_targets.models import Target, TargetName, TargetExtra
 from tom_dataproducts.models import DataProduct, ReducedDatum
 import logging
 from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -417,6 +418,7 @@ def merge_data_products(primary_target, primary_datums, matching_targets, matchi
                 rd.source_name = rd.source_name + '_' + matching_targets[i].name
                 rd.value['filter'] = rd.value['filter'] + '_' + matching_targets[i].name
                 rd.target = primary_target
+
                 rd.save()
 
 def merge_targetgroups(targetlists, primary_target, matching_targets):

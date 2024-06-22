@@ -545,6 +545,13 @@ class TestMergeExtraParams(TestCase):
         for rd in updated_data:
             assert(rd in expected_data)
 
+
+        # Test that the code properly skips ReducedDatums where they are exactly duplicated.
+        merge_utils.merge_data_products(self.primary_target,
+                                        primary_data,
+                                        self.matching_targets,
+                                        matched_data)
+
     def test_merge_targetgroups(self):
         """
         Method to test the merging of TargetLists.
