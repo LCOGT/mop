@@ -350,7 +350,7 @@ def sanity_check_data_sources(t, datums_qs):
 
     expected_sources = ['OGLE', 'MOA', 'Gaia', 'ZTF', 'ZTFDR3', 'ATLAS',
                         'Interferometry_predictor', 'AOFT_table', 'GSC_query_results',
-                        'MOP']
+                        'MOP', 'ASAS-SN']
 
     for i,rd in enumerate(datums_qs):
 
