@@ -23,7 +23,12 @@ class Command(BaseCommand):
         if 'all' in str(options['target']).lower():
             target_selection = Target.objects.all()
         else:
-            target_selection = Target.objects.filter(name=options['target'])
+            exclude_list = self.exclude_events()
+            target_selection = Target.objects.filter(
+                name=options['target']
+            ).exclude(
+                name__in=exclude_list
+            )
 
         if len(target_selection) == 0:
             raise IOError('No targets found matching selection ' + options['target'])
@@ -223,3 +228,13 @@ class Command(BaseCommand):
         matching_comments = [Comment.objects.filter(object_pk=t.pk) for t in matching_targets]
 
         merge_utils.merge_comments(matching_comments, primary_target)
+
+    def exclude_events(self):
+        """List of events to skip from automatic processing as they have been flagged for human
+        management"""
+
+        self.exclude_list = [
+            'MOA-2019--BLG-0284',       # Excluded when auto de-duplication repeatedly crashed
+            'Gaia20dup'
+        ]
+        logger.info('Excluding ' + str(len(self.exclude_list)) + ' events from selection')
