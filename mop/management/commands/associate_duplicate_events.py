@@ -21,13 +21,13 @@ class Command(BaseCommand):
 
         # Figure out if we should check just one target for duplication or all of them
         if 'all' in str(options['target']).lower():
-            target_selection = Target.objects.all()
+            self.exclude_events()
+            target_selection = Target.objects.all().exclude(
+                name__in=self.exclude_list
+            )
         else:
-            exclude_list = self.exclude_events()
             target_selection = Target.objects.filter(
                 name=options['target']
-            ).exclude(
-                name__in=exclude_list
             )
 
         if len(target_selection) == 0:
