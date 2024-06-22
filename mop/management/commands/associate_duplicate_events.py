@@ -15,6 +15,7 @@ class Command(BaseCommand):
         parser.add_argument('target', help='Name of target to check or all')
         parser.add_argument('radius', help='Match radius in arcseconds')
         parser.add_argument('delete', help='Delete duplicated Targets?  If yes, enter "delete"')
+        parser.add_argument('remove', help='Remove duplicated ReducedDatums?  If yes, enter "remove"')
 
     def handle(self, *args, **options):
 
@@ -87,7 +88,7 @@ class Command(BaseCommand):
                     self.merge_extra_params(primary_target, matching_targets)
 
                     # Merge the data products and ReducedDatums for the primary and matching targets
-                    self.merge_data_products(primary_target, matching_targets)
+                    self.merge_data_products(options, primary_target, matching_targets)
 
                     # Merge TargetLists, if the primary or matching targets are listed
                     self.merge_targetgroups(primary_target, matching_targets)
@@ -159,7 +160,7 @@ class Command(BaseCommand):
 
         logger.info(' -> Merged extra_params')
 
-    def merge_data_products(self, primary_target, matching_targets):
+    def merge_data_products(self, options, primary_target, matching_targets):
         """
         Function to combine the data products and ReducedDatums for duplicated targets.
 
@@ -183,7 +184,7 @@ class Command(BaseCommand):
         primary_datums = ReducedDatum.objects.filter(target=primary_target)
         matching_dataproducts = [DataProduct.objects.filter(target=t) for t in matching_targets]
 
-        merge_utils.merge_data_products(primary_target, primary_datums, matching_targets, matching_dataproducts)
+        merge_utils.merge_data_products(options, primary_target, primary_datums, matching_targets, matching_dataproducts)
 
         logger.info(' -> Completed merge of data products for ' + primary_target.name + ' with matching objects')
 

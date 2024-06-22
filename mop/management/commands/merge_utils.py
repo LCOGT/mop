@@ -367,7 +367,7 @@ def sanity_check_data_sources(t, datums_qs):
                 raise IOError('Target ' + t.name + ' has ReducedDatum (pk=' + str(rd.pk) \
                               + ') from unknown source ' + rd.source_name)
 
-def merge_data_products(primary_target, primary_datums, matching_targets, matching_dataproducts):
+def merge_data_products(options, primary_target, primary_datums, matching_targets, matching_dataproducts):
     """
     Function to merge the data products associated with duplicated targets
 
@@ -419,7 +419,13 @@ def merge_data_products(primary_target, primary_datums, matching_targets, matchi
                 rd.value['filter'] = rd.value['filter'] + '_' + matching_targets[i].name
                 rd.target = primary_target
 
-                rd.save()
+                try:
+                    rd.save()
+                except ValidationError as err:
+                    if 'remove' in options['remove']:
+                        rd.delete()
+                    else:
+                        raise err
 
 def merge_targetgroups(targetlists, primary_target, matching_targets):
     """
