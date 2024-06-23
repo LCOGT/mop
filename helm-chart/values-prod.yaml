@@ -47,8 +47,8 @@ resources:
     cpu: 500m
     memory: 768Mi
   limits:
-    cpu: 2
-    memory: 2Gi
+    cpu: 4
+    memory: 4Gi
 
 # HTTP router configuration
 ingress:
