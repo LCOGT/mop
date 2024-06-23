@@ -405,7 +405,7 @@ def merge_data_products(options, primary_target, primary_datums, matching_target
 
             # Check whether the primary target already has data from non-unique survey sources;
             # if not, transfer ownership:
-            elif rd.source_name in ['ZTF', 'ATLAS']:
+            elif 'ZTF' in rd.source_name or 'ATLAS' in rd.source_name or 'ASAS-SN' in rd.source_name:
                 if rd.source_name not in primary_data_sources:
                     transfer_ownership = True
 
