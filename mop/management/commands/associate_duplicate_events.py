@@ -27,7 +27,7 @@ class Command(BaseCommand):
             )
         else:
             target_selection = Target.objects.filter(
-                name=options['target']
+                name__icontains=options['target']
             )
 
         if len(target_selection) == 0:
