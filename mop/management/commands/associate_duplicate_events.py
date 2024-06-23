@@ -20,14 +20,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         # Figure out if we should check just one target for duplication or all of them
+        self.exclude_events()
         if 'all' in str(options['target']).lower():
-            self.exclude_events()
             target_selection = Target.objects.all().exclude(
                 name__in=self.exclude_list
             )
         else:
             target_selection = Target.objects.filter(
                 name__icontains=options['target']
+            ).exclude(
+                name__in=self.exclude_list
             )
 
         if len(target_selection) == 0:
