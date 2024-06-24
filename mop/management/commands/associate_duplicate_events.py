@@ -237,6 +237,8 @@ class Command(BaseCommand):
 
         self.exclude_list = [
             'MOA-2019-BLG-0284',       # Excluded when auto de-duplication repeatedly crashed
-            'Gaia20dup'
+            'Gaia20dup',
+            'MOA-2023-BLG-120',
+            'OGLE-2023-BLG-0187'
         ]
         logger.info('Excluding ' + str(len(self.exclude_list)) + ' events from selection')
