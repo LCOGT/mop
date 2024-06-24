@@ -300,7 +300,10 @@ def load_covar_matrix(raw_covar_data):
             try:
                 data.append([float(x) for x in entry.split()])
             except ValueError:
-                data.append([float(x) for x in entry.split(',')])
+                try:
+                    data.append([float(x) for x in entry.split(',')])
+                except ValueError:
+                    return np.array([])
     else:
         return np.array([])
 
