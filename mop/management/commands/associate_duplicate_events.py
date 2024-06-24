@@ -235,10 +235,17 @@ class Command(BaseCommand):
         """List of events to skip from automatic processing as they have been flagged for human
         management"""
 
+        # This list contains pairs of duplicate events found to cause the de-duplication code to
+        # crash repeatedly.  They are excluded here on the assumption that they will be
+        # processed mangually.
         self.exclude_list = [
-            'MOA-2019-BLG-0284',       # Excluded when auto de-duplication repeatedly crashed
+            'MOA-2019-BLG-0284',
             'Gaia20dup',
             'MOA-2023-BLG-120',
-            'OGLE-2023-BLG-0187'
+            'OGLE-2023-BLG-0187',
+            'MOA-2023-BLG-352',
+            'OGLE-2023-BLG-0920',
+            'MOA-2023-BLG-007',
+            'OGLE-2023-BLG-0048'
         ]
         logger.info('Excluding ' + str(len(self.exclude_list)) + ' events from selection')
