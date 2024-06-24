@@ -278,19 +278,31 @@ class Command(BaseCommand):
 
 def load_covar_matrix(raw_covar_data):
 
-    payload = str(raw_covar_data).replace('[[','').replace(']]','').replace('\n','').lstrip()
+    # Check for mal-formed strings.
+    # Some example cases of >100million character strings have been identified (largely consisting of "////..."_
+    # The least intensive way to identify them is to check for strings that are excessively long:
+    payload = str(raw_covar_data)
+    if len(payload) > 5000 or len(payload) == 0 or '////////////' in payload:
+        return np.array([])
+
+    # If the string looks reasonable, clean it of the matrix brackets etc
+    payload = payload.replace('[[','').replace(']]','').replace('\n','').replace('\r','').lstrip()
     array_list = payload.split('] [')
 
-    # Check for older covar matrix format
+    # Parse the result into a numpy array, checking first for the older covar matrix format
     if len(array_list) == 1:
         array_list = array_list[0].split('], [')
 
     data = []
-    for entry in array_list:
-        try:
-            data.append([float(x) for x in entry.split()])
-        except ValueError:
-            data.append([float(x) for x in entry.split(',')])
+    # This catches array entries with no items, i.e. '[]'
+    if len(array_list) > 1:
+        for entry in array_list:
+            try:
+                data.append([float(x) for x in entry.split()])
+            except ValueError:
+                data.append([float(x) for x in entry.split(',')])
+    else:
+        return np.array([])
 
     return np.array(data)
 
