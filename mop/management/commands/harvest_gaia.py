@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from microlensing_targets.models import MicrolensingTarget
 from tom_alerts.brokers import gaia
 from tom_targets.models import Target
 from mop.brokers import gaia as gaia_mop
@@ -95,10 +94,14 @@ class Command(BaseCommand):
 
         Gaia = MOPGaia()
 
-        if str(options['events']).lower() == 'all':
-            (list_of_alerts, broker_feedback) = Gaia.fetch_alerts({'target_name':None, 'cone':None})
-        else:
-            (list_of_alerts, broker_feedback) = Gaia.fetch_alerts({'target_name': options['events'], 'cone': None})
+        try:
+            if str(options['events']).lower() == 'all':
+                (list_of_alerts, broker_feedback) = Gaia.fetch_alerts({'target_name':None, 'cone':None})
+            else:
+                (list_of_alerts, broker_feedback) = Gaia.fetch_alerts({'target_name': options['events'], 'cone': None})
+        except requests.exceptions.ConnectionError:
+            logger.error('Connection error: cannot reach Gaia Alerts server')
+            exit()
 
         new_alerts = []
         for alert in list_of_alerts:
@@ -112,7 +115,7 @@ class Command(BaseCommand):
             #Create or load
             clean_alert = Gaia.to_generic_alert(alert)
             try:
-               target, created = MicrolensingTarget.objects.get_or_create(
+               target, created = Target.objects.get_or_create(
                    name=clean_alert.name,
                    ra=clean_alert.ra,
                    dec=clean_alert.dec,
@@ -121,7 +124,7 @@ class Command(BaseCommand):
                )
             #seems to bug with the ra,dec if exists
             except:
-                  target, created = MicrolensingTarget.objects.get_or_create(name=clean_alert.name)
+                  target, created = Target.objects.get_or_create(name=clean_alert.name)
 
             if created:
                 new_alerts.append(target)

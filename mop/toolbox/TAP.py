@@ -330,18 +330,21 @@ def sanity_check_model_parameters(t0_pspl, t0_pspl_error, u0_pspl, tE_pspl, tE_p
     Function to review the model parameters to verify that valid calulations can be made with them.
     """
     sane = True
+    reason = ''
     params = [t0_pspl, t0_pspl_error, u0_pspl, tE_pspl, tE_pspl_error, red_chi2]
 
     # Check t0, tE and u0 values are non-zero, not NaNs and floating point variables
     for value in params:
         if value == 0.0 or np.isnan(value) or type(value) != type(1.0) or value == None:
             sane = False
+            reason += ' Bad parameter value: ' + str(value)
 
     # Check the covariance array is an array of non-zero length:
     if type(covariance) != type(np.zeros(1)) or len(covariance) == 0:
         sane = False
+        reason += ' ; Bad covariance matrix: '+repr(covariance)
 
-    logger.info('TAP model parameters sanity check returned ' + repr(sane))
+    logger.info('TAP model parameters sanity check returned ' + repr(sane) + ' ' + reason)
 
     return sane
 

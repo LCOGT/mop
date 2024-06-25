@@ -77,3 +77,4 @@ class TestParameterLoad(TestCase):
             result = test_case.load_fit_covariance()
 
             assert(result == expected_result).all()
+            assert(type(result) == type(expected_result))

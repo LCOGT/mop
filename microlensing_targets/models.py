@@ -250,5 +250,5 @@ class MicrolensingTarget(BaseTarget):
             self.save()
 
     def load_fit_covariance(self):
-        data = json.loads(self.fit_covariance['covariance'])
+        data = np.array(json.loads(self.fit_covariance['covariance']))
         return data
