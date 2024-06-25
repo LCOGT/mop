@@ -93,7 +93,7 @@ def run_fit(mulens, cores=0, verbose=False):
             # Return True because no further processing is required
             return True
 
-   except:
+    except:
         logger.error('Job failed: '+mulens.name)
         return False
 
