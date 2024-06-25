@@ -66,6 +66,7 @@ def run_fit(mulens, cores=0, verbose=False):
             # Determine whether or not an event is still active based on the
             # current time relative to its t0 and tE
             alive = fittools.check_event_alive(model_params['t0'], model_params['tE'], mulens.last_observation)
+            logger.info(mulens.name + ' alive status: ' + repr(alive))
 
             t10 = datetime.datetime.utcnow()
             if verbose: utilities.checkpoint()
@@ -92,7 +93,7 @@ def run_fit(mulens, cores=0, verbose=False):
             # Return True because no further processing is required
             return True
 
-    except:
+   except:
         logger.error('Job failed: '+mulens.name)
         return False
 
