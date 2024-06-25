@@ -1,4 +1,5 @@
 from tom_dataproducts.models import ReducedDatum
+from django.core.exceptions import  ValidationError
 from astroquery.vizier import Vizier
 from astropy.coordinates import Angle
 import astropy.units as u
@@ -33,8 +34,11 @@ def update_gaia_errors(target):
             magnitude = i.value['magnitude']
             error = estimateGaiaError(magnitude)
             i.value['error'] = error 
-            
-            i.save()
+
+            try:
+                i.save()
+            except ValidationError:
+                pass
 
 def query_gaia_dr3(target, radius=Angle(0.004, "deg"), row_limit=-1, Gmag_max=24.0):
     """Function to query the Gaia DR3 catalog for information on a target and stars nearby"""

@@ -67,7 +67,7 @@ ingress:
 # CronJob: Fit Need Events
 # ACTIVE
 fitneedevents:
-  enabled: false
+  enabled: true
   # Run in parallel across 6 Nodes (Machines) until all jobs are finished
   # Overruled: do not parallelize
   parallelism: 1
@@ -85,7 +85,7 @@ fitneedevents:
 # CronJob: Run TAP
 # ACTIVE
 runtap:
-  enabled: false
+  enabled: true
   resources:
     requests:
       cpu: 10m
@@ -98,7 +98,7 @@ runtap:
 # Logs into IPAC archive portal directly
 # ACTIVE
 harvestztfdr3:
-  enabled: false
+  enabled: true
   resources:
     requests:
       cpu: 10m
@@ -110,7 +110,7 @@ harvestztfdr3:
 # CronJob: Harvest GAIA
 # ACTIVE
 harvestgaia:
-  enabled: false
+  enabled: true
   resources:
     requests:
       cpu: 10m
@@ -122,7 +122,7 @@ harvestgaia:
 # CronJob: Harvest MOA
 # ACTIVE
 harvestmoa:
-  enabled: false
+  enabled: true
   resources:
     requests:
       cpu: 10m
@@ -134,7 +134,7 @@ harvestmoa:
 # CronJob: Harvest OGLE
 # ACTIVE
 harvestogle:
-  enabled: false
+  enabled: true
   resources:
     requests:
       cpu: 10m
@@ -146,7 +146,7 @@ harvestogle:
 # CronJob: Add Gaia Classifier
 # ACTIVE
 gaiaclassifier:
-  enabled: false
+  enabled: true
   resources:
     requests:
       cpu: 10m
