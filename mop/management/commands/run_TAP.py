@@ -86,7 +86,7 @@ class Command(BaseCommand):
                         tE_pspl_error = float(mulens.tE_error)
                         red_chi2 = float(mulens.red_chi2)
 
-                        covariance = load_covar_matrix(mulens.fit_covariance)
+                        covariance = mulens.load_fit_covariance()
 
                         sane = TAP.sanity_check_model_parameters(t0_pspl, t0_pspl_error, u0_pspl,
                                                                  tE_pspl, tE_pspl_error, red_chi2,

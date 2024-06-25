@@ -229,7 +229,8 @@ class MicrolensingTarget(BaseTarget):
         for key in parameters:
             if key in model_params.keys():
                 if key == 'fit_covariance':
-                    data = json.dumps(model_params['fit_covariance'].tolist())
+                    payload = json.dumps(model_params['fit_covariance'].tolist())
+                    data = {'covariance': payload}
                 else:
                     data = model_params[key]
                 setattr(self, key, data)
@@ -241,8 +242,13 @@ class MicrolensingTarget(BaseTarget):
         for key, data in parameters.items():
             if key == 'fit_covariance':
                 if type(data) == type(np.array([])):
-                    data = json.dumps(data.tolist())
+                    payload = json.dumps(data.tolist())
+                    data = {'covariance': payload}
                 else:
-                    data = json.dumps(data)
+                    raise IOError('Fit covariance parameter for ' + self.name + ' not in array format')
             setattr(self, key, data)
             self.save()
+
+    def load_fit_covariance(self):
+        data = json.loads(self.fit_covariance['covariance'])
+        return data
