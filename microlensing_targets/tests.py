@@ -3,6 +3,7 @@ from tom_targets.tests.factories import SiderealTargetFactory
 import json
 import numpy as np
 from datetime import datetime
+import copy
 
 # Create your tests here.
 class TestParameterLoad(TestCase):
@@ -126,6 +127,12 @@ class TestParameterLoad(TestCase):
         covar = np.array([])
         t4.fit_covariance = {'covariance': json.dumps(covar.tolist())}
         self.test_cases.append((t4, covar))
+
+        # Simulate unmodeled event with default fit_covariance
+        t5 = copy.deepcopy(t1)
+        t5.fit_covariance = {}
+        self.test_cases.append((t5, np.array([])))
+
     def test_load_fit_covariance(self):
 
         for test_case, expected_result in self.test_cases:
