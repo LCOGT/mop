@@ -426,9 +426,9 @@ SELECTION_EXTRA_FIELDS = [
 # MATCH_MANAGERS = {
 #    "Target": "my_custom_code.match_managers.MyCustomTargetMatchManager"
 # }
-#MATCH_MANAGERS = {
-#    "Target": "mop.match_managers.matching_event_manager.EventMatchManager"
-#}
+MATCH_MANAGERS = {
+    "Target": "microlensing_targets.match_managers.matching_event_manager.EventMatchManager"
+}
 
 TARGET_PERMISSIONS_ONLY=True
 

@@ -1,6 +1,8 @@
 from django.test import TestCase
 from tom_targets.models import Target
 from tom_targets.tests.factories import SiderealTargetFactory
+from django.core.exceptions import ValidationError
+from django.conf import settings
 
 class TestMergeExtraParams(TestCase):
     """
@@ -24,6 +26,17 @@ class TestMergeExtraParams(TestCase):
             t.dec = target[1]
             t.save()
 
+        # Input for duplicate targets test
+        t1 = SiderealTargetFactory.create()
+        t1.name = 'OGLE-2023-BLG-0363'
+        t1.ra = 270.771375
+        t1.dec = -29.73827777777778
+        t2 = SiderealTargetFactory.create()
+        t2.name = 'MOA-2023-BLG-123'
+        t2.ra = 270.771375
+        t2.dec = -29.73827777777778
+        self.duplicates = [t1, t2]
+
     def test_match_cone_search(self):
         for target in self.target_coordinates:
             print('Searching on target coordinates for ' + target[2] + ' ' + str(target[0]) + ' ' + str(target[1]))
@@ -33,3 +46,11 @@ class TestMergeExtraParams(TestCase):
                 self.radius)
 
             assert(len(nearby_targets) > 0)
+
+    def test_match_duplicates(self):
+        print(settings)
+        t1 = self.duplicates[0]
+        t1.save()
+        t2 = self.duplicates[1]
+        with self.assertRaises(ValidationError):
+            t2.save()
