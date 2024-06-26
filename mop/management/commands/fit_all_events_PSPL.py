@@ -23,7 +23,7 @@ class Command(BaseCommand):
         logger.info('FIT_ALL_EVENTS: Running fit_all_events_PSPL')
 
         # Create a QuerySet which allows us to lock DB rows to avoid clashes
-        target_list = Target.objects.select_for_update(skip_locked=True).filter(
+        target_list = Target.objects.filter(
             name__icontains=options['name_search_term'],
             classification__icontains='Microlensing'
         )
