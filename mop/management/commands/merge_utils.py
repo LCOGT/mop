@@ -179,8 +179,12 @@ def fetch_param_values(primary_extras, matching_extras, search_key):
 
 def fetch_custom_attributes(primary_target, matching_targets, search_key):
 
-    primary_value = getattr(primary_target, search_key)
-    matching_values = [getattr(t, search_key) for t in matching_targets]
+    if search_key != 'fit_covariance':
+        primary_value = getattr(primary_target, search_key)
+        matching_values = [getattr(t, search_key) for t in matching_targets]
+    else:
+        primary_value = primary_target.load_fit_covariance()
+        matching_values = [t.load_fit_covariance() for t in matching_targets]
 
     return primary_value, matching_values
 
@@ -196,13 +200,9 @@ def merge_extra_params(primary_target, matching_targets):
     Returns:
         update_params dict     Set of merged extra_params
     """
-    custom_params = get_custom_params()
-
     # Holding dictionary for merged parameter values that need updating.  Initialize with the values
     # for the primary target
-    update_params = {}
-    for key in custom_params:
-        update_params[key] = getattr(primary_target, key)
+    update_params = primary_target.get_target_extras()
 
     # Merge boolean keywords
     param_list = ['alive', 'interferometry_candidate', 'YSO', 'QSO', 'galaxy']
@@ -223,93 +223,6 @@ def merge_extra_params(primary_target, matching_targets):
     update_params['Category'] = merge_classification(primary_value, matching_values)
 
     return update_params
-
-def get_custom_params():
-    """List of the custom parameters for a MicrolensingTarget"""
-
-    param_list = [
-        'alive',
-        'classification',
-        'category',
-        'observing_mode',
-        'sky_location',
-        't0',
-        't0_error',
-        'u0',
-        'u0_error',
-        'tE',
-        'tE_error',
-        'piEN',
-        'piEN_error',
-        'piEE',
-        'piEE_error',
-        'rho',
-        'rho_error',
-        's',
-        's_error',
-        'q',
-        'q_error',
-        'alpha',
-        'alpha_error',
-        'source_magnitude',
-        'source_mag_error',
-        'blend_magnitude',
-        'blend_mag_error',
-        'baseline_magnitude',
-        'baseline_mag_error',
-        'gaia_source_id',
-        'gmag',
-        'gmag_error',
-        'rpmag',
-        'rpmag_error',
-        'bpmag',
-        'bpmag_error',
-        'bprp',
-        'bprp_error',
-        'reddening_bprp',
-        'extinction_g',
-        'distance',
-        'teff',
-        'logg',
-        'metallicity',
-        'ruwe',
-        'fit_covariance',
-        'tap_priority',
-        'tap_priority_error',
-        'tap_priority_longte',
-        'tap_priority_longte_error',
-        'interferometry_mode',
-        'interferometry_guide_star',
-        'interferometry_candidate',
-        'spectras',
-        'last_fit',
-        'chi2',
-        'red_chi2',
-        'ks_test',
-        'sw_test',
-        'ad_test',
-        'latest_data_hjd',
-        'latest_data_utc',
-        'mag_now',
-        'mag_now_passband',
-        'mag_peak_J',
-        'mag_peak_J_error',
-        'mag_peak_H',
-        'mag_peak_H_error',
-        'mag_peak_K',
-        'mag_peak_K_error',
-        'mag_base_J',
-        'mag_base_H',
-        'mag_base_K',
-        'interferometry_interval',
-        'YSO',
-        'QSO',
-        'galaxy',
-        'TNS_name',
-        'TNS_class'
-    ]
-
-    return param_list
 
 def merge_names(primary_target, matching_targets):
     """

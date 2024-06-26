@@ -389,13 +389,6 @@ class TestMergeExtraParams(TestCase):
         assert(result == 'Microlensing stellar/planet')
 
     def test_merge_extra_params(self):
-        # The inputs to this function need to be QuerySets rather than dictionaries
-        #primary_extras = TargetExtra.objects.prefetch_related('target').filter(
-        #    target=self.primary_target
-        #)
-        #matching_extras = [TargetExtra.objects.prefetch_related('target').filter(
-        #    target=t
-        #) for t in self.matching_targets]
 
         primary_target = self.primary_target
         primary_extras = {
@@ -480,9 +473,7 @@ class TestMergeExtraParams(TestCase):
             if key != 'fit_covariance':
                 assert(str(result[key]) == str(value))
             else:
-                data = json.loads(result[key])
-                data = np.array(data)
-                np.testing.assert_allclose(data, value, rtol=1e-2)
+                np.testing.assert_allclose(result[key], value, rtol=1e-2)
 
     def test_merge_names(self):
         aliases = TargetName.objects.filter(target=self.primary_target)
