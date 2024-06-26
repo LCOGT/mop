@@ -19,14 +19,14 @@ def fetch_alive_events_outside_HCZ(with_atomic=True):
         ts = Target.objects.select_for_update(skip_locked=True).filter(
             classification__icontains='Microlensing',
             alive=True,
-            sky_location__icontains='Outsize HCZ'
+            sky_location__icontains='Outside HCZ'
         )
 
     else:
         ts = Target.objects.filter(
             classification__icontains='Microlensing',
             alive=True,
-            sky_location__icontains='Outsize HCZ'
+            sky_location__icontains='Outside HCZ'
         )
 
     logger.info('queryTools: Selected ' + str(ts.count()) + ' alive microlensing events outside the HCZ')

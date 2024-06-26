@@ -33,7 +33,7 @@ class Command(BaseCommand):
                         pass
                     sky_location = 'In HCZ'
                 else:
-                    sky_location = 'Outsize HCZ'
+                    sky_location = 'Outside HCZ'
 
                     try:
                         if 'True' in target.extra_fields.alive:
