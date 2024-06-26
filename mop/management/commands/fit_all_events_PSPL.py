@@ -20,31 +20,29 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        with transaction.atomic():
+        logger.info('FIT_ALL_EVENTS: Running fit_all_events_PSPL')
 
-            logger.info('FIT_ALL_EVENTS: Running fit_all_events_PSPL')
+        # Create a QuerySet which allows us to lock DB rows to avoid clashes
+        target_list = Target.objects.select_for_update(skip_locked=True).filter(
+            name__icontains=options['name_search_term'],
+            classification__icontains='Microlensing'
+        )
 
-            # Create a QuerySet which allows us to lock DB rows to avoid clashes
-            target_list = Target.objects.select_for_update(skip_locked=True).filter(
-                name__icontains=options['name_search_term'],
-                classification__icontains='Microlensing'
-            )
+        logger.info('FIT_ALL_EVENTS: Found ' + str(target_list.count()) + ' targets to fit')
 
-            logger.info('FIT_ALL_EVENTS: Found ' + str(target_list.count()) + ' targets to fit')
+        datums = ReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
+        logger.info('FIT_ALL_EVENTS: Retrieved photometry for selected targets')
 
-            datums = ReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
-            logger.info('FIT_ALL_EVENTS: Retrieved photometry for selected targets')
+        for i,mulens in enumerate(target_list):
+            logger.info('FIT_ALL_EVENTS: Fitting data for ' + mulens.name + ', '
+                        + str(i) + ' out of ' + str(target_list.count()))
+            mulens.get_reduced_data(datums.filter(target=mulens))
 
-            for i,mulens in enumerate(target_list):
-                logger.info('FIT_ALL_EVENTS: Fitting data for ' + mulens.name + ', '
-                            + str(i) + ' out of ' + str(target_list.count()))
-                mulens.get_reduced_data(datums.filter(target=mulens))
+            try:
+                result = run_fit(mulens)
 
-                try:
-                    result = run_fit(mulens)
-
-                    logger.info('FIT_ALL_EVENTS: Completed modeling of ' + mulens.name)
-                except:
-                    logger.warning('FIT_ALL_EVENTS: Fitting event ' + mulens.name + ' hit an exception')
+                logger.info('FIT_ALL_EVENTS: Completed modeling of ' + mulens.name)
+            except:
+                logger.warning('FIT_ALL_EVENTS: Fitting event ' + mulens.name + ' hit an exception')
 
         logger.info('FIT_ALL_EVENTS: Finished modeling set of targets')
