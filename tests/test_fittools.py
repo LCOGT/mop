@@ -272,7 +272,7 @@ class TestModelingTools(TestCase):
         assert(model_tel.lightcurve_magnitude.colnames == ['time', 'mag', 'err_mag'])
 
 
-def generate_test_ReducedDatums(target, tel_configs):
+def generate_test_ReducedDatums(target, tel_configs, source_name='OGLE'):
     """Method generates a set of ReducedDatums for different telescopes, as is held in the TOM for a
     single target"""
 
@@ -290,7 +290,7 @@ def generate_test_ReducedDatums(target, tel_configs):
             rd, created = ReducedDatum.objects.get_or_create(
                 timestamp=ts.to_datetime(timezone=TimezoneInfo()),
                 value=datum,
-                source_name='OGLE',
+                source_name=source_name,
                 source_location=target.name,
                 data_type='photometry',
                 target=target)

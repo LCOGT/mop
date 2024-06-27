@@ -130,6 +130,7 @@ class OGLEBroker(GenericBroker):
             event = target.name.split('-')[2]+'-'+target.name.split('-')[3]
 
             (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(target)
+            (ogle_last_jd, ogle_last_date) = TAP.TAP_time_last_datapoint(target, source_name='OGLE')
 
             # Only harvest the photometry for the current year's events, since
             # it will not otherwise be updating.  Also check to see if the latest
@@ -137,8 +138,8 @@ class OGLEBroker(GenericBroker):
             # runtime.
             if year == current_year or year == previous_year:
                 photometry = self.read_ogle_lightcurve(target)
-                if t_last_jd and not full_phot:
-                    if photometry[-1][0] > t_last_jd:
+                if ogle_last_jd and not full_phot:
+                    if photometry[-1][0] > ogle_last_jd:
                         status = self.ingest_ogle_photometry(target, photometry)
                         logger.info('OGLE harvester: read and ingested photometry for event '+target.name)
                     else:

@@ -275,15 +275,16 @@ def event_in_HCZ(ra, dec, KMTNet_fields):
 
     return event_in_HCZ
 
-def TAP_time_last_datapoint(target):
+def TAP_time_last_datapoint(target, source_name=None):
     """
     Returns time of the latest datapoint in the lightcurve.  If no photometry for this target is available,
     this function returns a default timestamp for 1995-01-01.  This is done to indicate that any subsequent
     photometry should be considered to be more recent and therefore ingested.
-
-    DEPRECIATED
     """
-    datasets = ReducedDatum.objects.filter(target=target).order_by('timestamp')
+    if not source_name:
+        datasets = ReducedDatum.objects.filter(target=target).order_by('timestamp')
+    else:
+        datasets = ReducedDatum.objects.filter(target=target, source_name__icontains=source_name).order_by('timestamp')
 
     # If there is existing photometry for this object, identify the most recent datapoint
     if datasets.count() > 0:

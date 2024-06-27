@@ -126,12 +126,19 @@ class TestLightcurveData(TestCase):
     def setUp(self):
         st1 = SiderealTargetFactory.create()
         tel_configs = {
-            'I': [2000, 18.0, 0.01,
-                  Time('2023-08-01T00:00:00.0', format='isot'),
-                  TimeDelta(0.25*u.day)],
-            'G': [100, 17.5, 0.005,
-                  Time('2023-08-01T00:00:00.0', format='isot'),
-                  TimeDelta(1.0*u.day)]
+            'OGLE': {
+                    'I': [200, 18.0, 0.01,
+                          Time('2023-08-01T00:00:00.0', format='isot'),
+                          TimeDelta(0.25*u.day)],
+                    'G': [10, 17.5, 0.005,
+                          Time('2023-08-01T00:00:00.0', format='isot'),
+                          TimeDelta(1.0*u.day)]
+            },
+            'MOA': {
+                    'R': [200, 18.0, 0.01,
+                          Time('2023-10-01T00:00:00.0', format='isot'),
+                          TimeDelta(0.25*u.day)],
+            },
         }
 
         self.params = {
@@ -140,18 +147,18 @@ class TestLightcurveData(TestCase):
         }
 
         # Use this configuration to generate some photometry datapoints for testing
-        photometry = generate_test_ReducedDatums(self.params['target'], self.params['tel_configs'])
+        photometry = generate_test_ReducedDatums(self.params['target'], self.params['tel_configs']['OGLE'], source_name='OGLE')
+        photometry2 = generate_test_ReducedDatums(self.params['target'], self.params['tel_configs']['MOA'], source_name='MOA')
 
         # Generate a test lightcurve model
         self.params['lc_model'] = generate_test_lc_model(self.params['target'])
         st1.existing_model = self.params['lc_model']
 
-    @skip("This test is for a depreciated function")
     def test_TAP_time_last_datapoint(self):
         # Retrieve the photometry for the test target.  Note that we retrieve it here rather than
         # pass the photometry array into the test because the DB applies a TimeZone correction
         # which adjusts the datapoints.  So the timestamps of the ReducedDatums are slightly different.
-        photometry = ReducedDatum.objects.filter(target=self.params['target'])
+        photometry = ReducedDatum.objects.filter(target=self.params['target']).order_by('timestamp')
 
         # Review timestamps of generated data
         ts = [Time(rd.timestamp, format='datetime').jd for rd in photometry if rd.data_type == 'photometry']
@@ -177,6 +184,23 @@ class TestLightcurveData(TestCase):
         # This should still return a floating point JD and datetime, but for a much earlier date
         assert (t_last_jd > 2440000.0)
         assert (type(t_last_date) == type(tnow))
+
+        # Now repeat this test for OGLE data only
+        photometry = ReducedDatum.objects.filter(
+            target=self.params['target'], source_name__icontains='OGLE'
+        ).order_by('timestamp')
+
+        # Recalculate the time of last datapoint:
+        ts = [Time(rd.timestamp, format='datetime').jd for rd in photometry if rd.data_type == 'photometry']
+        ts = np.array(ts)
+        idx = np.argsort(ts)
+        expected_t_last = ts.max()
+
+        # Calculate the timestamp of the latest datapoint
+        (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(self.params['target'], source_name='OGLE')
+
+        # Test the correct most-recent timestamp is returned
+        assert (t_last_jd == expected_t_last)
 
     def test_TAP_mag_now(self):
         mag_now = TAP.TAP_mag_now(self.params['target'])
