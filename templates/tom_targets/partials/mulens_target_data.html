@@ -42,6 +42,10 @@
     <dd class="col-sm-6">{{ target.ra|deg_to_sexigesimal:"hms" }}</dd>
     <dt class="col-sm-6">Dec</dt>
     <dd class="col-sm-6">{{ target.dec|deg_to_sexigesimal:"dms" }}</dd>
+    <dt class="col-sm-6">l</dt>
+    <dd class="col-sm-6">{{ target.galactic_lng|floatformat:4 }}&deg;</dd>
+    <dt class="col-sm-6">b</dt>
+    <dd class="col-sm-6">{{ target.galactic_lat|floatformat:4 }}&deg;</dd>
 </dl>
 <dl class="row">
     <dt class="col-sm-6">Alive</dt>
