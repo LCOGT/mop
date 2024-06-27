@@ -9,6 +9,7 @@ from datetime import datetime
 from astropy.time import Time, TimezoneInfo
 from mop.toolbox import TAP, utilities, classifier_tools
 import logging
+from microlensing_targets.match_managers import validators
 
 logger = logging.getLogger(__name__)
 
@@ -112,21 +113,16 @@ class Command(BaseCommand):
             # switched to downloading all Gaia alerts
             # if 'microlensing' in alert['comment']:
 
-            #Create or load
+            # Check for duplication first
             clean_alert = Gaia.to_generic_alert(alert)
-            try:
-               target, created = Target.objects.get_or_create(
-                   name=clean_alert.name,
-                   ra=clean_alert.ra,
-                   dec=clean_alert.dec,
-                   type='SIDEREAL',
-                   epoch=2000
-               )
-            #seems to bug with the ra,dec if exists
-            except:
-                  target, created = Target.objects.get_or_create(name=clean_alert.name)
 
-            if created:
+            target, result = validators.get_or_create_event(
+                clean_alert.name,
+                clean_alert.ra,
+                clean_alert.dec
+            )
+
+            if result == 'new_target':
                 new_alerts.append(target)
 
                 utilities.add_gal_coords(target)

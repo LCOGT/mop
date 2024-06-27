@@ -1,4 +1,5 @@
 import os
+#from django.conf.settings import *
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -125,6 +126,10 @@ HOOKS = {
     'target_post_save': 'tom_common.hooks.target_post_save',
     'observation_change_state': 'tom_common.hooks.observation_change_state',
     'data_product_post_upload': 'tom_dataproducts.hooks.data_product_post_upload'
+}
+
+MATCH_MANAGERS = {
+    "Target": "microlensing_targets.match_managers.matching_event_manager.EventMatchManager"
 }
 
 try:
