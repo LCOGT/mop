@@ -8,7 +8,6 @@ from astropy.coordinates import SkyCoord
 from astroquery.utils.commons import TableList
 from astropy.coordinates import Angle
 
-@skip("")
 class TestGaia(TestCase):
     def setUp(self):
         self.st1 = SiderealTargetFactory.create()
@@ -20,8 +19,6 @@ class TestGaia(TestCase):
                                                          dec=-35.0,
                                                          type='SIDEREAL',
                                                          epoch=2000)
-        print('ST2: ',self.st2)
-        print('ST2 extras: ',self.st2.extra_fields)
 
         self.test_new_events = [
             (('Gaia24bnb', 347.02747, 3.18862),
@@ -31,7 +28,7 @@ class TestGaia(TestCase):
              ('Gaia24bnb', 347.02747, 3.18862),
              'new_target'),
             (('Gaia24bnb', 347.02747, 3.18862),
-             ('Gaia24ccc', 347.027, 3.189),
+             ('Gaia24ccc', 347.027747, 3.18862),
              'existing_target_new_alias'),
         ]
 
@@ -40,7 +37,7 @@ class TestGaia(TestCase):
                        'radius': Angle(0.004, "deg")}
 
     def test_query_gaia_dr3(self):
-        results = gaia.query_gaia_dr3(self.params['target'], radius=self.params['radius'])
+        results = gaia.query_gaia_dr3(self.params['target1'], radius=self.params['radius'])
         assert(type(results) == type(TableList([])))
         assert(len(results) > 0)
         print(results)
@@ -71,7 +68,16 @@ class TestGaia(TestCase):
         for (target1, target2, expected_result) in self.test_new_events:
             t1 = Target.objects.create(name=target1[0], ra=target1[1], dec=target1[2])
 
-            target, result = gaia.ingest_event(target2[0], ra=target2[1], dec=target2[2]
+            target, result = gaia.ingest_event(target2[0], ra=target2[1], dec=target2[2], debug=True)
 
             assert(type(target) == type(t1))
             assert(result == expected_result)
+
+            if result in ['existing_target_exact_name', 'existing_target_new_alias']:
+                assert(target == t1)
+            elif result == 'new_target':
+                assert(target != t1)
+
+            # Clear DB for next test
+            t1.delete()
+            target.delete()

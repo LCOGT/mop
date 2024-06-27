@@ -22,7 +22,7 @@ if __name__ == "__main__":
     os.environ["DJANGO_SETTINGS_MODULE"] = "tests.test_settings"
     django.setup()
     TestRunner = get_runner(settings)
-    test_runner = TestRunner()
+    test_runner = TestRunner(verbosity=1)
     if options.module == 'all':
         failures = test_runner.run_tests(["tests"])
     else:

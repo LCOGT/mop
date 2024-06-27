@@ -5,6 +5,8 @@ from astropy.coordinates import Angle
 import astropy.units as u
 from astropy.coordinates import SkyCoord
 from mop.brokers import gaia as gaia_mop
+from mop.toolbox import TAP, utilities, classifier_tools
+from microlensing_targets.match_managers import validators
 
 #for a given mag computes new error-bar
 #from Gaia DR2 papers, degraded by x10 (N=100 ccds), in log
@@ -90,20 +92,20 @@ def fetch_gaia_dr3_entry(target):
 
         target.save()
 
-def ingest_event(name, ra, dec):
+def ingest_event(name, ra, dec, debug=False):
+
     target, result = validators.get_or_create_event(
         name,
         ra,
-        dec
+        dec,
+        debug=debug
     )
 
     if result == 'new_target':
-        new_alerts.append(target)
-
         utilities.add_gal_coords(target)
         TAP.set_target_sky_location(target)
         classifier_tools.check_known_variable(target)
-        gaia_mop.fetch_gaia_dr3_entry(target)
+        fetch_gaia_dr3_entry(target)
 
         # Set the permissions on the targets so all OMEGA users can see them
         utilities.open_targets_to_OMEGA_team([target])

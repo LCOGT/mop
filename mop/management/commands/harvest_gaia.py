@@ -9,7 +9,6 @@ from datetime import datetime
 from astropy.time import Time, TimezoneInfo
 from mop.toolbox import TAP, utilities, classifier_tools
 import logging
-from microlensing_targets.match_managers import validators
 
 logger = logging.getLogger(__name__)
 
@@ -118,9 +117,11 @@ class Command(BaseCommand):
 
             target, result = gaia_mop.ingest_event(
                 clean_alert.name,
-                clean_alert.ra,
-                clean_alert.dec
+                float(clean_alert.ra),
+                float(clean_alert.dec)
             )
+            if result == 'new_target':
+                new_alerts.append(target)
 
             Gaia.process_reduced_data(target, alert=alert)
             gaia_mop.update_gaia_errors(target)

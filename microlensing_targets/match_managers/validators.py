@@ -54,7 +54,7 @@ def check_target_coordinates_unique(ra, dec, radius=2.0):
     else:
         return True
 
-def get_or_create_event(name, ra, dec, radius=2.0):
+def get_or_create_event(name, ra, dec, radius=2.0, debug=False):
     """
     Function to fetch a matching event from the database if one exists with
     either matching coordinates or a matching name
@@ -64,6 +64,10 @@ def get_or_create_event(name, ra, dec, radius=2.0):
     name_unique = check_target_name_unique(name)
     alias_unique = check_target_alias_unique(name)
     coords_unique = check_target_coordinates_unique(ra, dec, radius=radius)
+    if debug:
+        print('Validating candidate event: name_unique=' + repr(name_unique)
+                    + ' alias_unique=' + repr(alias_unique)
+                    + ' coords_unique=' + repr(coords_unique))
 
     # If no matches are found at all, create a new target
     if name_unique and alias_unique and coords_unique:
