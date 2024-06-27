@@ -126,31 +126,40 @@ class OGLEBroker(GenericBroker):
         logger.info('OGLE harvester: ingesting photometry')
 
         for target in targets:
-            year = target.name.split('-')[1]
-            event = target.name.split('-')[2]+'-'+target.name.split('-')[3]
+            logger.info('OGLE harvester: ingesting photometry for event ' + target.name)
+            try:
+                year = target.name.split('-')[1]
+                event = target.name.split('-')[2]+'-'+target.name.split('-')[3]
 
-            (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(target)
-            (ogle_last_jd, ogle_last_date) = TAP.TAP_time_last_datapoint(target, source_name='OGLE')
+                (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(target)
+                (ogle_last_jd, ogle_last_date) = TAP.TAP_time_last_datapoint(target, source_name='OGLE')
 
-            # Only harvest the photometry for the current year's events, since
-            # it will not otherwise be updating.  Also check to see if the latest
-            # datapoint is more recent than those data already ingested, to minimize
-            # runtime.
-            if year == current_year or year == previous_year:
-                photometry = self.read_ogle_lightcurve(target)
-                if ogle_last_jd and not full_phot:
-                    if photometry[-1][0] > ogle_last_jd:
-                        status = self.ingest_ogle_photometry(target, photometry)
-                        logger.info('OGLE harvester: read and ingested photometry for event '+target.name)
-                    else:
-                        logger.info('OGLE harvester: most recent photometry for event '
-                                    +target.name+' ('+str(photometry[-1][0])+') already ingested')
-                        target.latest_data_hjd = t_last_jd
-                        target.latest_data_utc = t_last_date
-                        target.save()
-                else:
-                    status = self.ingest_ogle_photometry(target, photometry)
-                    logger.info('OGLE harvester: read and ingested photometry for event ' + target.name)
+                # Only harvest the photometry for the current year's events, since
+                # it will not otherwise be updating.  Also check to see if the latest
+                # datapoint is more recent than those data already ingested, to minimize
+                # runtime.
+                if year == current_year or year == previous_year:
+                    try:
+                        photometry = self.read_ogle_lightcurve(target)
+                        if ogle_last_jd and not full_phot:
+                            if photometry[-1][0] > ogle_last_jd:
+                                status = self.ingest_ogle_photometry(target, photometry)
+                                logger.info('OGLE harvester: read and ingested photometry for event '+target.name)
+                            else:
+                                logger.info('OGLE harvester: most recent photometry for event '
+                                            +target.name+' ('+str(photometry[-1][0])+') already ingested')
+                                target.latest_data_hjd = t_last_jd
+                                target.latest_data_utc = t_last_date
+                                target.save()
+                        else:
+                            status = self.ingest_ogle_photometry(target, photometry)
+                            logger.info('OGLE harvester: completed read and ingested photometry for event ' + target.name)
+                    except IndexError:
+                        logger.info('OGLE harvester: WARNING malformed photometry for event '
+                                    + target.name + ', skipping ingest')
+
+            except IndexError:
+                logger.info('OGLE harvester: Encountered malformed target name ' + target.name + ', skipped ingest')
 
         logger.info('OGLE harvester: Completed ingest of photometry')
 
