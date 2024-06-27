@@ -15,6 +15,7 @@ from astropy.time import Time, TimezoneInfo
 import datetime
 from mop.toolbox import logs
 from mop.toolbox import TAP, utilities, classifier_tools
+from microlensing_targets.match_managers import validators
 
 BROKER_URL = 'https://www.massey.ac.nz/~iabond/moa/'
 photometry = "https://www.massey.ac.nz/~iabond/moa/alert2019/fetchtxt.php?path=moa/ephot/"
@@ -64,14 +65,10 @@ class MOABroker(GenericBroker):
                    name = 'MOA-'+event[0]
                    #Create or load
                    self.event_dictionnary[name] = [event[1],event[-2],event[-1]]
-                   coords = [float(event[2]),float(event[3])]
-                   cible = SkyCoord(coords[0],coords[1],unit="deg")
-                   target, created = Target.objects.get_or_create(name=name,ra=cible.ra.degree,dec=cible.dec.degree,
-                                   type='SIDEREAL',epoch=2000)
-                   if created:
-                       utilities.add_gal_coords(target)
-                       TAP.set_target_sky_location(target)
-                       classifier_tools.check_known_variable(target, coord=cible)
+
+                   target, result = self.ingest_event(name, float(event[2]), float(event[3]))
+
+                   if 'new_target' in result:
                        new_targets.append(target)
 
                    list_of_targets.append(target)
@@ -80,6 +77,23 @@ class MOABroker(GenericBroker):
 
         return list_of_targets, new_targets
 
+    def ingest_event(self, name, ra, dec):
+        coords = [float(event[2]), float(event[3])]
+        cible = SkyCoord(coords[0], coords[1], unit="deg")
+
+        target, result = validators.get_or_create_event(
+                    name,
+                    cible.ra.degree,
+                    cible.dec.degree
+                )
+
+        if result == 'new_target':
+            utilities.add_gal_coords(target)
+            TAP.set_target_sky_location(target)
+            classifier_tools.check_known_variable(target, coord=cible)
+            new_targets.append(target)
+
+        return target, result
 
     def find_and_ingest_photometry(self, targets):
 

@@ -23,9 +23,19 @@ class TestOgleBroker(TestCase):
                                 [2459797.53976, 20.256, 0.285, 7.47, 645.0],
                                 [2459798.71855, 20.042, 0.290, 6.56, 1507.0],
                                 [2459804.52573, 20.667, 0.270, 4.91, 691.0]
-                        ])
+                        ]),
+                        'duplicate_events': {
+                            'event_set': {
+                                        'OGLE-2023-BLG-0363': (270.771375, -29.73827777777778),
+                                        'OGLE-2023-BLG-0363': (270.771375, -29.73827777777778),
+                                        'OGLE-2023-BLG-0455': (270.77, -29.737),
+                            },
+                            'unique_events': [
+                                        'OGLE-2023-BLG-0363',
+                                        'OGLE-2023-BLG-0455'
+                                        ]
+                    }
         }
-
     def test_fetch_lens_model_parameters(self):
         broker = ogle.OGLEBroker()
         events = broker.fetch_lens_model_parameters(self.params['years'])
@@ -42,6 +52,12 @@ class TestOgleBroker(TestCase):
         assert(type(target_list) == type([]))
         for target in target_list:
             assert(type(target) == type(test_target))
+
+        (target_list, new_targets) = broker.ingest_events(self.params['duplicate_events']['event_set'])
+        assert(len(new_targets) == len(self.params['duplicate_events']['unique_events']))
+
+        for t in new_targets:
+            assert(t.name in self.params['duplicate_events']['unique_events'])
 
     def test_read_ogle_lightcurve(self):
         test_target = self.generate_test_target()

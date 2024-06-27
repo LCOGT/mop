@@ -16,6 +16,7 @@ import requests
 from astropy.time import Time, TimezoneInfo
 import logging
 from mop.toolbox import TAP, utilities, classifier_tools
+from microlensing_targets.match_managers import validators
 
 logger = logging.getLogger(__name__)
 
@@ -95,10 +96,14 @@ class OGLEBroker(GenericBroker):
 
             if len(qs) == 0:
                 s = SkyCoord(event_params[0], event_params[1], unit=(unit.hourangle, unit.deg), frame='icrs')
-                target, created = Target.objects.get_or_create(name=event_name, ra=s.ra.deg, dec=s.dec.deg,
-                                                           type='SIDEREAL', epoch=2000)
-                if created:
-                    target.save()
+
+                target, result = validators.get_or_create_event(
+                    event_name,
+                    s.ra.deg,
+                    s.dec.deg
+                )
+
+                if result == 'new_target':
                     utilities.add_gal_coords(target)
                     TAP.set_target_sky_location(target)
                     classifier_tools.check_known_variable(target, coord=s)

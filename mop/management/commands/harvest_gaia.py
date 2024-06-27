@@ -116,22 +116,11 @@ class Command(BaseCommand):
             # Check for duplication first
             clean_alert = Gaia.to_generic_alert(alert)
 
-            target, result = validators.get_or_create_event(
+            target, result = gaia_mop.ingest_event(
                 clean_alert.name,
                 clean_alert.ra,
                 clean_alert.dec
             )
-
-            if result == 'new_target':
-                new_alerts.append(target)
-
-                utilities.add_gal_coords(target)
-                TAP.set_target_sky_location(target)
-                classifier_tools.check_known_variable(target)
-                gaia_mop.fetch_gaia_dr3_entry(target)
-
-                # Set the permissions on the targets so all OMEGA users can see them
-                utilities.open_targets_to_OMEGA_team([target])
 
             Gaia.process_reduced_data(target, alert=alert)
             gaia_mop.update_gaia_errors(target)
