@@ -61,25 +61,27 @@ class MOABroker(GenericBroker):
 
             for event in events[0:]:
 
-                   event = event.decode("utf-8").split(' ')
-                   name = 'MOA-'+event[0]
-                   #Create or load
-                   self.event_dictionnary[name] = [event[1],event[-2],event[-1]]
+                event = event.decode("utf-8").split(' ')
+                name = 'MOA-'+event[0]
+                #Create or load
 
-                   target, result = self.ingest_event(name, float(event[2]), float(event[3]))
+                target, result = self.ingest_event(name, float(event[2]), float(event[3]))
 
-                   if 'new_target' in result:
-                       new_targets.append(target)
+                # This needs to store the name of the target it refers to, rather than
+                # the input name, in case that is an alias for duplicate events
+                self.event_dictionnary[target.name] = [event[1],event[-2],event[-1]]
 
-                   list_of_targets.append(target)
+                if 'new_target' in result:
+                   new_targets.append(target)
+
+                list_of_targets.append(target)
 
         logs.stop_log(log)
 
         return list_of_targets, new_targets
 
     def ingest_event(self, name, ra, dec):
-        coords = [float(event[2]), float(event[3])]
-        cible = SkyCoord(coords[0], coords[1], unit="deg")
+        cible = SkyCoord(ra, dec, unit="deg")
 
         target, result = validators.get_or_create_event(
                     name,
@@ -91,7 +93,6 @@ class MOABroker(GenericBroker):
             utilities.add_gal_coords(target)
             TAP.set_target_sky_location(target)
             classifier_tools.check_known_variable(target, coord=cible)
-            new_targets.append(target)
 
         return target, result
 
@@ -106,7 +107,6 @@ class MOABroker(GenericBroker):
 
             year = target.name.split('-')[1]
             event = self.event_dictionnary[target.name][0]
-
 
             url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/fetchtxt.php?path=moa/ephot/phot-'+event+'.dat' )
             lines = urllib.request.urlopen(url_file_path).readlines()

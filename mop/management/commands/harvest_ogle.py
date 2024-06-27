@@ -12,6 +12,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('years', help='years you want to harvest, separated by ,')
         parser.add_argument('events', help='name of a specific event, all or an integer number')
+        parser.add_argument('--phot', help='Force ingest of full photometry [optional]: True or False')
 
     def handle(self, *args, **options):
         logger.info('Starting run of OGLE event harvester')
@@ -24,6 +25,9 @@ class Command(BaseCommand):
             year_list = options['years'].split(',')
         else:
             year_list = [options['years']]
+        full_phot = False
+        if options['phot']:
+            full_phot = True
 
         # If a number of events to select is given, make a list of all available events;
         # the random selection is applied later.  If a specific event name is given, fetch data for that event only
@@ -43,7 +47,7 @@ class Command(BaseCommand):
             selected_targets = Ogle.sort_target_list(list_of_targets)
             logger.info('Ingesting data from '+str(len(selected_targets))+' selected targets')
 
-        Ogle.find_and_ingest_photometry(selected_targets)
+        Ogle.find_and_ingest_photometry(selected_targets, full_phot=full_phot)
 
         logger.info('Harvesting Gaia photometry for new OGLE targets')
         for target in new_targets:
