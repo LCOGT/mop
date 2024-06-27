@@ -26,14 +26,12 @@ class TestOgleBroker(TestCase):
                         ]),
                         'duplicate_events': {
                             'event_set': {
-                                        'OGLE-2023-BLG-0363': (270.771375, -29.73827777777778),
-                                        'OGLE-2023-BLG-0363': (270.771375, -29.73827777777778),
-                                        'OGLE-2023-BLG-0455': (270.77, -29.737),
+                                        'OGLE-2023-BLG-0363': ('18:03:05.130', '-29:44:17.80'),
+                                        'OGLE-2023-BLG-0363': ('18:03:05.130', '-29:44:17.80'),
+                                        'MOA-2023-BLG-123': ('18:03:05.130', '-29:44:17.0'),
+                                        'OGLE-2024-GD-0010': ('16:11:10.910', '-54:51:22.00')
                             },
-                            'unique_events': [
-                                        'OGLE-2023-BLG-0363',
-                                        'OGLE-2023-BLG-0455'
-                                        ]
+                            'unique_events': ['OGLE-2023-BLG-0363', 'OGLE-2024-GD-0010']
                     }
         }
     def test_fetch_lens_model_parameters(self):
@@ -53,9 +51,8 @@ class TestOgleBroker(TestCase):
         for target in target_list:
             assert(type(target) == type(test_target))
 
-        (target_list, new_targets) = broker.ingest_events(self.params['duplicate_events']['event_set'])
+        (target_list, new_targets) = broker.ingest_events(self.params['duplicate_events']['event_set'], debug=True)
         assert(len(new_targets) == len(self.params['duplicate_events']['unique_events']))
-
         for t in new_targets:
             assert(t.name in self.params['duplicate_events']['unique_events'])
 

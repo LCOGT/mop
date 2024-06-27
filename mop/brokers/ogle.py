@@ -83,7 +83,7 @@ class OGLEBroker(GenericBroker):
 
         return events
 
-    def ingest_events(self, ogle_events):
+    def ingest_events(self, ogle_events, debug=False):
         """Function to ingest the targets into the TOM database"""
         logger.info('OGLE harvester: ingesting events')
 
@@ -100,7 +100,8 @@ class OGLEBroker(GenericBroker):
                 target, result = validators.get_or_create_event(
                     event_name,
                     s.ra.deg,
-                    s.dec.deg
+                    s.dec.deg,
+                    debug=debug
                 )
 
                 if result == 'new_target':

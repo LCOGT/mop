@@ -92,7 +92,7 @@ def get_or_create_event(name, ra, dec, radius=2.0, debug=False):
         tn = TargetName.objects.get(name=name)
         t = Target.objects.get(pk=tn.target_id)
         created = False
-        logger.info('Matched Target by alias name ' + t.name + ', pk=' + str(t.pk))
+        logger.info('Matched Target ' + name + ' by alias to ' + t.name + ', pk=' + str(t.pk))
         return t, 'existing_target_existing_alias'
 
     # If a match is found in coordinates but not name, check to see if there is an alias
@@ -102,6 +102,6 @@ def get_or_create_event(name, ra, dec, radius=2.0, debug=False):
         t = qs[0]
         tn = TargetName.objects.create(target=t, name=name)
         created = 'existing_target_new_alias'
-        logger.info('Matched Target by coordinates, ' + t.name + ', pk=' + str(t.pk)
+        logger.info('Matched Target ' + name + ' by coordinates to ' + t.name + ', pk=' + str(t.pk)
                     + ' created new alias ' + tn.name)
         return t, created
