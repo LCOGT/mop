@@ -1,5 +1,6 @@
 from django.test import TestCase
 from tom_targets.tests.factories import SiderealTargetFactory
+from tom_targets.models import TargetName, Target
 import json
 import numpy as np
 from datetime import datetime
@@ -152,3 +153,47 @@ class TestParameterLoad(TestCase):
             else:
                 assert(result[par] == value).all()
 
+class TestNameHandling(TestCase):
+    """Class of tests for target name handling, including for duplicated detections"""
+
+    def setUp(self):
+        self.t1 = Target.objects.create(
+                        name = 'Gaia23cqg',
+                        ra = 223.61302,
+                        dec = 51.40936
+        )
+
+        self.t2 = Target.objects.create(
+                    name = 'OGLE-2023-BLG-0363',
+                    ra = 270.771375,
+                    dec = -29.73827778
+        )
+
+        tn = TargetName.objects.create(target=self.t2, name = 'MOA-2023-BLG-123')
+
+        self.expected_results = {
+            self.t1: [{
+                'survey': 'Gaia',
+                'survey_name': 'Gaia23cqg'
+            }],
+            self.t2: [
+                {
+                    'survey': 'OGLE',
+                    'survey_name': 'OGLE-2023-BLG-0363'
+                },
+                {
+                    'survey': 'MOA',
+                    'survey_name': 'MOA-2023-BLG-123'
+                },
+                {
+                    'survey': 'Gaia',
+                    'survey_name': None
+                },
+            ]
+        }
+    def test_get_target_name_survey(self):
+
+        for t, test_params in self.expected_results.items():
+            for test_case in test_params:
+                result = t.get_target_name_survey(test_case['survey'])
+                assert (result == test_case['survey_name'])

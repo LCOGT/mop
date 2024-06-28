@@ -131,33 +131,6 @@ def fetch_priority_targets(priority_threshold, event_type='stellar'):
 
     # First fetch a list of TargetExtra entries where the priority exceeds the threshold.
     # This returns a list of Target pk interger values.
-    # ts1 = TargetExtra.objects.prefetch_related('target').filter(
-    #     key=priority_key, float_value__gt=priority_threshold
-    # ).exclude(
-    #     value=np.nan
-    # ).exclude(
-    #     value__exact=''
-    # ).exclude(
-    #     value__exact='None'
-    # )
-    # ts2 = TargetExtra.objects.prefetch_related('target').filter(
-    #     key='Sky_location', value__icontains='Outside HCZ'
-    # )
-    # ts3 = TargetExtra.objects.prefetch_related('target').filter(
-    #     key='Classification', value__icontains='Microlensing'
-    # )
-    # ts4 = TargetExtra.objects.prefetch_related('target').filter(
-    #     key='YSO', value=False
-    # )
-    # ts5 = TargetExtra.objects.prefetch_related('target').filter(
-    #     key='QSO', value=False
-    # )
-    # ts6 = TargetExtra.objects.prefetch_related('target').filter(
-    #     key='galaxy', value=False
-    # )
-    # ts7 = TargetExtra.objects.prefetch_related('target').filter(
-    #     key='Alive', value=True
-    # )
 
     # With the custom Targets model we can search directly on the Target table,
     # but note that this doesn't exclude Nan or None values
@@ -170,7 +143,7 @@ def fetch_priority_targets(priority_threshold, event_type='stellar'):
             YSO=True,
             QSO=True,
             galaxy=True,
-            alive=False
+            alive=False,
         )
     else:
         ts = Target.objects.filter(
@@ -181,40 +154,16 @@ def fetch_priority_targets(priority_threshold, event_type='stellar'):
             YSO=True,
             QSO=True,
             galaxy=True,
-            alive=False
+            alive=False,
         )
 
-    # logger.info('QueryTools: Got ' + str(ts1.count()) + ' targets above priority threshold, '
-    #       + str(ts2.count()) + ' targets outside the HCZ, '
-    #       + str(ts3.count()) + ' targets classified as microlensing, '
-    #       + str(ts4.count()) + ' targets not YSOs, '
-    #       + str(ts5.count()) + ' targets not QSOs, '
-    #       + str(ts6.count()) + ' targets not galaxies, '
-    #       + str(ts7.count()) + ' targets that are currently Alive')
     logger.info('queryTools: Got ' + str(ts.count()) + ' priority alive events outside the HCZ')
+    for t in ts:
+        logger.info(t.name + ' ' + str(t.tap_priority) + ' ' + str(type(t.tap_priority))
+                    + str(t.tap_priority_longte) + ' ' + str(type(t.tap_priority_longte)))
+        if np.isnan(t.tap_priority):
+            logger.info('NaN detected')
 
-    # Find the intersection of the target sets:
-    # targets1 = [x.target for x in ts1]
-    # targets2 = [x.target for x in ts2]
-    # targets3 = [x.target for x in ts3]
-    # targets4 = [x.target for x in ts4]
-    # targets5 = [x.target for x in ts5]
-    # targets6 = [x.target for x in ts6]
-    # targets7 = [x.target for x in ts7]
-
-    # target_list = list(set(targets1).intersection(
-    #     set(targets2)
-    # ).intersection(
-    #     set(targets3)
-    # ).intersection(
-    #     set(targets4)
-    # ).intersection(
-    #     set(targets5)
-    # ).intersection(
-    #     set(targets6)
-    # ).intersection(
-    #     set(targets7)
-    # ))
     target_list = list(set(ts))
     logger.info('QueryTools: identified ' + str(len(target_list)) + ' targets')
 

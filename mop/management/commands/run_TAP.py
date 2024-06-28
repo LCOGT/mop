@@ -121,7 +121,7 @@ class Command(BaseCommand):
                         # If not available, assume a default 30d period to encourage observations
                         t_last = mulens.last_observation
                         if not t_last:
-                            t_last = Time.now(jd) - TimeDelta(days=30.0)
+                            t_last = Time.now().jd - TimeDelta(days=30.0)
                         logger.info('runTAP: Last datapoint: ' + str(t_last))
 
                         mag_now = TAP.TAP_mag_now(mulens)

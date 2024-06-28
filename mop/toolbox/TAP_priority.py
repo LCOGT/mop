@@ -44,6 +44,10 @@ def TAP_planet_priority_error(time_now, t0_pspl, u0_pspl, tE_pspl, covariance):
     light curve magnification.
     """
 
+    # Catch invalid input
+    if len(covariance) == 0 or np.isnan(t0_pspl) or np.isnan(u0_pspl) or np.isnan(tE_pspl):
+        return 0.0
+
     usqr = u0_pspl**2 + ((time_now - t0_pspl) / tE_pspl)**2
 
     dpsipdu = -8*(usqr+2)/(usqr*(usqr+4)**1.5)
@@ -53,12 +57,18 @@ def TAP_planet_priority_error(time_now, t0_pspl, u0_pspl, tE_pspl, covariance):
     dUduo = u0_pspl/ usqr**0.5
     dUdtE = -(time_now - t0_pspl) ** 2 / (tE_pspl ** 3 * usqr**0.5)
 
+    print(covariance, dpsipdu, dUdto, dUdtE, dUduo)
     Jacob = np.zeros(len(covariance))
     Jacob[0] = dpsipdu*dUdto
     Jacob[1] = dpsipdu*dUduo
     Jacob[2] = dpsipdu*dUdtE
 
     error_psip = np.dot(Jacob.T,np.dot(covariance,Jacob))**0.5
+
+    # Intercept NaN values and set them to zero as NaN entries
+    # are non-retrievable from the DB
+    if np.isnan(error_psip):
+        error_psip = 0.0
 
     return error_psip #/ (calculate_exptime_omega_sdss_i(mag) + 60.)
 
@@ -73,11 +83,22 @@ def TAP_planet_priority(time_now, t0_pspl, u0_pspl, tE_pspl):
     60 seconds and also return the current Paczynski
     light curve magnification.
     """
+
+    # Catch invalid input
+    if np.isnan(t0_pspl) or np.isnan(u0_pspl) or np.isnan(tE_pspl) \
+            or t0_pspl == 0.0 or tE_pspl == 0.0:
+        return 0.0
+
     usqr = u0_pspl**2 + ((time_now - t0_pspl) / tE_pspl)**2
     pspl_deno = (usqr * (usqr + 4.))**0.5
     if pspl_deno < 1e-10:
         pspl_deno = 10000.
     psip = 4.0 / (pspl_deno) - 2.0 / (usqr + 2.0 + pspl_deno)
+
+    # Intercept NaN values and set them to zero as NaN entries
+    # are non-retrievable from the DB
+    if np.isnan(psip):
+        psip = 0.0
 
     return psip
 
@@ -100,6 +121,10 @@ def TAP_long_event_priority(t_now, t_last, t_E, t_E_base = 75.):
 
     :return: priority of the long microlensing event
     """
+
+    # Catch invalid input
+    if np.isnan(t_E) or t_E == 0.0:
+        return 0.0
 
     if (np.isnan(t_E)):
         # t_E may hit the fit bounds. This means, the fit was
@@ -124,6 +149,11 @@ def TAP_long_event_priority(t_now, t_last, t_E, t_E_base = 75.):
         # if (delta_t > 10.):
         #     psi *= 10.
 
+    # Intercept NaN values and set them to zero as NaN entries
+    # are non-retrievable from the DB
+    if np.isnan(psi):
+        psi = 0.0
+
     return psi
 
 def TAP_long_event_priority_error(t_E, covariance, t_E_base = 75.):
@@ -138,12 +168,21 @@ def TAP_long_event_priority_error(t_E, covariance, t_E_base = 75.):
     :return: error of the priority of the long microlensing event.
     """
 
+    # Catch invalid input
+    if len(covariance) == 0 or np.isnan(t_E):
+        return 0.0
+
     if(np.isnan(t_E)):
         err_psi = 0.
     else:
         # Simple derevative
         err_t_E = np.sqrt(covariance[2,2])
         err_psi = 10. *  err_t_E / t_E_base
+
+    # Intercept NaN values and set them to zero as NaN entries
+    # are non-retrievable from the DB
+    if np.isnan(err_psi):
+        err_psi = 0.0
 
     return err_psi
 

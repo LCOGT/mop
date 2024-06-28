@@ -166,18 +166,27 @@ class OGLEBroker(GenericBroker):
     def read_ogle_lightcurve(self, target):
         """Method to read the OGLE lightcurve via HTTP"""
 
-        year = target.name.split('-')[1]
-        event = target.name.split('-')[2] + '-' + target.name.split('-')[3]
-
-        lc_file_url = os.path.join(BROKER_URL, year, event.lower(), 'phot.dat')
-
+        ogle_name = target.get_target_name_survey('OGLE')
         photometry = []
 
-        response = requests.request('GET', lc_file_url)
-        if response.status_code == 200:
-            for line in response.iter_lines():
-                entries = str(line).replace('\n','').replace("b'",'').replace("'",'').split()
-                photometry.append( [float(x) for x in entries] )
+        if ogle_name:
+            year = ogle_name.split('-')[1]
+            event = ogle_name.split('-')[2] + '-' + ogle_name.split('-')[3]
+
+            lc_file_url = os.path.join(BROKER_URL, year, event.lower(), 'phot.dat')
+
+            response = requests.request('GET', lc_file_url)
+            if response.status_code == 200:
+                for line in response.iter_lines():
+                    entries = str(line).replace('\n','').replace("b'",'').replace("'",'').split()
+                    photometry.append( [float(x) for x in entries] )
+
+            logger.info('OGLE harvester: read and ingested photometry for event ' + target.name
+                        + ' from file ' + os.path.join(event.lower(), 'phot.dat'))
+
+        else:
+            logger.info('OGLE Harvester WARNING: No OGLE name available for target '
+                        + target.name + ' so cannot find lightcurve to ingest')
 
         return np.array(photometry)
 

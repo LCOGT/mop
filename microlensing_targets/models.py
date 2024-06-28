@@ -111,6 +111,32 @@ class MicrolensingTarget(BaseTarget):
         for name in qs:
             self.targetnames.append(name.name)
 
+    def get_target_name_survey(self, survey):
+        """
+        Method to identify the name for the current Target from a specific survey.
+        Returns None if the survey has not detected the Target and hence there would be no name.
+        Input:
+            survey  str     Identifier used in Target names to distinguish detections from that survey, e.g.
+                            'Gaia' or 'OGLE'
+
+        Returns
+            survey_name str Name string from the survey or None
+        """
+
+        survey_name = None
+
+        # Check the primary name for the survey identifier
+        if survey in self.name:
+            survey_name = self.name
+
+        # If not, check the aliases for the survey identifier:
+        else:
+            for tn in self.aliases.all():
+                if survey in tn.name:
+                    survey_name = tn.name
+
+        return survey_name
+
     def get_target_extras(self):
         """Method to return a dictionary of the custom parameters and their values,
         handling the proper loading of the fit covariance"""
@@ -244,7 +270,11 @@ class MicrolensingTarget(BaseTarget):
                     payload = json.dumps(model_params['fit_covariance'].tolist())
                     data = {'covariance': payload}
                 else:
-                    data = model_params[key]
+                    # Intercept NaN values as these are not well supported by Django FloatFields
+                    if np.isnan(model_params[key]):
+                        data = 0.0
+                    else:
+                        data = model_params[key]
                 setattr(self, key, data)
         self.save()
 
