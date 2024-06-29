@@ -157,13 +157,6 @@ def fetch_priority_targets(priority_threshold, event_type='stellar'):
             alive=False,
         )
 
-    logger.info('queryTools: Got ' + str(ts.count()) + ' priority alive events outside the HCZ')
-    for t in ts:
-        logger.info(t.name + ' ' + str(t.tap_priority) + ' ' + str(type(t.tap_priority))
-                    + str(t.tap_priority_longte) + ' ' + str(type(t.tap_priority_longte)))
-        if np.isnan(t.tap_priority):
-            logger.info('NaN detected')
-
     target_list = list(set(ts))
     logger.info('QueryTools: identified ' + str(len(target_list)) + ' targets')
 
