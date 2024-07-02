@@ -8,7 +8,7 @@ gunicornTimeout: 300
 # CronJob: Fit Need Events XX
 # Selects the first available alive event to model
 fitneedevents:
-  enabled: false
+  enabled: true
   # Run every 4 hours
   schedule: "30 2,6,10,14,18,22 * * *"
   # maximum execution time: 4 hours - 10 minutes == 14400 seconds - 600 seconds == 13800 seconds

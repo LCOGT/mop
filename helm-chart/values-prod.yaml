@@ -67,7 +67,7 @@ ingress:
 # CronJob: Fit Need Events
 # ACTIVE
 fitneedevents:
-  enabled: false
+  enabled: true
   # Run in parallel across 6 Nodes (Machines) until all jobs are finished
   # Overruled: do not parallelize
   parallelism: 1
