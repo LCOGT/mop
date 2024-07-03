@@ -96,13 +96,19 @@ def extract_obs_request_info(result):
     obs_info['instrument_type'] = result['requests'][0]['configurations'][0]['instrument_type']
     obs_info['state'] = result['state']
 
+    type_spectro = ['LAMP_FLAT', 'ARC', 'SPECTRUM']
+
     for request in result['requests']:
         for config in request['configurations']:
-            if 'instrument_configs' in config.keys():
-                for inst_conf in config['instrument_configs']:
-                    obs_info['filters'].append(inst_conf['optical_elements']['filter'])
-                    obs_info['exposure_times'].append(inst_conf['exposure_time'])
-                    obs_info['exposure_counts'].append(inst_conf['exposure_count'])
+            if any(x in config['type'] for x in type_spectro):
+                # Put here missing code for getting spectroscopic config
+                pass
+            elif 'EXPOSE' in config['type']:
+                if 'instrument_configs' in config.keys():
+                    for inst_conf in config['instrument_configs']:
+                        obs_info['filters'].append(inst_conf['optical_elements']['filter'])
+                        obs_info['exposure_times'].append(inst_conf['exposure_time'])
+                        obs_info['exposure_counts'].append(inst_conf['exposure_count'])
 
     return obs_info
 
