@@ -19,7 +19,7 @@ fitneedevents:
   # default to non-parallel operation (multi-CPU within one Node)
   cores: 1
   # run with cutoff of 3 hours ago before running a new fit
-  runEvery: 3
+  runEvery: 24
   # CPU/Memory resource requests/limits
   resources: {}
 

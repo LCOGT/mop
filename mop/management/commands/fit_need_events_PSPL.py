@@ -106,6 +106,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
+        # Configuration
+        # Cap maximum allowed number of events to fit to avoid massive model fit processes
+        # that trigger the OOMKiller, and trigger endless recycling of the fitting process
+        max_nevents = 100
+
         with transaction.atomic():
 
             t1 = datetime.datetime.utcnow()
@@ -119,6 +124,9 @@ class Command(BaseCommand):
                         + str(ts.count()) + ' alive microlensing events last modeled before '
                         + repr(options['run_every']) + 'hrs ago')
             target_list = list(set(ts))
+            if len(target_list) > max_nevents:
+                target_list = target_list[0:max_nevents]
+                logger.info('FIT_NEED_EVENTS: Capped number of models to fit at ' + str(max_nevents))
 
             utilities.checkpoint()
 
