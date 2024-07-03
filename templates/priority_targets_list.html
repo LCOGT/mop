@@ -11,7 +11,9 @@
     {% current_timestamp %}
     <h3>Priority Targets</h3>
 <p>This page lists targets assigned a high priority as either a stellar or a long-tE event.  Targets are excluded
-if they have a non-microlensing classification, or are flagged as a known galaxy, YSO etc. </p>
+if they have a non-microlensing classification, or are flagged as a known galaxy, YSO etc.
+<br>Tagets marked in beige are less than 5 days before the predicted peak of brightness.
+<br>Targets with underlined name in bold are currently observed.</p>
     <div class="row">
         <div class="col">
             <h4>Stellar/planetary Targets</h4>
@@ -32,8 +34,16 @@ if they have a non-microlensing classification, or are flagged as a known galaxy
                 </thead>
                 <tbody>
             {% for target in stellar_targets %}
-                <tr>
-                    <td><a href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                {% if target.t0_now_diff > 0 and target.t0_now_diff < 5%}
+                     <tr style="background-color:#E4D6AC">
+                {% else %}
+                     <tr style="background-color: #ffffff">
+                {% endif %}
+                {% if target.observed == True %}
+                     <td><a style="font-weight:bold; text-decoration: underline; color: #175184" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                {% else %}
+                     <td><a style="color: #175184" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                {% endif %}
                     <td>{{target.t0}}&#8723;{{target.t0_error}}</td>
                     <td>{{target.u0}}&#8723;{{target.u0_error}}</td>
                     <td>{{target.tE}}&#8723;{{target.tE_error}}</td>
@@ -64,8 +74,16 @@ if they have a non-microlensing classification, or are flagged as a known galaxy
                 </thead>
                 <tbody>
             {% for target in bh_targets %}
-                <tr>
-                    <td><a href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                {% if target.t0_now_diff > 0 and target.t0_now_diff < 5 %}
+                     <tr style="background-color:#E4D6AC">
+                {% else %}
+                     <tr style="background-color: #ffffff">
+                {% endif %}
+                {% if target.observed == True %}
+                     <td><a style="font-weight:bold; text-decoration: underline; color: #175184" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                {% else %}
+                     <td><a style="color: #175184" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                {% endif %}
                     <td>{{target.t0}}&#8723;{{target.t0_error}}</td>
                     <td>{{target.u0}}&#8723;{{target.u0_error}}</td>
                     <td>{{target.tE}}&#8723;{{target.tE_error}}</td>

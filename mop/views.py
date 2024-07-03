@@ -24,6 +24,7 @@ from django.views.generic.list import ListView
 import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+from astropy.time import Time
 import logging
 
 logger = logging.getLogger(__name__)
@@ -171,6 +172,7 @@ class ActiveObsView(ListView):
         pending_obs_list = []
         for target, obs_info in pending_obs.items():
             for config in obs_info:
+                print(config)
                 config['target'] = target
                 config['filters'] = ','.join(config['filters'])
                 config['exposure_times'] = ','.join([str(x) for x in config['exposure_times']])
@@ -241,6 +243,9 @@ class PriorityTargetsView(ListView):
             qs_stars = querytools.fetch_priority_targets(10.0, 'stellar')
             qs_bh = querytools.fetch_priority_targets(10.0, 'long_tE')
 
+            #Check observed targets
+            obs_targets = self.get_observed_targets_data()
+
             logger.info('Priority querysets initially find ' \
                         + str(len(qs_stars)) + ' stellar candidate events and ' \
                         + str(len(qs_bh)) + ' BH candidate events')
@@ -251,8 +256,8 @@ class PriorityTargetsView(ListView):
             # Repackage the two lists to extract the parameters to display in the table.
             # This also checks to see if a Target is alive and not flagged as a known
             # variable before including it
-            context['stellar_targets'] = self.extract_target_parameters(qs_stars, 'stellar')
-            context['bh_targets'] = self.extract_target_parameters(qs_bh, 'bh')
+            context['stellar_targets'] = self.extract_target_parameters(qs_stars, 'stellar', obs_targets)
+            context['bh_targets'] = self.extract_target_parameters(qs_bh, 'bh', obs_targets)
 
             logger.info('After filtering priority targets, returning '\
                         + str(len(context['stellar_targets'])) + ' stellar candidate events and '\
@@ -269,7 +274,7 @@ class PriorityTargetsView(ListView):
 
         return context
 
-    def extract_target_parameters(self, targetset, target_category):
+    def extract_target_parameters(self, targetset, target_category, obs_targets):
         t1 = datetime.utcnow()
         logger.info('PRIORITYTARGETS started extract at ' + str(t1))
         utilities.checkpoint()
@@ -315,6 +320,13 @@ class PriorityTargetsView(ListView):
                     except:
                         pass
 
+            time_now = Time(datetime.now()).jd - 2460000.0
+            target_info['t0_now_diff'] = time_now - target_info['t0']
+            if(target_info['name'] in obs_targets):
+                target_info['observed'] = True
+            else:
+                target_info['observed'] = False
+
             target_data.append(target_info)
             priority.append(target_info['priority'])
 
@@ -332,6 +344,27 @@ class PriorityTargetsView(ListView):
         utilities.checkpoint()
 
         return sorted_targets
+
+    def get_observed_targets_data(self, *args, **kwargs):
+        """Method to retrieve names of targets which have a request in MOP in last 7 days.
+
+        Returns:
+            observed     list    List of names of observed targets
+        """
+        if self.request.user.is_authenticated:
+            # Retrieve a list of pending observations from the LCO Portal
+            response = fetch_all_lco_requestgroups()
+            pending_obs = parse_lco_requestgroups(response, short_form=False, pending_only=False)
+
+            obs_targets = []
+            for obs in pending_obs:
+                for row in pending_obs[obs]:
+                    state = row['state']
+                    exposures = len(row['exposure_counts'])
+                    if state != 'CANCELED' and exposures > 0:
+                        obs_targets.append(obs)
+        return obs_targets
+
 
 class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
     """
