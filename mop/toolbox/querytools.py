@@ -210,8 +210,8 @@ def get_targetlist_alive_events(targetlist_name='all'):
     # Options include 'all' targets, in which case we fetch all alive microlensing events
     target_set = fetch_alive_events_outside_HCZ(with_atomic=False)
     if targetlist_name != 'all':
-        targets = TargetList.objects.get(id=targetlist_name)
-        targets = targets.targets.all()
+        tl = TargetList.objects.get(pk=targetlist_name)
+        targets = [Target.objects.get(pk=x.pk) for x in tl.targets.all()]
 
         target_set = list(set(target_set).intersection(set(targets)))
 
