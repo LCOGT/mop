@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class MicrolensingTarget(BaseTarget):
     """
     Customized Target model including attributes relating the observation and modeling of microlensing events
+    Some parameters allowed to be blank
     """
 
     # Microlensing-specific fields
