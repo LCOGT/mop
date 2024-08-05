@@ -36,7 +36,7 @@ def mop_pylima_model(mulens):
         'pylima_model_products': pylima_model_products
     }
 
-@register.inclusion_tag('tom_dataproducts/partials/photometry_for_target.html')
+@register.inclusion_tag('tom_dataproducts/partials/mop_photometry_for_target.html')
 def mop_photometry(mulens):
     """
     Renders a photometric plot for a target.

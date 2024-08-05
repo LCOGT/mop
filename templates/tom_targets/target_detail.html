@@ -47,7 +47,7 @@
       {% mulens_target_data target request %}
       {% recent_photometry object limit=3 %}
       {% if object.type == 'SIDEREAL' %}
-        {% aladin object %}
+        {% aladin_finderchart object %}
       {% endif %}
     </div>
   </div>
@@ -108,7 +108,7 @@
         {% endif %}
         {% if user.is_authenticated %}
           <hr>
-          {% query_forced_photometry object %}
+          {% query_single_target_data_service object %}
           <hr>
         {% endif %}
         {% dataproduct_list_for_target object %}
