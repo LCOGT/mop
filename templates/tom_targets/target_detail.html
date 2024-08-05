@@ -1,10 +1,37 @@
 {% extends 'tom_common/base.html' %}
-{% load comments bootstrap4 tom_common_extras targets_extras observation_extras dataproduct_extras static cache dataproduct_extras mop_extras %}
+{% load comments bootstrap4 tom_common_extras targets_extras observation_extras dataproduct_extras static cache mop_extras %}
 {% block title %}Target {{ object.name }}{% endblock %}
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_targets/css/main.css' %}">
 {% endblock %}
 {% block content %}
+<script>
+  // Function to update the URL.
+  const updateUrlWithTab = (tabId) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tabId);
+    history.replaceState({}, document.title, url.toString());
+  };
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Listen for tab changes.
+    document.querySelectorAll('#tabs .nav-link').forEach(tab => {
+      tab.addEventListener('click', function() {
+        updateUrlWithTab(this.id.replace('-tab', ''));
+      });
+    });
+
+    // Initial tab selection from URL.
+    const tabQuery = new URL(window.location.href).searchParams.get('tab');
+    if (tabQuery) {
+      const activeTab = '#' + tabQuery;
+      const tabElement = document.querySelector(`a[href="${activeTab}"]`);
+      if (tabElement) {
+        tabElement.click();
+      }
+    }
+  });
+</script>
 {% current_timestamp %}
 <div class="row">
   <div class="col-md-3">
@@ -15,14 +42,13 @@
         {{ object.future_observations|length }} upcoming observation{{ object.future_observations|pluralize }}
       </div>
       {% endif %}
-
-      <!--<a href="http://aladin.unistra.fr/AladinLite/?target={{ target.ra }} {{ target.dec }}&fov=0.05&survey=P%2FDSS2%2Fcolor">Aladin Finding Chart</a>-->
-
-      <br><br>
-
+      {% target_unknown_statuses object %}
+      {% target_buttons object %}
       {% mulens_target_data target request %}
-      {% aladin object %}
-
+      {% recent_photometry object limit=3 %}
+      {% if object.type == 'SIDEREAL' %}
+        {% aladin object %}
+      {% endif %}
     </div>
   </div>
   <div class="col-md-7">
@@ -60,20 +86,31 @@
         <h4>Observe</h4>
         {% observing_buttons object %}
         <hr/>
+        {% observationtemplate_run object %}
+        <hr/>
         <h4>Plan</h4>
         {% if object.type == 'SIDEREAL' %}
             {% target_plan %}
+            {% moon_distance object %}
         {% elif target.type == 'NON_SIDEREAL' %}
             <p>Airmass plotting for non-sidereal targets is not currently supported. If you would like to add this functionality, please check out the <a href="https://github.com/TOMToolkit/tom_nonsidereal_airmass" target="_blank">non-sidereal airmass plugin.</a></p>
         {% endif %}
       </div>
       <div class="tab-pane" id="observations">
+        {% existing_observation_form object %}
         <h4>Observations</h4>
         <a href="{% url 'targets:detail' pk=target.id %}?update_status=True" title="Update status of observations for target" class="btn btn-primary">Update Observations Status</a>
         {% observation_list object %}
       </div>
       <div class="tab-pane" id="manage-data">
-        {% upload_dataproduct object %}
+        {% if user.is_authenticated %}
+          {% upload_dataproduct object %}
+        {% endif %}
+        {% if user.is_authenticated %}
+          <hr>
+          {% query_forced_photometry object %}
+          <hr>
+        {% endif %}
         {% dataproduct_list_for_target object %}
       </div>
       <div class="tab-pane" id="manage-groups">
@@ -81,6 +118,7 @@
       </div>
       <div class="tab-pane in active" id="photometry">
         {% mop_photometry target %}
+        {% get_photometry_data object %}
       </div>
       <div class="tab-pane" id="spectroscopy">
         {% spectroscopy_for_target target %}
