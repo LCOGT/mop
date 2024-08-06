@@ -108,7 +108,7 @@ class MOABroker(GenericBroker):
                 year = target.name.split('-')[1]
                 event = self.event_dictionnary[target.name][0]
             except:
-                tn = TargetName.objects.get(name=name)
+                tn = TargetName.objects.get(name=target.name)
 
                 print('ERROR ON TARGET NAME: '+repr(target.name))
                 print(tn)
