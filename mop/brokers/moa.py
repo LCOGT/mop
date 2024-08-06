@@ -104,9 +104,14 @@ class MOABroker(GenericBroker):
 
             datasets = ReducedDatum.objects.filter(target=target)
             existing_time = [Time(i.timestamp).jd for i in datasets if i.data_type == 'photometry']
-
-            year = target.name.split('-')[1]
-            event = self.event_dictionnary[target.name][0]
+            try:
+                year = target.name.split('-')[1]
+                event = self.event_dictionnary[target.name][0]
+            except:
+                tn = TargetName.objects.get(name=name)
+                print('ERROR ON TARGET NAME: '+repr(target.name))
+                print(tn)
+                exit()
 
             url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/fetchtxt.php?path=moa/ephot/phot-'+event+'.dat' )
             lines = urllib.request.urlopen(url_file_path).readlines()
