@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
         utilities.open_targets_to_OMEGA_team(list_of_targets)
 
-        Moa.find_and_ingest_photometry(list_of_targets)
+        Moa.find_and_ingest_photometry(list_of_targets, [options['years']])
         logger.info('MOA HARVESTER: Ingested photometry for MOA targets')
 
         for target in new_targets:

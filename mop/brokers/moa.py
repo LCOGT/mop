@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 from tom_alerts.alerts import GenericBroker, GenericQueryForm
 from django import forms
-from tom_targets.models import Target
+from tom_targets.models import Target, TargetName
 from tom_observations import facility
 from tom_dataproducts.models import ReducedDatum
 
@@ -96,7 +96,7 @@ class MOABroker(GenericBroker):
 
         return target, result
 
-    def find_and_ingest_photometry(self, targets):
+    def find_and_ingest_photometry(self, targets, year_list):
 
 
         time_now = Time(datetime.datetime.now()).jd
@@ -109,6 +109,7 @@ class MOABroker(GenericBroker):
                 event = self.event_dictionnary[target.name][0]
             except:
                 tn = TargetName.objects.get(name=name)
+
                 print('ERROR ON TARGET NAME: '+repr(target.name))
                 print(tn)
                 exit()
