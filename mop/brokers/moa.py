@@ -104,40 +104,34 @@ class MOABroker(GenericBroker):
 
             datasets = ReducedDatum.objects.filter(target=target)
             existing_time = [Time(i.timestamp).jd for i in datasets if i.data_type == 'photometry']
-            try:
-                year = target.name.split('-')[1]
-                event = self.event_dictionnary[target.name][0]
-            except:
-                print('ERROR ON TARGET NAME: '+repr(target.name))
-                tn = TargetName.objects.get(name=target.name)
-                print(tn)
-                exit()
-
-            url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/fetchtxt.php?path=moa/ephot/phot-'+event+'.dat' )
-            lines = urllib.request.urlopen(url_file_path).readlines()
+            event = self.event_dictionnary[target.name][0]
 
             jd = []
             mags = []
             emags = []
+            for year in year_list:
+                #year = target.name.split('-')[1]
+                url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/fetchtxt.php?path=moa/ephot/phot-'+event+'.dat' )
+                lines = urllib.request.urlopen(url_file_path).readlines()
 
-            for line in lines:
+                for line in lines:
 
-                line = line.decode("utf-8").split("  ")
-                try:
+                    line = line.decode("utf-8").split("  ")
+                    try:
 
-                    phot = [i for i in line if i!='']
-                    tot_flux = float(self.event_dictionnary[target.name][2])+float(phot[1])
+                        phot = [i for i in line if i!='']
+                        tot_flux = float(self.event_dictionnary[target.name][2])+float(phot[1])
 
-                    time = float(phot[0])
-                    mag = float(self.event_dictionnary[target.name][1])-2.5*np.log10(tot_flux)
-                    emag = float(phot[2])/tot_flux*2.5/np.log(10)
-                    if (np.isfinite(mag)) & (emag>0) & (emag<1.0) & (time>time_now-2*365.25) & (time not in existing_time): #Harvest the last 2 years
-                        jd.append(time)
-                        mags.append(mag)
-                        emags.append(emag)
+                        time = float(phot[0])
+                        mag = float(self.event_dictionnary[target.name][1])-2.5*np.log10(tot_flux)
+                        emag = float(phot[2])/tot_flux*2.5/np.log(10)
+                        if (np.isfinite(mag)) & (emag>0) & (emag<1.0) & (time>time_now-2*365.25) & (time not in existing_time): #Harvest the last 2 years
+                            jd.append(time)
+                            mags.append(mag)
+                            emags.append(emag)
 
-                except:
-                    pass
+                    except:
+                        pass
 
 
             photometry = np.c_[jd,mags,emags]
