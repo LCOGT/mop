@@ -46,7 +46,8 @@ def run_fit(mulens, cores=0, verbose=False):
     if mulens.ndata > 10:
         (model_params, model_telescope, fit_status) = fittools.fit_pspl_omega2(
             mulens.ra, mulens.dec, mulens.datasets)
-        logger.info('FIT: completed modeling process for ' + mulens.name + ' with status ' + fit_status)
+        logger.info('FIT: completed modeling process for ' + mulens.name
+                    + ' with status ' + repr(fit_status))
 
         t8 = datetime.datetime.utcnow()
         if verbose: utilities.checkpoint()
