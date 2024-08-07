@@ -16,12 +16,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         
         Moa = moa.MOABroker()
-        (list_of_targets, new_targets) = Moa.fetch_alerts('./data/',[options['years']])
+
+        if ',' in options['years']:
+            year_list = options['years'].split(',')
+        else:
+            year_list = [options['years']]
+
+        (list_of_targets, new_targets) = Moa.fetch_alerts('./data/',year_list)
         logger.info('MOA HARVESTER: Found '+str(len(list_of_targets))+' targets')
 
         utilities.open_targets_to_OMEGA_team(list_of_targets)
 
-        Moa.find_and_ingest_photometry(list_of_targets, [options['years']])
+        Moa.find_and_ingest_photometry(list_of_targets, year_list)
         logger.info('MOA HARVESTER: Ingested photometry for MOA targets')
 
         for target in new_targets:
