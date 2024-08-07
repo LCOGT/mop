@@ -109,7 +109,7 @@ class Command(BaseCommand):
                     logger.info('ZTF HARVESTER: Ingested ZTF data for ' + str(target.name))
 
             except:
-                print('Can not connect to IRSA')
+                logger.info('Cannot connect to IRSA')
                 pass
 
 
