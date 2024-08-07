@@ -44,16 +44,16 @@ def run_fit(mulens, cores=0, verbose=False):
         if verbose: logger.info('Time taken chk 3: ' + str(t7 - t6))
 
         if mulens.ndata > 10:
-            (model_params, model_telescope) = fittools.fit_pspl_omega2(
+            (model_params, model_telescope, fit_status) = fittools.fit_pspl_omega2(
                 mulens.ra, mulens.dec, mulens.datasets)
-            logger.info('FIT: completed modeling process for '+mulens.name)
+            logger.info('FIT: completed modeling process for ' + mulens.name + ' with status ' + fit_status)
 
             t8 = datetime.datetime.utcnow()
             if verbose: utilities.checkpoint()
             if verbose: logger.info('Time taken chk 4: ' + str(t8 - t7))
 
             # Store model lightcurve
-            if model_telescope:
+            if model_telescope and fit_status:
                 fittools.store_model_lightcurve(mulens, model_telescope)
                 logger.info('FIT: Stored model lightcurve for event '+mulens.name)
             else:
@@ -65,7 +65,8 @@ def run_fit(mulens, cores=0, verbose=False):
 
             # Determine whether or not an event is still active based on the
             # current time relative to its t0 and tE
-            alive = fittools.check_event_alive(model_params['t0'], model_params['tE'], mulens.last_observation)
+            if fit_status:
+                alive = fittools.check_event_alive(model_params['t0'], model_params['tE'], mulens.last_observation)
             logger.info(mulens.name + ' alive status: ' + repr(alive))
 
             t10 = datetime.datetime.utcnow()
@@ -73,10 +74,11 @@ def run_fit(mulens, cores=0, verbose=False):
             if verbose: logger.info('Time taken chk 6: ' + str(t10 - t9))
 
             # Store model parameters
-            model_params['last_fit'] = Time(datetime.datetime.utcnow()).jd
-            model_params['alive'] = alive
-            mulens.store_model_parameters(model_params)
-            logger.info('FIT: Stored model parameters for event ' + mulens.name)
+            if fit_status:
+                model_params['last_fit'] = Time(datetime.datetime.utcnow()).jd
+                model_params['alive'] = alive
+                mulens.store_model_parameters(model_params)
+                logger.info('FIT: Stored model parameters for event ' + mulens.name)
 
             t11 = datetime.datetime.utcnow()
             if verbose: utilities.checkpoint()
