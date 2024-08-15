@@ -1,3 +1,87 @@
+ <div class="row" style="margin-top: 20px; margin-bottom: 20px; border:1px solid black; overflow: scroll">
+     <div class="col-md-8">
+         <h5>Paczy&#324ski parameters for best-fit model</h5>
+         <div class="col-sm-6">Latest data HJD: {{ target.latest_data_hjd }}</div>
+         <div class="col-sm-6">Latest data UTC: {{ target.latest_data_utc }}</div>
+         <div class="col-sm-6">Latest fit: {{ target.last_fit|floatformat:3 }}</div>
+     </div>
+    <table class="table">
+            <thead>
+                <tr>
+                    <th>t<sub>0</sub> [HJD]</th>
+                    <th>u<sub>0</sub></th>
+                    <th>t<sub>E</sub> [days]</th>
+                    <th>pi<sub>EE</sub></th>
+                    <th>pi<sub>EN</sub></th>
+                    <th>rho</th>
+                    <th>s</th>
+                    <th>q</th>
+                    <th>alpha</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ target.t0|floatformat:3 }}&#8723;</br>
+                        {{ target.t0_error|floatformat:3 }}</td>
+                    <td>{{ target.u0|floatformat:4 }}&#8723;<br/>
+                        {{ target.u0_error|floatformat:4 }}</td>
+                    <td>{{ target.tE|floatformat:3 }}&#8723;<br/>
+                        {{ target.tE_error|floatformat:3 }}</td>
+                    <td>{{ target.piEN|floatformat:3 }}&#8723;<br/>
+                        {{ target.piEN_error|floatformat:3 }}</td>
+                    <td>{{ target.piEE|floatformat:3 }}&#8723;<br/>
+                        {{ target.piEE_error|floatformat:3 }}</td>
+                    <td>{{ target.rho|floatformat:3 }}&#8723;<br/>
+                        {{ target.rho_error|floatformat:3 }}</td>
+                    <td>{{ target.s|floatformat:3 }}&#8723;<br/>
+                        {{ target.s_error|floatformat:3 }}</td>
+                    <td>{{ target.q|floatformat:3 }}&#8723;<br/>
+                        {{ target.q_error|floatformat:3 }}</td>
+                    <td>{{ target.alpha|floatformat:3 }}&#8723;<br/>
+                        {{ target.alpha_error|floatformat:3 }}</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+     <table class="table">
+         <thead>
+            <tr>
+                <th>Source magnitude</th>
+                <th>Blend magnitude</th>
+                <th>Baseline magnitude</th>
+                <th>Current magnitude</th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr>
+                <td>{{ target.source_magnitude }}&#8723;{{ target.source_mag_error }}</td>
+                <td>{{ target.blend_magnitude }}&#8723;{{ target.blend_mag_error }}</td>
+                <td>{{ target.baseline_magnitude }}&#8723;{{ target.baseline_mag_error }}</td>
+                <td>{{ target.mag_now }}</td>
+            </tr>
+         </tbody>
+     </table>
+    <table class="table">
+            <thead>
+                <tr>
+                    <th>chi<sup>2</sup></th>
+                    <th>red_chi<sup>2</sup></th>
+                    <th>KS test</th>
+                    <th>SW test</th>
+                    <th>AD test</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ target.chi2|floatformat:3 }}</td>
+                    <td>{{ target.red_chi2|floatformat:3 }}</td>
+                    <td>{{ target.ks_test }}</td>
+                    <td>{{ target.sw_test }}</td>
+                    <td>{{ target.ad_test }}</td>
+                </tr>
+            </tbody>
+    </table>
+ </div>
 {% if pylima_model_products %}
     <div class="pylima-models-list">
         <h3>Select a pyLIMA model to display</h3>
@@ -10,7 +94,9 @@
         </ul>
     </div>
 {% else %}
-    <p>No pyLIMA Model data products available for this target.</p>
+    <div class="row">
+        <p>No pyLIMA Model data products available for this target.</p>
+    </div>
 {% endif %}
 
 

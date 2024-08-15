@@ -431,6 +431,12 @@ def current_timestamp():
 
     return context
 
+@register.inclusion_tag('tom_targets/partials/mulens_target_banner.html')
+def mulens_target_banner(target):
+    """
+    Display target name and coordinates in a banner across the top of a Target Detail Page
+    """
+    return {'target': target}
 
 @register.inclusion_tag('tom_targets/partials/mulens_target_data.html')
 def mulens_target_data(target, request):

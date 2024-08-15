@@ -32,11 +32,11 @@
     }
   });
 </script>
+{% mulens_target_banner object %}
 {% current_timestamp %}
 <div class="row">
   <div class="col-md-3">
     <div id="target-info">
-      {% target_feature object %}
       {% if object.future_observations %}
       <div class="alert alert-success">
         {{ object.future_observations|length }} upcoming observation{{ object.future_observations|pluralize }}
@@ -45,7 +45,6 @@
       {% target_unknown_statuses object %}
       {% target_buttons object %}
       {% mulens_target_data target request %}
-      {% recent_photometry object limit=3 %}
       {% if object.type == 'SIDEREAL' %}
         {% aladin_finderchart object %}
       {% endif %}
@@ -72,7 +71,7 @@
         <span class="nav-link" data-target="#spectroscopy" data-toggle="tab">Spectroscopy</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-target="#pylima-model" data-toggle="tab">pyLIMA Model</span>
+        <span class="nav-link" data-target="#pylima-model" data-toggle="tab">pyLIMA Results</span>
       </li>
       <li class="nav-item">
         <span class="nav-link" data-target="#interferometry" data-toggle="tab">Interferometry</span>

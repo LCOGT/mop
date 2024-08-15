@@ -1,52 +1,4 @@
 {% load static tom_common_extras targets_extras mop_extras %}
-
-{% if target.sky_location == 'In HCZ' %}
-<h5 style="color: #ffffff; background-color: #690a00">{{ target.sky_location }}</h5>
-{% else %}
-<h5 style="color: #016603">{{ target.sky_location }}</h5>
-{% endif %}
-
-{% if target.YSO == 'True' %}
-    <h5 style="color: #016603">Known YSO</h5>
-{% endif %}
-{% if target.QSO == 'True' %}
-    <h5 style="color: #016603">Known QSO</h5>
-{% endif %}
-{% if target.galaxy == 'True' %}
-    <h5 style="color: #016603">Known galaxy</h5>
-{% endif %}
-
-{% if target.TNS_name != 'None' and target.TNS_class != 'None' %}
-    <h5 style="color: #016603">TNS: {{ target.TNS_name }} {{ target.TNS_class }}</h5>
-{% elif target.TNS_name != 'None' and target.TNS_class == 'None' %}
-    <h5 style="color: #016603">TNS name: {{ target.TNS_name }}</h5>
-{% elif target.TNS_name == 'None' and target.TNS_class != 'None' %}
-    <h5 style="color: #016603">TNS class: {{ target.TNS_class }}</h5>
-{% endif %}
-
-<a href="{% url 'tom_targets:update' pk=target.id %}" title="Update Target parameters manually" class="btn  btn-primary">Update Target</a>
-<a href="{% url 'tom_targets:delete' pk=target.id %}" title="Delete Target" class="btn  btn-warning">Delete Target</a>
-<br><br>
-<a href="{% url 'tom_targets:detail' pk=target.id %}?fit_event=True" title="Fit Target (PSPL with parallax)" class="btn  btn-primary">Fit Target</a>
-<a href="{% url 'tom_targets:detail' pk=target.id %}?tap_event=True" title="Run TAP, then submit observations if needed" class="btn  btn-primary">Run TAP</a>
-<dl class="row">
-  {% for target_name in target.names %}
-    {% if forloop.first %}
-      <dt class="col-sm-6">Names</dt>
-    {% else %}
-      <dt class="col-sm-6">&nbsp;</dt>
-    {% endif %}
-    <dd class="col-sm-6">{{ target_name }}</dd>
-  {% endfor %}
-    <dt class="col-sm-6">RA</dt>
-    <dd class="col-sm-6">{{ target.ra|deg_to_sexigesimal:"hms" }}</dd>
-    <dt class="col-sm-6">Dec</dt>
-    <dd class="col-sm-6">{{ target.dec|deg_to_sexigesimal:"dms" }}</dd>
-    <dt class="col-sm-6">l</dt>
-    <dd class="col-sm-6">{{ target.galactic_lng|floatformat:4 }}&deg;</dd>
-    <dt class="col-sm-6">b</dt>
-    <dd class="col-sm-6">{{ target.galactic_lat|floatformat:4 }}&deg;</dd>
-</dl>
 <dl class="row">
     <dt class="col-sm-6">Alive</dt>
     <dd class="col-sm-6">{{ target.alive }}</dd>
@@ -58,52 +10,20 @@
     <dd class="col-sm-6">{{ target.tap_priority_longte }}&#8723;{{ target.tap_priority_longte_error }}</dd>
     <dt class="col-sm-6">Interferometry candidate</dt>
     <dd class="col-sm-6">{{ target.interferometry_candidate }}</dd>
+    <dt class="col-sm-6">{{ 't0' }}</dt>
+    <dd class="col-sm-6">{{ target.t0 }}&#8723;{{ target.t0_error }}</dd>
+    <dt class="col-sm-6">{{ 'u0' }}</dt>
+    <dd class="col-sm-6">{{ target.u0 }}&#8723;{{ target.u0_error }}</dd>
+    <dt class="col-sm-6">{{ 'tE' }}</dt>
+    <dd class="col-sm-6">{{ target.tE }}&#8723;{{ target.tE_error }}</dd>
+    <dt class="col-sm-6">{{ 'Mag now' }}</dt>
+    <dd class="col-sm-6">{{ target.mag_now }}</dd>
+    <dt class="col-sm-6">{{ 'Latest data HJD' }}</dt>
+    <dd class="col-sm-6">{{ target.latest_data_hjd }}</dd>
+    <dt class="col-sm-6">{{ 'Latest data UTC' }}</dt>
+    <dd class="col-sm-6">{{ target.latest_data_utc }}</dd>
+    <dt class="col-sm-6">{{ 'Last fit JD' }}</dt>
+    <dd class="col-sm-6">{{ target.last_fit }}</dd>
 </dl>
 
 {% classification_form %}
-
-<font size="5"><b>Paczy&#324ski parameters</b></font>
-<dl class="row">
-<dt class="col-sm-6">{{ 't0' }}</dt>
-<dd class="col-sm-6">{{ target.t0 }}&#8723;{{ target.t0_error }}</dd>
-<dt class="col-sm-6">{{ 'u0' }}</dt>
-<dd class="col-sm-6">{{ target.u0 }}&#8723;{{ target.u0_error }}</dd>
-<dt class="col-sm-6">{{ 'tE' }}</dt>
-<dd class="col-sm-6">{{ target.tE }}&#8723;{{ target.tE_error }}</dd>
-<dt class="col-sm-6">{{ 'piEN' }}</dt>
-<dd class="col-sm-6">{{ target.piEN }}&#8723;{{ target.piEN_error }}</dd>
-<dt class="col-sm-6">{{ 'piEE' }}</dt>
-<dd class="col-sm-6">{{ target.piEE }}&#8723;{{ target.piEE_error }}</dd>
-<dt class="col-sm-6">{{ 'rho' }}</dt>
-<dd class="col-sm-6">{{ target.rho }}&#8723;{{ target.rho_error }}</dd>
-<dt class="col-sm-6">{{ 's' }}</dt>
-<dd class="col-sm-6">{{ target.s }}&#8723;{{ target.s_error }}</dd>
-<dt class="col-sm-6">{{ 'q' }}</dt>
-<dd class="col-sm-6">{{ target.q }}&#8723;{{ target.q_error }}</dd>
-<dt class="col-sm-6">{{ 'alpha' }}</dt>
-<dd class="col-sm-6">{{ target.alpha }}&#8723;{{ target.alpha_error }}</dd>
-<dt class="col-sm-6">{{ 'Source magnitude' }}</dt>
-<dd class="col-sm-6">{{ target.source_magnitude }}&#8723;{{ target.source_mag_error }}</dd>
-<dt class="col-sm-6">{{ 'Blend_magnitude' }}</dt>
-<dd class="col-sm-6">{{ target.blend_magnitude }}&#8723;{{ target.blend_mag_error }}</dd>
-<dt class="col-sm-6">{{ 'Baseline magnitude' }}</dt>
-<dd class="col-sm-6">{{ target.baseline_magnitude }}&#8723;{{ target.baseline_mag_error }}</dd>
-<dt class="col-sm-6">{{ 'Mag now' }}</dt>
-<dd class="col-sm-6">{{ target.mag_now }}</dd>
-<dt class="col-sm-6">{{ 'chi2' }}</dt>
-<dd class="col-sm-6">{{ target.chi2 }}</dd>
-<dt class="col-sm-6">{{ 'red chi2' }}</dt>
-<dd class="col-sm-6">{{ target.red_chi2 }}</dd>
-<dt class="col-sm-6">{{ 'KS test' }}</dt>
-<dd class="col-sm-6">{{ target.ks_test }}</dd>
-<dt class="col-sm-6">{{ 'SW test' }}</dt>
-<dd class="col-sm-6">{{ target.sw_test }}</dd>
-<dt class="col-sm-6">{{ 'AD test' }}</dt>
-<dd class="col-sm-6">{{ target.ad_test }}</dd>
-<dt class="col-sm-6">{{ 'Latest data HJD' }}</dt>
-<dd class="col-sm-6">{{ target.latest_data_hjd }}</dd>
-<dt class="col-sm-6">{{ 'Latest data UTC' }}</dt>
-<dd class="col-sm-6">{{ target.latest_data_utc }}</dd>
-<dt class="col-sm-6">{{ 'Last fit JD' }}</dt>
-<dd class="col-sm-6">{{ target.last_fit }}</dd>
-</dl>

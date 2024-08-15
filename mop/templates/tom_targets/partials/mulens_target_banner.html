@@ -1,0 +1,48 @@
+<div class="row">
+  <div class="col-sm-6">
+    {% for name in target.names %}
+      {% if forloop.first %}
+        <h5>{{ name }}</h5>
+      {% else %}
+        {{ name }}
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="col-sm-6">
+    <p>RA: {{ target.ra|deg_to_sexigesimal:"hms" }} Dec: {{ target.dec|deg_to_sexigesimal:"dms" }}</p>
+    <p>l: {{ target.galactic_lng|floatformat:4 }}&deg; b: {{ target.galactic_lat|floatformat:4 }}&deg;</p>
+    <p>
+    {% if target.sky_location == 'In HCZ' %}
+      <h5 style="color: #ffffff; background-color: #690a00">{{ target.sky_location }}</h5>
+    {% else %}
+      <h5 style="color: #016603">{{ target.sky_location }}</h5>
+    {% endif %}
+    </p>
+  </div>
+  <div class="col-sm-6">
+    <p>
+    {% if target.YSO == 'True' %}
+      <h5 style="color: #016603">Known YSO</h5>
+    {% endif %}
+    </p>
+    <p>
+    {% if target.QSO == 'True' %}
+      <h5 style="color: #016603">Known QSO</h5>
+    {% endif %}
+    </p>
+    <p>
+    {% if target.galaxy == 'True' %}
+      <h5 style="color: #016603">Known galaxy</h5>
+    {% endif %}
+    </p>
+    <p>
+      {% if target.TNS_name != 'None' and target.TNS_class != 'None' %}
+        <h5 style="color: #016603">TNS: {{ target.TNS_name }} {{ target.TNS_class }}</h5>
+      {% elif target.TNS_name != 'None' and target.TNS_class == 'None' %}
+        <h5 style="color: #016603">TNS name: {{ target.TNS_name }}</h5>
+      {% elif target.TNS_name == 'None' and target.TNS_class != 'None' %}
+        <h5 style="color: #016603">TNS class: {{ target.TNS_class }}</h5>
+      {% endif %}
+    </p>
+  </div>
+</div>
