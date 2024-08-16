@@ -10,6 +10,9 @@ from tom_observations.views import ObservationFilter
 from tom_observations.utils import get_sidereal_visibility
 from mop.toolbox.TAP import set_target_sky_location
 from django.views.generic.edit import FormView
+from django_filters.views import FilterView
+from guardian.mixins import PermissionListMixin
+from tom_targets.filters import TargetFilter
 from django.contrib import messages
 from mop.toolbox.obs_control import fetch_all_lco_requestgroups, parse_lco_requestgroups
 from mop.forms import TargetClassificationForm, TargetSelectionForm
@@ -469,3 +472,36 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
             messages.add_message(request, messages.WARNING, "Invalid date given")
 
         return self.render_to_response(context)
+
+
+class TargetListView(PermissionListMixin, FilterView):
+    """
+    View for listing targets in the TOM. Only shows targets that the user is authorized to view. Requires authorization.
+    """
+    template_name = 'tom_targets/target_list.html'
+    paginate_by = 25
+    strict = False
+    model = Target
+    filterset_class = TargetFilter
+    # Set app_name for Django-Guardian Permissions in case of Custom Target Model
+    permission_required = f'{Target._meta.app_label}.view_target'
+    ordering = ['-created']
+
+    def get_context_data(self, *args, **kwargs):
+        """
+        Adds the number of targets visible, the available ``TargetList`` objects if the user is authenticated, and
+        the query string to the context object.
+
+        :returns: context dictionary
+        :rtype: dict
+        """
+        context = super().get_context_data(*args, **kwargs)
+        context['target_count'] = context['paginator'].count
+        # hide target grouping list if user not logged in
+        context['groupings'] = (TargetList.objects.all()
+                                if self.request.user.is_authenticated
+                                else TargetList.objects.none())
+        context['query_string'] = self.request.META['QUERY_STRING']
+        print(context['object_list'])
+
+        return context

@@ -4,12 +4,17 @@ body {
   color: #fff;
 }
 
-.navbar {
-    background-color: #000;
-}
-
 .content {
   padding: 3rem 0rem 0rem 0rem;
+}
+
+.card {
+    background-color: #8F8984;
+    color: #000;
+}
+
+a {
+    color: #0d23fc;
 }
 
 .target-banner {
@@ -29,8 +34,9 @@ body {
 }
 
 .target-content {
-    background-color: rgba(143,137,132,0.7);
+    background-color: rgba(143,137,132,1.0);
     color: #000;
     border-radius: 10px;
+    margin: 0rem 0rem 0rem 0rem;
     overflow: scroll;
 }

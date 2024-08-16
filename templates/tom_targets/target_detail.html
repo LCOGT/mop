@@ -35,7 +35,7 @@
 {% mulens_target_banner object %}
 {% current_timestamp %}
 <div class="row">
-  <div class="col-3">
+  <div class="col-4">
     <div class="target-parameters" id="target-info">
       {% if object.future_observations %}
       <div class="alert alert-success">
@@ -78,6 +78,9 @@
       </li>
       <li class="nav-item">
         <span class="nav-link" data-target="#gaia_neighbours" data-toggle="tab">Gaia</span>
+      </li>
+      <li class="nav-item">
+        <span class="nav-link" data-target="#comments" data-toggle="tab">Comments</span>
       </li>
     </ul>
     <div class="tab-content">
@@ -131,6 +134,7 @@
       <div class="tab-pane" id="gaia_neighbours" style="width: 80em">
         {% gaia_neighbours_data target %}
       </div>
+      <div class="tab-pane" id="comments" style="width: 80em">
       {% comments_enabled as comments_are_enabled %}
       <hr/>
       <h5>Comments</h5>
@@ -141,6 +145,7 @@
             {% render_comment_form for object %}
           {% endif %}
         {% endif %}
+        </div>
     </div>
   </div>
 </div>
