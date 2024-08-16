@@ -1,0 +1,36 @@
+body {
+  padding-top: 0rem;
+  background-color: #000;
+  color: #fff;
+}
+
+.navbar {
+    background-color: #000;
+}
+
+.content {
+  padding: 3rem 0rem 0rem 0rem;
+}
+
+.target-banner {
+    width: 100%;
+    margin: 0rem 0rem;
+    padding: 1rem 0rem 0rem 0rem;
+    background-color: #4B4B4B;
+    color: white;
+    justify-content: center;
+}
+
+.target-parameters {
+    background-color: #8F8984;
+    color: #000;
+    border-radius: 10px;
+    overflow: scroll;
+}
+
+.target-content {
+    background-color: rgba(143,137,132,0.7);
+    color: #000;
+    border-radius: 10px;
+    overflow: scroll;
+}

@@ -1,16 +1,17 @@
-<div class="row">
-  <div class="col-sm-6">
+{% load static tom_common_extras targets_extras mop_extras %}
+<div class="row target-banner">
+  <div class="col-sm">
     {% for name in target.names %}
       {% if forloop.first %}
-        <h5>{{ name }}</h5>
+        <h3>{{ name }}</h3>
       {% else %}
-        {{ name }}
+        <h5>{{ name }}</h5>
       {% endif %}
     {% endfor %}
   </div>
-  <div class="col-sm-6">
-    <p>RA: {{ target.ra|deg_to_sexigesimal:"hms" }} Dec: {{ target.dec|deg_to_sexigesimal:"dms" }}</p>
-    <p>l: {{ target.galactic_lng|floatformat:4 }}&deg; b: {{ target.galactic_lat|floatformat:4 }}&deg;</p>
+  <div class="col-sm">
+    <h5>RA: {{ target.ra|deg_to_sexigesimal:"hms" }} Dec: {{ target.dec|deg_to_sexigesimal:"dms" }}</h5>
+    <h5>l: {{ target.galactic_lng|floatformat:4 }}&deg; b: {{ target.galactic_lat|floatformat:4 }}&deg;</h5>
     <p>
     {% if target.sky_location == 'In HCZ' %}
       <h5 style="color: #ffffff; background-color: #690a00">{{ target.sky_location }}</h5>
@@ -19,7 +20,7 @@
     {% endif %}
     </p>
   </div>
-  <div class="col-sm-6">
+  <div class="col-sm">
     <p>
     {% if target.YSO == 'True' %}
       <h5 style="color: #016603">Known YSO</h5>
@@ -42,6 +43,8 @@
         <h5 style="color: #016603">TNS name: {{ target.TNS_name }}</h5>
       {% elif target.TNS_name == 'None' and target.TNS_class != 'None' %}
         <h5 style="color: #016603">TNS class: {{ target.TNS_class }}</h5>
+      {% else %}
+        <h5>No TNS infomation</h5>
       {% endif %}
     </p>
   </div>
