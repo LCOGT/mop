@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_filters',
     'django_gravatar',
+#    'django_dramatiq',
     'rest_framework',
     'rest_framework.authtoken',
     'tom_targets',
@@ -257,7 +258,19 @@ FACILITIES = {
     },
 }
 
-
+SINGLE_TARGET_DATA_SERVICES = {
+    'ATLAS': {
+        'class': 'tom_dataproducts.single_target_data_service.atlas.AtlasForcedPhotometryService',
+        'url': "https://fallingstar-data.com/forcedphot",
+        'api_key': os.getenv('ATLAS_FORCED_PHOTOMETRY_API_KEY', 'your atlas account api token')
+    },
+    'PANSTARRS': {
+        'class': 'tom_dataproducts.single_target_data_service.panstarrs_service.panstarrs.PanstarrsSingleTargetDataService',
+        'url': 'https://catalogs.mast.stsci.edu/api/v0.1/panstarrs',  # MAST Base URL
+        # MAST_API_TOKEN is not required for public data
+        'api_key': os.getenv('MAST_API_TOKEN', 'MAST_API_TOKEN not set')
+    },
+}
 
 # Define the valid data product types for your TOM. Be careful when removing items, as previously valid types will no
 # longer be valid, and may cause issues unless the offending records are modified.
@@ -278,11 +291,15 @@ DATA_PRODUCT_TYPES = {
     'lc_model': ('lc_model', 'Model'),
     'html_file': ('pylima_model', 'pyLIMA Model'),
     'tabular': ('tabular', 'Tabular'),
+    'atlas_photometry': ('atlas_photometry', 'Atlas Photometry'),
+    'panstarrs_photometry': ('panstarrs_photometry', 'PanSTARRS Photometry'),
 }
 
 DATA_PROCESSORS = {
     'photometry': 'mop.processors.photometry_processor.PhotometryProcessor',
     'spectroscopy': 'mop.processors.spectroscopy_processor.SpectroscopyProcessor',
+    'atlas_photometry': 'mop.processors.atlas_processor.AtlasProcessor',
+    'panstarrs_photometry': 'tom_dataproducts.processors.panstarrs_processor.PanstarrsProcessor',
 }
 
 TOM_FACILITY_CLASSES = [
@@ -314,6 +331,21 @@ HARVESTERS = {
         'api_key': os.environ.get('TNS_API_KEY','dummy'),
     }
 }
+
+# Needs "redis://your-redis-service-url:your-redis-port"
+# DRAMATIQ_BROKER = {
+#     "BROKER": "dramatiq.brokers.redis.RedisBroker",
+#     "OPTIONS": {
+#         "url": "redis://127.0.0.1:6379"
+#     },
+#     "MIDDLEWARE": [
+#         "dramatiq.middleware.AgeLimit",
+#         "dramatiq.middleware.TimeLimit",
+#         "dramatiq.middleware.Callbacks",
+#         "dramatiq.middleware.Retries",
+#         "django_dramatiq.middleware.DbConnectionsMiddleware",
+#     ]
+# }
 
 #'tom_antares.antares.AntaresBroker',
 #BROKER_CREDENTIALS = {}
