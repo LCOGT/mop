@@ -41,6 +41,9 @@ postgresql:
   postgresqlUsername: "mop"
   postgresqlPassword: "overridden"
 
+# Increase gunicorn timeout
+gunicornTimeout: 600
+
 # MOP Container CPU/Memory Resource Requests/Limits
 resources:
   requests:
