@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_gravatar',
 #    'django_dramatiq',
+    'django_htmx',
     'rest_framework',
     'rest_framework.authtoken',
     'tom_targets',
@@ -77,6 +78,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tom_common.middleware.ExternalServiceMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
+    'tom_common.middleware.Raise403Middleware',
+    'tom_common.middleware.AuthStrategyMiddleware',
 ]
 
 ROOT_URLCONF = 'mop.urls'

@@ -57,6 +57,7 @@ class AtlasProcessor(DataProcessor):
                          'uJy': entry[3],
                          'duJy': entry[4],
                          'F': entry[5]})
+        print('ATLAS data: ', data)
 
         return data
 

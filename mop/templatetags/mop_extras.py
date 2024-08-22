@@ -59,7 +59,7 @@ def mop_photometry(mulens):
                 array=dataset_values[:,2],
                 visible=True
             )
-        ) for dataset_name, dataset_values in mulens.datasets.items()]
+        ) for dataset_name, dataset_values in mulens.datasets.items() if len(dataset_values) > 0]
 
     layout = go.Layout(
         yaxis=dict(autorange='reversed'),
