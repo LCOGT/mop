@@ -188,6 +188,7 @@ tnsApiKey: ""
 lcoApiKey: ""
 lcoProposalId: ""
 lcoUsername: ""
+atlasApiKey: ""
 
 # AWS Credentials
 # These MUST be overriden in secret configuration file
