@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/2.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
-
+import logging.config
 import os
 import ast
 import tempfile
@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_filters',
     'django_gravatar',
-#    'django_dramatiq',
     'django_htmx',
     'rest_framework',
     'rest_framework.authtoken',
@@ -335,21 +334,6 @@ HARVESTERS = {
         'api_key': os.environ.get('TNS_API_KEY','dummy'),
     }
 }
-
-# Needs "redis://your-redis-service-url:your-redis-port"
-# DRAMATIQ_BROKER = {
-#     "BROKER": "dramatiq.brokers.redis.RedisBroker",
-#     "OPTIONS": {
-#         "url": "redis://127.0.0.1:6379"
-#     },
-#     "MIDDLEWARE": [
-#         "dramatiq.middleware.AgeLimit",
-#         "dramatiq.middleware.TimeLimit",
-#         "dramatiq.middleware.Callbacks",
-#         "dramatiq.middleware.Retries",
-#         "django_dramatiq.middleware.DbConnectionsMiddleware",
-#     ]
-# }
 
 #'tom_antares.antares.AntaresBroker',
 #BROKER_CREDENTIALS = {}
