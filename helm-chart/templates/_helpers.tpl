@@ -122,4 +122,6 @@ build it here and use it everywhere.
   value: {{ .Values.geminiSApiKey | quote }}
 - name: TNS_API_KEY
   value: {{ .Values.tnsApiKey | quote }}
+- name: ATLAS_FORCED_PHOTOMETRY_API_KEY
+  value: {{ .Values.atlasApiKey | quote }}
 {{- end -}}

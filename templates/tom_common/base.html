@@ -1,5 +1,4 @@
-{% load static bootstrap4 %}
-{% load plotly_dash %}
+{% load static bootstrap4 tom_common_extras %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -11,13 +10,14 @@
     {% bootstrap_css %}
     <link rel="stylesheet" href="{% static 'tom_common/css/main.css' %}">
     <link rel="stylesheet" href="{% static 'tom_common/css/custom.css' %}">
-    {% plotly_header %}
     {% block additional_css %}
     {% endblock %}
     <link rel="icon" type="image/x-icon" href="{% static 'tom_common/img/MOP.jpeg' %}" sizes="32x32" />
     <link rel="icon" type="image/x-icon" href="{% static 'tom_common/img/MOP.jpeg' %}" sizes="16x16" />
 
     {% bootstrap_javascript jquery='True' %}
+    <!-- htmx.min.js was downloaded manually and added to the project. see https://htmx.org/docs/#download-a-copy -->
+    <script src="{% static 'tom_common/js/htmx.min.js' %}" defer></script>
 
     <title>MOP | {% block title %}{% endblock %}</title>
   </head>

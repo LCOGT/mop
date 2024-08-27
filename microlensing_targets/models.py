@@ -216,7 +216,12 @@ class MicrolensingTarget(BaseTarget):
                 try:
                     lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], rd.value['error']])
                 except:
-                    lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], 1.0])
+                    # Necessary to handle the datapoints where only a limit is available.
+                    # Skipping these for now
+                    try:
+                        lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], 1.0])
+                    except KeyError:
+                        pass
 
                 datasets[passband] = lc
 

@@ -124,7 +124,7 @@ def fetch_data_for_targetset(target_list, check_need_to_fit=True, fetch_photomet
 
     return target_data
 
-def fetch_priority_targets(priority_threshold, event_type='stellar'):
+def fetch_priority_targets(priority_threshold, event_type='stellar', verbose=True):
     """Function to fetch a list of Targets currently assigned a priority value higher than
     the given threshold.  Different priority keys are specified in the extra_fields and can
     be used as selection keys. """
@@ -136,26 +136,26 @@ def fetch_priority_targets(priority_threshold, event_type='stellar'):
     # but note that this doesn't exclude Nan or None values
     if event_type == 'stellar':
         ts = Target.objects.filter(
-            tap_priority__gt=priority_threshold,
-            sky_location__icontains='Outside HCZ',
-            classification__icontains='Microlensing',
+            Q(tap_priority__gt=priority_threshold)
+            & Q(sky_location__icontains='Outside HCZ')
+            & Q(classification__icontains='Microlensing')
         ).exclude(
-            YSO=True,
-            QSO=True,
-            galaxy=True,
-            alive=False,
+            Q(YSO=True) | Q(QSO=True) | Q(galaxy=True) | Q(alive=False)
         )
     else:
         ts = Target.objects.filter(
-            tap_priority_longte__gt=priority_threshold,
-            sky_location__icontains='Outside HCZ',
-            classification__icontains='Microlensing',
+            Q(tap_priority_longte__gt=priority_threshold)
+            & Q(sky_location__icontains='Outside HCZ')
+            & Q(classification__icontains='Microlensing')
         ).exclude(
-            YSO=True,
-            QSO=True,
-            galaxy=True,
-            alive=False,
+            Q(YSO=True) | Q(QSO=True) | Q(galaxy=True) | Q(alive=False)
         )
+    if verbose:
+        logger.info('QueryTools selected priority ' + event_type + ' targets:')
+        for t in ts:
+            logger.info(t.name + ' ' + repr(t.tap_priority) + ' ' + repr(t.tap_priority_longte)
+                        + ' ' + repr(t.sky_location) + ' ' + repr(t.classification) + ' '
+                        + ' ' + repr(t.YSO) + ' ' + repr(t.QSO) + ' ' + repr(t.galaxy) + ' ' + repr(t.alive))
 
     target_list = list(set(ts))
     logger.info('QueryTools: identified ' + str(len(target_list)) + ' targets')
