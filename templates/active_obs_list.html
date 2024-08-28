@@ -8,17 +8,23 @@
 {% endblock %}
 
 {% block content %}
+<div class="row content">
+    <div class="col">
     {% current_timestamp %}
     <h3>Active Observations List</h3>
     <div class="row">
-        <div class="col">
+        <div class="card">
+          <div class="card-header">
             <h4>Requested Observations</h4>
+          </div>
+            <div class="card-body">
             <p>This page lists the targets requested by run_TAP in the last week.
-                Click on each target to see information on its observations.</p>
-            <table class="table" style="overflow: scroll">
+                Click on each target to go to its target detail page; click on the display link to see information on its observations.</p>
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Target</th>
+                        <th>Observations</th>
                         <th>tE [days]</th>
                         <th>t0 [JD]</th>
                         <th>Current mag</th>
@@ -30,7 +36,8 @@
                 <tbody>
             {% for target in targets %}
                 <tr>
-                    <td><a class="nav-link" data-target="#{{target.name}}" data-toggle="tab">{{target.name}}</a></td>
+                    <td><a href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                    <td><a class="nav-link" data-target="#{{target.name}}" data-toggle="tab">Display</a></td>
                     <td>{{target.tE}}</td>
                     <td>{{target.t0}}</td>
                     <td>{{target.mag_now}}</td>
@@ -82,10 +89,15 @@
             {% endfor %}
             </div>
         </div>
-        <div class="col">
+            </div>
+
+        <div class="card">
+          <div class="card-header">
             <h4>Submitted Observations</h4>
+          </div>
+            <div class="card-body">
             <p>Recent observations in the LCO Observe Portal</p>
-                    <table class="table" style="overflow: scroll">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>Request<br>name</th>
@@ -103,7 +115,7 @@
                             <tr>
                                 <td>{{obs.name}}</td>
                                 <td>{{obs.id}}</td>
-                                <td>{{obs.target}}</td>
+                                <td>{{obs.target}}</a></td>
                                 <td>{{obs.instrument_type}}</td>
                                 <td>{{obs.filters}}</td>
                                 <td>{{obs.exposure_times}}</td>
@@ -115,5 +127,6 @@
                     </table>
         </div>
 </div>
-
+    </div>
+</div>
 {% endblock %}

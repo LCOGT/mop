@@ -1,20 +1,61 @@
 body {
   padding-top: 0rem;
-  background-color: #000;
+  background-color: #313232;
   color: #fff;
 }
 
+.navbar {
+  background-image: url("../img/mop_navbar_grey_bkgd.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #000;
+  color: #fff;
+  height: 60px;
+}
+
+a:link, a:visited, a:hover {
+  color: #fff;
+}
+
+a:hover {
+  color: #00effe;
+}
+
+a:active {
+  color: #fead00;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.nav-link {
+  color: #fff;
+}
+
+.nav-link:active, .nav-item:active {
+  color: #fead00;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* top, right, bottom, left */
 .content {
-  padding: 3rem 0rem 0rem 0rem;
+  padding: 50px 0rem 0rem 10px;
 }
 
 .card {
-    background-color: #8F8984;
-    color: #000;
+  background-color: #191c17;
+  color: #fff;
+  overflow: scroll;
+  border-radius: 10px;
+  margin: 5px;
 }
 
-a {
-    color: #0d23fc;
+.card-header {
+  background-color: #191c17;
+}
+
+.media {
+  background-color: #272626;
 }
 
 .target-banner {
@@ -39,4 +80,51 @@ a {
     border-radius: 10px;
     margin: 0rem 0rem 0rem 0rem;
     overflow: scroll;
+}
+
+table {
+  background-color: #191c17;
+  border: none;
+  margin: 10pt;
+  border: 1pt solid #191c17;
+  border-radius: 10px;
+}
+
+thead {
+  color: #fff;
+  border: 1pt solid #191c17;
+}
+
+tbody {
+  border: 1pt solid #191c17;
+}
+
+tr {
+  border: 1pt solid #191c17;
+}
+
+td, th {
+  border: 1pt solid #191c17;
+  background-color: #272626;
+  color: #fff;
+}
+
+.pagination {
+  background-color: #313232;
+  color: #fff;
+  overflow: scroll;
+}
+
+.pagination a {
+  background-color: #272626;
+  color: #fff;
+}
+
+.pagination a:hover {
+  background-color: #4e4c51;
+  color: #fff;
+}
+
+.warning {
+  color: #fe8300;
 }

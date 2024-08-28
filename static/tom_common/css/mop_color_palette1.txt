@@ -1,0 +1,4 @@
+Navbar background color: #191c17
+Body background color:  #313232
+Inset cards, tables: #272626
+
