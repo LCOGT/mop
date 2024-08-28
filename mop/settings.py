@@ -62,8 +62,6 @@ INSTALLED_APPS = [
     'silk',
     'mop',
     'microlensing_targets',
-    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
-    'dpd_static_support',
 ]
 
 SITE_ID = 1
@@ -79,8 +77,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tom_common.middleware.ExternalServiceMiddleware',
-    'django_plotly_dash.middleware.BaseMiddleware',
-    'django_plotly_dash.middleware.ExternalRedirectionMiddleware',
 ]
 
 ROOT_URLCONF = 'mop.urls'
@@ -449,11 +445,6 @@ TARGETLIST_FIELDS = [
     ('u0', 'float'),
     ('t0', 'float'),
     ('mag_now', 'float')
-]
-
-
-PLOTLY_COMPONENTS = [
-    'dpd_static_support'
 ]
 
 # Define MATCH_MANAGERS here. This is a dictionary that contains a dotted module path to the desired match manager

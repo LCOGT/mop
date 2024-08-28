@@ -16,7 +16,6 @@ Including another URLconf
 from django.urls import path, include
 
 from mop.views import MOPTargetDetailView, ActiveObsView, PriorityTargetsView, TargetFacilitySelectionView
-from mop.apps import targetlist_table_app
 
 urlpatterns = [
     path('targets/<int:pk>/', MOPTargetDetailView.as_view(), name='detail'),
@@ -25,5 +24,4 @@ urlpatterns = [
     path('', include('tom_common.urls')),
     path('silk/', include('silk.urls', namespace='silk')),
     path('targetselection/', TargetFacilitySelectionView.as_view(), name='target-selection'),
-    path('django_plotly_dash/', include('django_plotly_dash.urls')),
 ]

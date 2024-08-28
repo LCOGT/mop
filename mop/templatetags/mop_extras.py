@@ -548,8 +548,3 @@ def get_request_param(request_key, param_key, request, target):
 
     return request_value
 
-def targetlist_table(targets, all_checked=False):
-    """
-    Templatetag to create a customized interactive targetlist table
-    """
-

@@ -1,6 +1,5 @@
 {% extends 'tom_common/base.html' %}
 {% load bootstrap4 targets_extras dataproduct_extras %}
-{% load plotly_dash %}
 {% block title %}Targets{% endblock %}
 {% block content %}
 <div class="row content">
@@ -45,7 +44,7 @@
           <button type="submit" class="btn btn-outline-primary ml-1" name="move">Move</button>
           <button type="submit" class="btn btn-outline-danger ml-1" name="remove">Remove</button>
         </div>
-        {% plotly_app name="TargetlistTable" %}
+        {% target_table object_list %}
       </form>
       </div>
       {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
