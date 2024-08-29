@@ -127,3 +127,17 @@ class CASLEOFacility(BaseManualObservationFacility):
 
     def get_observation_url(self, observation_id):
         return ''
+
+    def update_observation_status(self, observation_id):
+        """
+        This empty method is necessary for the 'update observation status' button in the TOM
+        to work for all stored observations\
+        """
+        pass
+
+    def update_all_observation_statuses(self, target=None):
+        """
+        This empty method is necessary for the 'update observation status' button in the TOM
+        to work for all stored observations\
+        """
+        pass
