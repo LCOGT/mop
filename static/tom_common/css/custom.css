@@ -62,21 +62,22 @@ a:active {
     width: 100%;
     margin: 0rem 0rem;
     padding: 1rem 0rem 0rem 0rem;
-    background-color: #4B4B4B;
+    background-color: #191c17;
     color: white;
     justify-content: center;
 }
 
 .target-parameters {
-    background-color: #8F8984;
-    color: #000;
+    background-color: #272626;
+    padding: 10px 10px 10px 10px;
+    color: #fff;
     border-radius: 10px;
     overflow: scroll;
 }
 
 .target-content {
-    background-color: rgba(143,137,132,1.0);
-    color: #000;
+    background-color: #272626;
+    color: #fff;
     border-radius: 10px;
     margin: 0rem 0rem 0rem 0rem;
     overflow: scroll;
