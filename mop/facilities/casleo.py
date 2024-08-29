@@ -37,12 +37,16 @@ class CASLEOFacility(BaseManualObservationFacility):
 
     name = 'El Leoncito'
     observation_types = [('OBSERVATION', 'Manual Observation')]
+    observation_forms = {
+        'IMAGING': BaseManualObservationForm,
+        'SPECTROSCOPY': BaseManualObservationForm,
+    }
 
     def get_form(self, observation_type):
         """
         This method takes in an observation type and returns the form type that matches it.
         """
-        return BaseManualObservationForm
+        return self.observation_forms.get(observation_type, BaseManualObservationForm)
 
     def submit_observation(self, observation_payload):
         """
