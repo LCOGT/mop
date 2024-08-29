@@ -153,9 +153,11 @@ class ActiveObsView(ListView):
                         target_data = {'name': obs.target.name, 'obs_list': []}
                         t = Target.objects.get(pk=obs.target.pk)
                         if t:
+                            target_data['id'] = t.pk
                             for key in target_keys:
                                 target_data[key] = getattr(t, key)
                         else:
+                            target_data['id'] = None
                             for key in target_keys:
                                 target_data[key] = 'None'
 
