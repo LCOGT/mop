@@ -174,17 +174,22 @@ class ActiveObsView(ListView):
         response = fetch_all_lco_requestgroups()
         pending_obs = parse_lco_requestgroups(response, short_form=False, pending_only=False)
 
-        pending_obs_list = []
+        pending_obs_list = {}
         for target, obs_info in pending_obs.items():
             for config in obs_info:
-                print(config)
-                config['target'] = target
-                config['filters'] = ','.join(config['filters'])
-                config['exposure_times'] = ','.join([str(x) for x in config['exposure_times']])
-                config['exposure_counts'] = ','.join([str(x) for x in config['exposure_counts']])
-                pending_obs_list.append(config)
+                if config['id'] not in pending_obs_list.keys():
+                    config['target'] = target
+                    unique_configs = []
+                    for k,f in enumerate(config['filters']):
+                        if (f,config['exposure_times'][k],config['exposure_counts'][k]) not in unique_configs:
+                            unique_configs.append((f,config['exposure_times'][k],config['exposure_counts'][k]))
+                    config['nvisits'] = str(int(len(config['exposure_times'])/len(unique_configs)))
+                    config['filters'] = ','.join([conf[0] for conf in unique_configs])
+                    config['exposure_times'] = ','.join([str(conf[1]) for conf in unique_configs])
+                    config['exposure_counts'] = ','.join([str(conf[2]) for conf in unique_configs])
+                    pending_obs_list[config['id']] = config
 
-        context['pending_obs'] = pending_obs_list
+        context['pending_obs'] = pending_obs_list.values()
 
         context['query_string'] = self.request.META['QUERY_STRING']
 
