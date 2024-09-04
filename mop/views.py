@@ -183,7 +183,10 @@ class ActiveObsView(ListView):
                     for k,f in enumerate(config['filters']):
                         if (f,config['exposure_times'][k],config['exposure_counts'][k]) not in unique_configs:
                             unique_configs.append((f,config['exposure_times'][k],config['exposure_counts'][k]))
-                    config['nvisits'] = str(int(len(config['exposure_times'])/len(unique_configs)))
+                    if len(unique_configs) > 0 and len(config['exposure_times']) > 0:
+                        config['nvisits'] = str(int(len(config['exposure_times'])/len(unique_configs)))
+                    else:
+                        config['nvisits'] = '0'
                     config['filters'] = ','.join([conf[0] for conf in unique_configs])
                     config['exposure_times'] = ','.join([str(conf[1]) for conf in unique_configs])
                     config['exposure_counts'] = ','.join([str(conf[2]) for conf in unique_configs])
