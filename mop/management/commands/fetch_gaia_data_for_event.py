@@ -25,14 +25,18 @@ class Command(BaseCommand):
                 target_list = [qs[0]]
 
         if len(target_list) > 0:
+
             for j,target in enumerate(target_list):
-                gaia_mop.fetch_gaia_dr3_entry(target, radius=Angle(0.00014, "deg"))
-
-                # This alternative async TAP query is EXTREMELY slow
-                #gaia_mop.query_gaia_tap_service(target, radius=Angle(0.00014, "deg"), row_limit=-1)
-
-                logger.info('Completed fetch of Gaia DR3 data for ' + target.name
+                logger.info('Fetching Gaia DR3 data for ' + target.name
                             + ', ' + str(j) + ' of ' + str(len(target_list)))
+                try:
+                    gaia_mop.fetch_gaia_dr3_entry(target, radius=Angle(0.00014, "deg"))
+                    # This alternative async TAP query is EXTREMELY slow
+                    #gaia_mop.query_gaia_tap_service(target, radius=Angle(0.00014, "deg"), row_limit=-1)
+
+                except ValuerError:
+                    print('-> ANOMALY searching for Gaia data for ' + target.name
+                          + ' RA, Dec=' + repr(target.ra) + ', ' + repr(target.dec))
 
         else:
             logger.info('No targets matching the name ' + options['event'] + ' found')
