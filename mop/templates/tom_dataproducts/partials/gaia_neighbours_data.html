@@ -5,6 +5,62 @@
 </div>
 
 <div class="row" style="border:1px solid black; overflow: scroll">
+        <div class="col-md-8">
+        <h5>Target Data</h5>
+    </div>
+    <br>
+    <p>
+    Gaia Source ID: {{target.gaia_source_id}} (Gaia DR3)
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Distance [pc]</th>
+                <th>Teff [K]</th>
+                <th>log(g)</th>
+                <th>[Fe/H]</th>
+                <th>RUWE</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{target.distance|floatformat:3}}</td>
+                <td>{{target.teff|floatformat:3}}</td>
+                <td>{{target.logg|floatformat:3}}</td>
+                <td>{{target.metallicity|floatformat:3}}</td>
+                <td>{{target.ruwe|floatformat:3}}</td>
+            </tr>
+        </tbody>
+    </table>
+     <table class="table">
+         <thead>
+         <tr>
+             <th>G [mag]</th>
+             <th>BP [mag]</th>
+             <th>RP [mag]</th>
+             <th>BP-RP [mag]</th>
+             <th>J baseline [mag]</th>
+             <th>H baseline [mag]</th>
+             <th>K baseline [mag]</th>
+             <th>Reddening (BP-RP) [mag]</th>
+             <th>Extinction (G) [mag]</th>
+         </tr>
+         </thead>
+         <tbody>
+         <tr>
+             <td>{{target.gmag|floatformat:3}}&#8723;{{target.gmag_error|floatformat:3}}</td>
+             <td>{{target.bpmag|floatformat:3}}&#8723;{{target.bpmag_error|floatformat:3}}</td>
+             <td>{{target.rpmag|floatformat:3}}&#8723;{{target.rpmag_error|floatformat:3}}</td>
+             <td>{{target.bprp|floatformat:3}}&#8723;{{target.bprp_error|floatformat:3}}</td>
+             <td>{{target.mag_base_J|floatformat:3}}</td>
+             <td>{{target.mag_base_H|floatformat:3}}</td>
+             <td>{{target.mag_base_K|floatformat:3}}</td>
+             <td>{{target.reddening_bprp|floatformat:3}}</td>
+             <td>{{target.extinction_g|floatformat:3}}</td>
+             <td></td>
+         </tr>
+         </tbody>
+     </table>
     <div class="col-md-8">
         <h5>Neighbouring stars</h5>
     </div>

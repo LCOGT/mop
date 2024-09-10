@@ -411,6 +411,7 @@ def gaia_neighbours_data(mulens):
                     for i in range(0, nstars, 1) ]
 
     context['neighbours'] = neighbours
+    context['target'] = mulens
 
     t2 = datetime.utcnow()
     logger.info('GAIA NEIGHBOURS took ' + str(t2 - t1))

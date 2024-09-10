@@ -10,7 +10,7 @@
     {% endfor %}
   </div>
   <div class="col-sm">
-    <h5>RA: {{ target.ra|deg_to_sexigesimal:"hms" }} Dec: {{ target.dec|deg_to_sexigesimal:"dms" }}</h5>
+    <h5>RA: {{ target.ra|deg_to_sexigesimal:"hms" }}={{ target.ra|floatformat:5 }}&deg; Dec: {{ target.dec|deg_to_sexigesimal:"dms" }}={{ target.dec|floatformat:5 }}&deg;</h5>
     <h5>l: {{ target.galactic_lng|floatformat:4 }}&deg; b: {{ target.galactic_lat|floatformat:4 }}&deg;</h5>
     <p>
     {% if target.sky_location == 'In HCZ' %}
