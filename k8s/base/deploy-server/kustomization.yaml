@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+metadata: # kpt-merge: /deploy-example
+  name: deploy-server
+  annotations:
+    config.kubernetes.io/local-config: "true"
+    internal.kpt.dev/upstream-identifier: 'kustomize.config.k8s.io|Kustomization|default|deploy-example'
+resources:
+  - ./deploy.yaml
+patches:
+  - target:
+      annotationSelector: internal.kpt.dev/upstream-identifier
+    patch: |-
+      - op: remove
+        path: /metadata/annotations/internal.kpt.dev~1upstream-identifier

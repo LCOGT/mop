@@ -13,4 +13,7 @@ local_settings*
 
 # Any local datafiles
 data/star*csv
-data/*ogle*
+data/*ogle*.devenv
+
+.devenv/
+.pre-commit-config.yaml

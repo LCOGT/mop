@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "mop"
+version = "0.1.0"
+description = "Microlensing Observation Portal"
+authors = ["Your Name <you@example.com>"]
+license = "GPL-3.0-only"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+tomtoolkit = "2.19.5"
+whitenoise = "5.0.1"
+gunicorn = {version = "22.0.0", extras = ["gevent"]}
+psycopg2 = "=2.8.4"
+pylima = "1.9.2"
+django-storages = "^1.14.4"
+boto3 = "^1.35.9"
+lxml = "^4"
+pandas = "^2.2.2"
+shapely = "^2"
+healpy = "^1"
+django-silk = "^5"
+psutil = "^5"
+pika = "^1"
+
+
+[tool.poetry.group.dev.dependencies]
+factory-boy = "2.12.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

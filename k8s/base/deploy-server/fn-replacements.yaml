@@ -1,0 +1,34 @@
+apiVersion: fn.kpt.dev/v1alpha1
+kind: ApplyReplacements
+metadata: # kpt-merge: /deploy-example
+  name: deploy-server
+  annotations:
+    config.kubernetes.io/local-config: "true"
+    internal.kpt.dev/upstream-identifier: 'fn.kpt.dev|ApplyReplacements|default|deploy-example'
+replacements:
+  - source:
+      kind: Deployment
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Kustomization
+        fieldPaths:
+          - metadata.name
+        options:
+          delimiter: "deploy-"
+          index: 1
+      - select:
+          kind: ApplyReplacements
+        fieldPaths:
+          - metadata.name
+        options:
+          delimiter: "deploy-"
+          index: 1
+      - select:
+          kind: Deployment
+        fieldPaths:
+          - metadata.labels.[app.kubernetes.io/component]
+          - spec.selector.matchLabels.[app.kubernetes.io/component]
+          - spec.template.metadata.labels.[app.kubernetes.io/component]
+        options:
+          create: true
