@@ -1,0 +1,62 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base/
+
+namespace: mop
+
+configMapGenerator:
+  - name: env
+    behavior: merge
+    envs:
+      - ./settings.env
+
+secretGenerator:
+  - name: env
+    envs:
+      - ./secrets.env
+
+patches:
+  - target:
+      kind: Deployment
+      name: server
+    patch: |-
+      - op: add
+        path: /spec/template/spec/initContainers/-
+        value:
+          name: create-superuser
+          image: mop
+          command:
+            - python
+            - manage.py
+            - shell
+            - -c
+            - |
+                # Doing this as a custom script for idempotency
+
+                import sys
+
+                from os import environ
+                from django.contrib.auth import get_user_model
+
+                username = environ.get("DJANGO_SUPERUSER_USERNAME", "admin")
+                email = environ.get("DJANGO_SUPERUSER_EMAIL", "admin@example.invalid")
+                password = environ.get("DJANGO_SUPERUSER_PASSWORD", "admin")
+
+                User = get_user_model()
+                u, _ = User.objects.get_or_create(username=username)
+
+                u.email = email
+                u.is_staff = True
+                u.is_superuser = True
+                u.set_password(password)
+                u.save()
+
+          envFrom:
+            - configMapRef:
+                name: env
+                optional: false
+            - secretRef:
+                name: env
+                optional: false

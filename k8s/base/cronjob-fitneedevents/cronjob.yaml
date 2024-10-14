@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata: # kpt-merge: /example
+  name: fitneedevents
+  labels:
+    app.kubernetes.io/component: fitneedevents
+  annotations:
+    internal.kpt.dev/upstream-identifier: 'batch|CronJob|default|example'
+spec:
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
+  schedule: "30 2,6,10,14,18,22 * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 13800
+      parallelism: 1
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 1000
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 16Mi
+                medium: Memory
+          containers:
+            - name: default
+              image: "mop"
+              command:
+                - python
+                - manage.py
+                - fit_need_events_PSPL
+                - --cores=$(CORES)
+                - --run-every=$(RUN_EVERY)
+              env:
+                - name: CORES
+                  value: "1"
+                - name: RUN_EVERY
+                  value: "24"
+              envFrom:
+                - configMapRef:
+                    name: env
+                    optional: false
+                - secretRef:
+                    name: env
+                    optional: false
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                  readOnly: false
+              securityContext:
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                runAsGroup: 1000
+        metadata:
+          labels:
+            app.kubernetes.io/component: fitneedevents
+    metadata:
+      labels:
+        app.kubernetes.io/component: fitneedevents
