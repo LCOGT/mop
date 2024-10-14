@@ -1,12 +1,19 @@
-.git
-*.pyc
-*.pyo
-__pycache__
-env/
-.idea
-*~
-README.md
-LICENSE
-Jenkinsfile
-docker-compose.yml
-helm-chart
+# first ignore everything
+**/*
+
+# now add things to include
+!./poetry-requirement.txt
+!./README.md
+!./pyproject.toml
+!./poetry.toml
+!./poetry.lock
+!./mop/
+!./microlensing_targets/
+!./manage.py
+!./static/
+!./templates/
+
+# but stil ignore
+**/*__pycache__
+**/*.pyc
+**/*.pyo

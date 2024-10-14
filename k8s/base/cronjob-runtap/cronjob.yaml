@@ -1,0 +1,61 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone/cronjob-batch-v1.json
+apiVersion: batch/v1
+kind: CronJob
+metadata: # kpt-merge: /example
+  name: runtap
+  labels:
+    app.kubernetes.io/component: runtap
+  annotations:
+    internal.kpt.dev/upstream-identifier: 'batch|CronJob|default|example'
+spec:
+  schedule: "0 */4 * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 3600
+      template:
+        spec:
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 1000
+          volumes:
+            - name: tmp
+              emptyDir:
+                sizeLimit: 16Mi
+                medium: Memory
+          containers:
+            - name: default
+              image: "mop"
+              command:
+                - python
+                - manage.py
+                - run_TAP
+                - all
+                - live_obs
+              envFrom:
+                - configMapRef:
+                    name: env
+                    optional: false
+                - secretRef:
+                    name: env
+                    optional: false
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                  readOnly: false
+              securityContext:
+                capabilities:
+                  drop:
+                    - ALL
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 1000
+                runAsGroup: 1000
+        metadata:
+          labels:
+            app.kubernetes.io/component: runtap
+    metadata:
+      labels:
+        app.kubernetes.io/component: runtap

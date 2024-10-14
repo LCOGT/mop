@@ -14,3 +14,7 @@ local_settings*
 # Any local datafiles
 data/star*csv
 data/*ogle*
+
+.devenv
+.pre-commit-config.yaml
+local-kubeconfig
