@@ -106,7 +106,7 @@ def select_random_events(target_list, max_nevents):
     Function to select a random set of max_nevents from the list provided
     """
     rng = np.random.default_rng()
-    target_list = rng.shuffle(target_list)
+    rng.shuffle(target_list)
     selected_targets = target_list[0:max_nevents]
 
     return selected_targets
