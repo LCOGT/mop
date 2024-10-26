@@ -8,6 +8,7 @@ from mop.toolbox.mop_classes import MicrolensingEvent
 import datetime
 import os
 import logging
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +101,16 @@ def run_fit(mulens, cores=0, verbose=False):
         logger.error('Job failed: '+mulens.name)
         return False
 
+def select_random_events(target_list, max_nevents):
+    """
+    Function to select a random set of max_nevents from the list provided
+    """
+    rng = np.random.default_rng()
+    target_list = rng.shuffle(target_list)
+    selected_targets = target_list[0:max_nevents]
+
+    return selected_targets
+
 class Command(BaseCommand):
     help = 'Fit events with PSPL and parallax, then ingest fit parameters in the db'
 
@@ -128,7 +139,7 @@ class Command(BaseCommand):
                         + repr(options['run_every']) + 'hrs ago')
             target_list = list(set(ts))
             if len(target_list) > max_nevents:
-                target_list = target_list[0:max_nevents]
+                target_list = select_random_events(target_list, max_nevents)
                 logger.info('FIT_NEED_EVENTS: Capped number of models to fit at ' + str(max_nevents))
 
             utilities.checkpoint()
