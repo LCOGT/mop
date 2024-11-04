@@ -1,13 +1,23 @@
 FROM python:3.10
 LABEL maintainer="etibachelet@gmail.com"
 
-# the exposed port must match the deployment.yaml containerPort value
-EXPOSE 80
-ENTRYPOINT [ "/usr/local/bin/gunicorn", "mop.wsgi", "-b", "0.0.0.0:80", "--access-logfile", "-", "--error-logfile", "-", "-k", "gevent", "--timeout", "300", "--workers", "2"]
-
 WORKDIR /mop
 
-COPY requirements.txt /mop
-RUN pip install --no-cache-dir -r /mop/requirements.txt
+RUN pip install poetry
+
+COPY ./pyproject.toml ./poetry.lock ./poetry.toml /mop
+
+RUN poetry install --no-root --only main
 
 COPY . /mop
+
+# Activate virtual env
+ENV PATH="/mop/.venv/bin:$PATH"
+
+# disable buffering so that logs are rendered to stdout asap
+ENV PYTHONUNBUFFERED=1
+
+# the exposed port must match the deployment.yaml containerPort value
+EXPOSE 80
+
+ENTRYPOINT [ "gunicorn", "mop.wsgi", "-b", "0.0.0.0:80", "--access-logfile", "-", "--error-logfile", "-", "-k", "gevent", "--timeout", "300", "--workers", "2"]

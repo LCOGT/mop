@@ -1,0 +1,40 @@
+apiVersion: skaffold/v4beta10
+kind: Config
+metadata:
+  name: mop
+build:
+  tagPolicy:
+    gitCommit:
+      variant: Tags
+  artifacts:
+    - image: mop
+      custom:
+        buildCommand: skaffold-builder-buildx
+        dependencies:
+          dockerfile:
+            path: Dockerfile
+manifests:
+  kustomize:
+    paths:
+      - k8s/envs/local/
+deploy:
+  kubectl: {}
+  logs:
+    prefix: podAndContainer
+portForward:
+  - resourceType: Service
+    resourceName: server
+    port: http
+---
+apiVersion: skaffold/v4beta10
+kind: Config
+metadata:
+  name: mop-deps
+manifests:
+  kustomize:
+    paths:
+      - k8s/envs/local-deps/
+deploy:
+  kubectl: {}
+  logs:
+    prefix: podAndContainer

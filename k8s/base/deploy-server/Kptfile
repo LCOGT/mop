@@ -1,0 +1,25 @@
+apiVersion: kpt.dev/v1
+kind: Kptfile
+metadata:
+  name: deploy-server
+  annotations:
+    config.kubernetes.io/local-config: "true"
+upstream:
+  type: git
+  git:
+    repo: https://github.com/LCOGT/kpt-pkg-catalog
+    directory: /deployment
+    ref: main
+  updateStrategy: resource-merge
+upstreamLock:
+  type: git
+  git:
+    repo: https://github.com/LCOGT/kpt-pkg-catalog
+    directory: /deployment
+    ref: main
+    commit: 44eff6a4abed9b954b7bf4ac5c62c0900013b091
+pipeline:
+  mutators:
+    - image: gcr.io/kpt-fn/apply-replacements:v0.1.1
+      configPath: ./fn-replacements.yaml
+      name: apply-replacements

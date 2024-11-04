@@ -1,0 +1,26 @@
+apiVersion: fn.kpt.dev/v1alpha1
+kind: ApplyReplacements
+metadata: # kpt-merge: /ns-example
+  name: ns-mop
+  annotations:
+    config.kubernetes.io/local-config: "true"
+    internal.kpt.dev/upstream-identifier: 'fn.kpt.dev|ApplyReplacements|default|ns-example'
+replacements:
+  - source:
+      kind: Namespace
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Kustomization
+        fieldPaths:
+          - metadata.name
+        options:
+          delimiter: "ns-"
+          index: 1
+      - select:
+          kind: ApplyReplacements
+        fieldPaths:
+          - metadata.name
+        options:
+          delimiter: "ns-"
+          index: 1
