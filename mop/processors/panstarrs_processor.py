@@ -86,7 +86,8 @@ class PanstarrsProcessor(DataProcessor):
                     mag_err = float(datum[mag_err_col_name])
                     # -999 is the value returned by PanSTARRS when there is no data for a given column
                     # so, filter out columns for which there is no data
-                    if mag > -999:
+                    # Added filtering for datapoints with -999 photometric uncertainties as well
+                    if mag > -999 and mag_err:
                         value = {
                             'timestamp': timestamp,
                             'telescope': 'PanSTARRS 1',

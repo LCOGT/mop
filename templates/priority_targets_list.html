@@ -8,6 +8,8 @@
 {% endblock %}
 
 {% block content %}
+<div class="row content">
+    <div class="col">
     {% current_timestamp %}
     <h3>Priority Targets</h3>
 <p>This page lists targets assigned a high priority as either a stellar or a long-tE event.  Targets are excluded
@@ -15,12 +17,15 @@ if they have a non-microlensing classification, or are flagged as a known galaxy
 <br>Tagets marked in beige are less than 5 days before the predicted peak of brightness.
 <br>Targets with underlined name in bold are currently observed.</p>
     <div class="row">
-        <div class="col">
+        <div class="card" style="{width: 0.5em;}">
+          <div class="card-header">
             <h4>Stellar/planetary Targets</h4>
+          </div>
+            <div class="card-body">
             {% if stellar_targets|length == 20 %}
-              <p style="color: red">Warning: Number of candidate targets returned equals or exceeds the maximum allowed</p>
+              <p class="warning">Warning: Number of candidate targets returned equals or exceeds the maximum allowed</p>
             {% endif %}
-            <table class="table" style="overflow: scroll">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Target</th>
@@ -35,14 +40,14 @@ if they have a non-microlensing classification, or are flagged as a known galaxy
                 <tbody>
             {% for target in stellar_targets %}
                 {% if target.t0_now_diff > 0 and target.t0_now_diff < 5%}
-                     <tr style="background-color:#E4D6AC">
+                     <tr>
                 {% else %}
-                     <tr style="background-color: #ffffff">
+                     <tr>
                 {% endif %}
                 {% if target.observed == True %}
-                     <td><a style="font-weight:bold; text-decoration: underline; color: #175184" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                     <td><a style="font-weight:bold; text-decoration: underline;" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
                 {% else %}
-                     <td><a style="color: #175184" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                     <td><a href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
                 {% endif %}
                     <td>{{target.t0}}&#8723;{{target.t0_error}}</td>
                     <td>{{target.u0}}&#8723;{{target.u0_error}}</td>
@@ -54,13 +59,17 @@ if they have a non-microlensing classification, or are flagged as a known galaxy
             {% endfor %}
             </tbody>
             </table>
+                </div>
         </div>
-        <div class="col">
-            <h4>Long tE Targets</h4>
+        <div class="card">
+          <div class="card-header">
+            <h4>Long t<sub>E</sub> Targets</h4>
+          </div>
+            <div class="card-body">
             {% if bh_targets|length == 20 %}
-              <p style="color: red">Warning: Number of candidate targets returned equals or exceeds the maximum allowed</p>
+              <p class="warning">Warning: Number of candidate targets returned equals or exceeds the maximum allowed</p>
             {% endif %}
-            <table class="table" style="overflow: scroll">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Target</th>
@@ -75,14 +84,14 @@ if they have a non-microlensing classification, or are flagged as a known galaxy
                 <tbody>
             {% for target in bh_targets %}
                 {% if target.t0_now_diff > 0 and target.t0_now_diff < 5 %}
-                     <tr style="background-color:#E4D6AC">
+                     <tr>
                 {% else %}
-                     <tr style="background-color: #ffffff">
+                     <tr>
                 {% endif %}
                 {% if target.observed == True %}
-                     <td><a style="font-weight:bold; text-decoration: underline; color: #175184" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                     <td><a href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
                 {% else %}
-                     <td><a style="color: #175184" href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
+                     <td><a href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
                 {% endif %}
                     <td>{{target.t0}}&#8723;{{target.t0_error}}</td>
                     <td>{{target.u0}}&#8723;{{target.u0_error}}</td>
@@ -95,6 +104,8 @@ if they have a non-microlensing classification, or are flagged as a known galaxy
             </tbody>
             </table>
         </div>
+            </div>
 </div>
-
+</div>
+</div>
 {% endblock %}

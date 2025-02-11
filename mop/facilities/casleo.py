@@ -37,12 +37,16 @@ class CASLEOFacility(BaseManualObservationFacility):
 
     name = 'El Leoncito'
     observation_types = [('OBSERVATION', 'Manual Observation')]
+    observation_forms = {
+        'IMAGING': BaseManualObservationForm,
+        'SPECTROSCOPY': BaseManualObservationForm,
+    }
 
     def get_form(self, observation_type):
         """
         This method takes in an observation type and returns the form type that matches it.
         """
-        return BaseManualObservationForm
+        return self.observation_forms.get(observation_type, BaseManualObservationForm)
 
     def submit_observation(self, observation_payload):
         """
@@ -123,3 +127,17 @@ class CASLEOFacility(BaseManualObservationFacility):
 
     def get_observation_url(self, observation_id):
         return ''
+
+    def update_observation_status(self, observation_id):
+        """
+        This empty method is necessary for the 'update observation status' button in the TOM
+        to work for all stored observations\
+        """
+        pass
+
+    def update_all_observation_statuses(self, target=None):
+        """
+        This empty method is necessary for the 'update observation status' button in the TOM
+        to work for all stored observations\
+        """
+        pass

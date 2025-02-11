@@ -411,6 +411,7 @@ def gaia_neighbours_data(mulens):
                     for i in range(0, nstars, 1) ]
 
     context['neighbours'] = neighbours
+    context['target'] = mulens
 
     t2 = datetime.utcnow()
     logger.info('GAIA NEIGHBOURS took ' + str(t2 - t1))
@@ -431,6 +432,12 @@ def current_timestamp():
 
     return context
 
+@register.inclusion_tag('tom_targets/partials/mulens_target_banner.html')
+def mulens_target_banner(target):
+    """
+    Display target name and coordinates in a banner across the top of a Target Detail Page
+    """
+    return {'target': target}
 
 @register.inclusion_tag('tom_targets/partials/mulens_target_data.html')
 def mulens_target_data(target, request):
@@ -541,3 +548,4 @@ def get_request_param(request_key, param_key, request, target):
         request_value = getattr(target, param_key)
 
     return request_value
+

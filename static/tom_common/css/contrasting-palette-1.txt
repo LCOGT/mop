@@ -1,0 +1,9 @@
+Background color, text color
+#29282a, #ffffff Dark grey, white text  - body background
+#4e4c51, #ffffff Mid-gray white text
+#7f837b, #000000 Light grey, black text
+#2b3226, #ffffff Dark green, white text
+#191c17, #ffffff V. dark grey, white text
+
+Generated using Vennage:
+https://venngage.com/tools/accessible-color-palette-generator

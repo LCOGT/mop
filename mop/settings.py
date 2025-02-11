@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'tom_dataproducts',
     'silk',
     'mop',
-    'microlensing_targets'
+    'microlensing_targets',
 ]
 
 SITE_ID = 1
@@ -80,8 +80,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'tom_common.middleware.ExternalServiceMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
-    'tom_common.middleware.Raise403Middleware',
-    'tom_common.middleware.AuthStrategyMiddleware',
 ]
 
 ROOT_URLCONF = 'mop.urls'
@@ -443,6 +441,16 @@ SELECTION_EXTRA_FIELDS = [
     'tap_priority_longte',
 ]
 
+TARGETLIST_FIELDS = [
+    ('names', 'text'),
+    ('RA', 'float'),
+    ('Dec', 'float'),
+    ('tE', 'float'),
+    ('u0', 'float'),
+    ('t0', 'float'),
+    ('mag_now', 'float')
+]
+
 # Define MATCH_MANAGERS here. This is a dictionary that contains a dotted module path to the desired match manager
 # for a given model.
 # For example:
@@ -470,6 +478,8 @@ HOOKS = {
     'data_product_post_save': 'tom_dataproducts.hooks.data_product_post_save',
     'multiple_data_products_post_save': 'tom_dataproducts.hooks.multiple_data_products_post_save',
 }
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 AUTO_THUMBNAILS = False
 

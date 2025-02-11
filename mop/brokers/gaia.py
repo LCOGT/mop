@@ -7,6 +7,8 @@ from astropy.coordinates import SkyCoord
 from mop.brokers import gaia as gaia_mop
 from mop.toolbox import TAP, utilities, classifier_tools
 from microlensing_targets.match_managers import validators
+from astroquery.gaia import Gaia
+
 
 #for a given mag computes new error-bar
 #from Gaia DR2 papers, degraded by x10 (N=100 ccds), in log
@@ -43,7 +45,32 @@ def update_gaia_errors(target):
             except ValidationError:
                 pass
 
-def query_gaia_dr3(target, radius=Angle(0.004, "deg"), row_limit=-1, Gmag_max=24.0):
+def query_gaia_tap_service(target, radius=Angle(0.00014, "deg"), row_limit=-1):
+    """
+    Function to query the Gaia TAP service.
+    WARNING: this asynchronous query can be extremely slow and so is not
+    suitable for automation
+    """
+
+    # Configure Gaia TAP parameters
+    Gaia.ROW_LIMIT = row_limit
+    Gaia.MAIN_GAIA_TABLE = "gaiadr3.gaia_source"
+
+    # Establish centroid for the cone search at the target's location
+    coord = SkyCoord(ra=target.ra, dec=target.dec, unit=(u.deg, u.deg), frame='icrs')
+
+    # Send query to TAP service - note that this will wait to return results but
+    # can take some time
+    response = Gaia.cone_search_async(coord, radius=radius)
+
+    # Parse the results
+    if not response.failed:
+        results = response.get_results()
+        print(results)
+        print(type(results))
+        import pdb; pdb.set_trace()
+
+def query_gaia_dr3(target, radius=Angle(0.00014, "deg"), row_limit=-1, Gmag_max=24.0):
     """Function to query the Gaia DR3 catalog for information on a target and stars nearby"""
 
     gaia_columns_list = ['Source', 'RA_ICRS', 'DE_ICRS',
@@ -59,15 +86,15 @@ def query_gaia_dr3(target, radius=Angle(0.004, "deg"), row_limit=-1, Gmag_max=24
 
     return result
 
-def fetch_gaia_dr3_entry(target):
+def fetch_gaia_dr3_entry(target, radius=Angle(0.00014, "deg")):
     """Function to retrieve the Gaia photometry for a target and store it in the Target's ExtraParameters"""
 
     # Search the Gaia DR3 catalog:
-    results = query_gaia_dr3(target)
-
+    results = query_gaia_dr3(target, radius)
     if len(results) > 0:
 
         fields = {
+            'Source': 'gaia_source_id',
             'Gmag': 'gmag',
             'e_Gmag': 'gmag_error',
             'RPmag': 'rpmag',
@@ -80,7 +107,7 @@ def fetch_gaia_dr3_entry(target):
             'Dist':'distance',
             'Teff': 'teff',
             'logg': 'logg',
-            '[Fe/H]': 'metallicity',
+            '__Fe_H_': 'metallicity',
             'RUWE': 'ruwe'}
 
         for cat_field, mop_field in fields.items():

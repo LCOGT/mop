@@ -224,7 +224,7 @@ def pylima_telescopes_from_datasets(datasets, emag_limit=None):
     """
 
     # Sort the available datasets into order, giving preference to main survey datasets
-    priority_order = ['I', 'ip', 'i_ZTF', 'r_ZTF', 'R', 'g_ZTF', 'gp', 'G']
+    priority_order = ['I', 'ip', 'G', 'i_ZTF', 'r_ZTF', 'R', 'g_ZTF', 'gp']
 
     dataset_order = []
     for name in priority_order:

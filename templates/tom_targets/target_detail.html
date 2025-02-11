@@ -2,7 +2,7 @@
 {% load comments bootstrap4 tom_common_extras targets_extras observation_extras dataproduct_extras static cache mop_extras %}
 {% block title %}Target {{ object.name }}{% endblock %}
 {% block additional_css %}
-<link rel="stylesheet" href="{% static 'tom_targets/css/main.css' %}">
+<link rel="stylesheet" href="{% static 'tom_common/css/custom.css' %}">
 {% endblock %}
 {% block content %}
 <script>
@@ -32,11 +32,11 @@
     }
   });
 </script>
+{% mulens_target_banner object %}
 {% current_timestamp %}
 <div class="row">
-  <div class="col-md-3">
-    <div id="target-info">
-      {% target_feature object %}
+  <div class="col-4">
+    <div class="target-parameters" id="target-info">
       {% if object.future_observations %}
       <div class="alert alert-success">
         {{ object.future_observations|length }} upcoming observation{{ object.future_observations|pluralize }}
@@ -45,13 +45,12 @@
       {% target_unknown_statuses object %}
       {% target_buttons object %}
       {% mulens_target_data target request %}
-      {% recent_photometry object limit=3 %}
       {% if object.type == 'SIDEREAL' %}
         {% aladin_finderchart object %}
       {% endif %}
     </div>
   </div>
-  <div class="col-md-7">
+  <div class="col-8 target-content">
     <ul class="nav nav-tabs" id="tabs">
       <li class="nav-item">
         <span class="nav-link" data-target="#observe" data-toggle="tab">Observe</span>
@@ -72,7 +71,7 @@
         <span class="nav-link" data-target="#spectroscopy" data-toggle="tab">Spectroscopy</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-target="#pylima-model" data-toggle="tab">pyLIMA Model</span>
+        <span class="nav-link" data-target="#pylima-model" data-toggle="tab">pyLIMA Results</span>
       </li>
       <li class="nav-item">
         <span class="nav-link" data-target="#interferometry" data-toggle="tab">Interferometry</span>
@@ -80,8 +79,11 @@
       <li class="nav-item">
         <span class="nav-link" data-target="#gaia_neighbours" data-toggle="tab">Gaia</span>
       </li>
+      <li class="nav-item">
+        <span class="nav-link" data-target="#comments" data-toggle="tab">Comments</span>
+      </li>
     </ul>
-    <div class="tab-content"  style="width: 80em">
+    <div class="tab-content">
       <div class="tab-pane" id="observe">
         <h4>Observe</h4>
         {% observing_buttons object %}
@@ -132,6 +134,7 @@
       <div class="tab-pane" id="gaia_neighbours" style="width: 80em">
         {% gaia_neighbours_data target %}
       </div>
+      <div class="tab-pane" id="comments" style="width: 80em">
       {% comments_enabled as comments_are_enabled %}
       <hr/>
       <h5>Comments</h5>
@@ -142,6 +145,7 @@
             {% render_comment_form for object %}
           {% endif %}
         {% endif %}
+        </div>
     </div>
   </div>
 </div>

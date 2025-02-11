@@ -5,6 +5,8 @@
 <link rel="stylesheet" href="{% static 'tom_targets/css/main.css' %}">
 {% endblock %}
 {% block content %}
+<div class="row content">
+    <div class="col">
 <h3>Select Targets for an Observing Facility</h3>
 <div class="row">
     <p>Please use the form below to search a target list for targets visible from a particular site and date. </p>
@@ -39,12 +41,15 @@
 </div>
 <div class="row">
     {% if observable_targets %}
-    <table class="table table-striped">
+    <table class="table">
+        <thead>
         <tr>
             {% for col in table_columns %}
                 <th>{{col}}</th>
             {% endfor %}
         </tr>
+        </thead>
+        <tbody>
         {% for target, entry in observable_targets %}
             <tr>
                 <td><a href="{% url 'targets:detail' target.id %}">{{ target.name }}</td>
@@ -53,7 +58,10 @@
                 {% endfor %}
             </tr>
         {% endfor %}
+        </tbody>
     {% endif %}
     </table>
+</div>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'tom_common/base.html' %}
+{% load user_extras %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+<div class="content">
+{% group_list %}
+<hr/>
+{% user_list %}
+</div>
+{% endblock %}

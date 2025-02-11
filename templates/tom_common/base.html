@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="{% static 'tom_common/css/custom.css' %}">
     {% block additional_css %}
     {% endblock %}
-    <link rel="icon" type="image/x-icon" href="{% static 'tom_common/img/favicon-32.ico' %}" sizes="32x32" />
-    <link rel="icon" type="image/x-icon" href="{% static 'tom_common/img/favicon-16.ico' %}" sizes="16x16" />
+    <link rel="icon" type="image/x-icon" href="{% static 'tom_common/img/MOP.jpeg' %}" sizes="32x32" />
+    <link rel="icon" type="image/x-icon" href="{% static 'tom_common/img/MOP.jpeg' %}" sizes="16x16" />
 
     {% bootstrap_javascript jquery='True' %}
     <!-- htmx.min.js was downloaded manually and added to the project. see https://htmx.org/docs/#download-a-copy -->
@@ -22,8 +22,8 @@
     <title>MOP | {% block title %}{% endblock %}</title>
   </head>
   <body>
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="/"><img src="{% static 'tom_common/img/logo-color-cropped.png' %}" class="img-fluid"> MOP</a>
+    <nav class="navbar navbar-expand-md fixed-top" style="background: url('{% static 'tom_common/img/mop_navbar_grey_bkgd.png' %}'); background-position: center; background-repeat: no-repeat;">
+      <a class="navbar-brand" href="/"><img src="{% static 'tom_common/img/MOP.jpeg' %}" class="img-fluid"> MOP</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -69,8 +69,8 @@
     </nav>
 
     <main role="main" class="container-fluid">
-      {% bootstrap_messages %}
       <div class="content">
+        {% bootstrap_messages %}
         {% block content %}
         {% endblock %}
       </div>

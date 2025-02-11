@@ -10,6 +10,9 @@ from tom_observations.views import ObservationFilter
 from tom_observations.utils import get_sidereal_visibility
 from mop.toolbox.TAP import set_target_sky_location
 from django.views.generic.edit import FormView
+from django_filters.views import FilterView
+from guardian.mixins import PermissionListMixin
+from tom_targets.filters import TargetFilter
 from django.contrib import messages
 from mop.toolbox.obs_control import fetch_all_lco_requestgroups, parse_lco_requestgroups
 from mop.forms import TargetClassificationForm, TargetSelectionForm
@@ -150,9 +153,11 @@ class ActiveObsView(ListView):
                         target_data = {'name': obs.target.name, 'obs_list': []}
                         t = Target.objects.get(pk=obs.target.pk)
                         if t:
+                            target_data['id'] = t.pk
                             for key in target_keys:
                                 target_data[key] = getattr(t, key)
                         else:
+                            target_data['id'] = None
                             for key in target_keys:
                                 target_data[key] = 'None'
 
@@ -169,17 +174,25 @@ class ActiveObsView(ListView):
         response = fetch_all_lco_requestgroups()
         pending_obs = parse_lco_requestgroups(response, short_form=False, pending_only=False)
 
-        pending_obs_list = []
+        pending_obs_list = {}
         for target, obs_info in pending_obs.items():
             for config in obs_info:
-                print(config)
-                config['target'] = target
-                config['filters'] = ','.join(config['filters'])
-                config['exposure_times'] = ','.join([str(x) for x in config['exposure_times']])
-                config['exposure_counts'] = ','.join([str(x) for x in config['exposure_counts']])
-                pending_obs_list.append(config)
+                if config['id'] not in pending_obs_list.keys():
+                    config['target'] = target
+                    unique_configs = []
+                    for k,f in enumerate(config['filters']):
+                        if (f,config['exposure_times'][k],config['exposure_counts'][k]) not in unique_configs:
+                            unique_configs.append((f,config['exposure_times'][k],config['exposure_counts'][k]))
+                    if len(unique_configs) > 0 and len(config['exposure_times']) > 0:
+                        config['nvisits'] = str(int(len(config['exposure_times'])/len(unique_configs)))
+                    else:
+                        config['nvisits'] = '0'
+                    config['filters'] = ','.join([conf[0] for conf in unique_configs])
+                    config['exposure_times'] = ','.join([str(conf[1]) for conf in unique_configs])
+                    config['exposure_counts'] = ','.join([str(conf[2]) for conf in unique_configs])
+                    pending_obs_list[config['id']] = config
 
-        context['pending_obs'] = pending_obs_list
+        context['pending_obs'] = pending_obs_list.values()
 
         context['query_string'] = self.request.META['QUERY_STRING']
 
@@ -469,3 +482,36 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
             messages.add_message(request, messages.WARNING, "Invalid date given")
 
         return self.render_to_response(context)
+
+
+class TargetListView(PermissionListMixin, FilterView):
+    """
+    View for listing targets in the TOM. Only shows targets that the user is authorized to view. Requires authorization.
+    """
+    template_name = 'tom_targets/target_list.html'
+    paginate_by = 25
+    strict = False
+    model = Target
+    filterset_class = TargetFilter
+    # Set app_name for Django-Guardian Permissions in case of Custom Target Model
+    permission_required = f'{Target._meta.app_label}.view_target'
+    ordering = ['-created']
+
+    def get_context_data(self, *args, **kwargs):
+        """
+        Adds the number of targets visible, the available ``TargetList`` objects if the user is authenticated, and
+        the query string to the context object.
+
+        :returns: context dictionary
+        :rtype: dict
+        """
+        context = super().get_context_data(*args, **kwargs)
+        context['target_count'] = context['paginator'].count
+        # hide target grouping list if user not logged in
+        context['groupings'] = (TargetList.objects.all()
+                                if self.request.user.is_authenticated
+                                else TargetList.objects.none())
+        context['query_string'] = self.request.META['QUERY_STRING']
+        print(context['object_list'])
+
+        return context
