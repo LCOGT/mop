@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/master-standalone/ingress-networking-v1.json
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: # kpt-merge: /example
+  name: minio
+  annotations:
+    internal.kpt.dev/upstream-identifier: 'networking.k8s.io|Ingress|default|example'
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: "nginx"
+  rules:
+    - host: "minio-mop.local.lco.earth"
+      http:
+        paths:
+          - pathType: "Prefix"
+            path: "/"
+            backend:
+              service:
+                name: "minio"
+                port:
+                  name: "minio-api"
+    - host: "console-minio-mop.local.lco.earth"
+      http:
+        paths:
+          - pathType: "Prefix"
+            path: "/"
+            backend:
+              service:
+                name: "minio"
+                port:
+                  name: "minio-console"

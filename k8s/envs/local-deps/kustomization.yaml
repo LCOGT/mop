@@ -7,3 +7,4 @@ resources:
   - ./ns/
   - ./postgres/
   - ./minio/
+  - ./ing-minio/

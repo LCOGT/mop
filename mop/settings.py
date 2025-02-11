@@ -15,6 +15,7 @@ import os
 import ast
 import tempfile
 
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -28,6 +29,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY','+xg%_n7l==$@v7))t1&amp;@a_tl)qo
 DEBUG = ast.literal_eval(os.getenv('DJANGO_DEBUG', 'False'))
 
 ALLOWED_HOSTS = ['*']
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 TOM_NAME = 'MOP'
 
