@@ -61,7 +61,10 @@
             };
           };
 
-          devcontainer.enable = true;
+          devcontainer = {
+            enable = true;
+            settings.onCreateCommand = "./develop.sh";
+          };
 
           # https://devenv.sh/packages/
           packages = [
