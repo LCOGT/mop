@@ -61,6 +61,8 @@
             };
           };
 
+          devcontainer.enable = true;
+
           # https://devenv.sh/packages/
           packages = [
               # Needed to build psycopg2
