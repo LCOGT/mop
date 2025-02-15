@@ -61,11 +61,6 @@
             };
           };
 
-          devcontainer = {
-            enable = true;
-            settings.onCreateCommand = "./develop.sh";
-          };
-
           # https://devenv.sh/packages/
           packages = [
               # Needed to build psycopg2
