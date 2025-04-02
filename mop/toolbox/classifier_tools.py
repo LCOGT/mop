@@ -19,11 +19,19 @@ def check_YSO(coord):
     '''
 
     try:
-        Vizier.cache_location = None
+        #Vizier.cache_location = None
         # check if in Konkoly YSO catalogue, Marton et al. 2023
-        result1 = Vizier.query_region(coord, radius=Angle(1. / 60. / 60., "deg"), catalog='J/A+A/674/A21/kyso')
+        result1 = Vizier.query_region(
+            coord,
+            radius=Angle(1. / 60. / 60., "deg"), catalog='J/A+A/674/A21/kyso',
+            cache=False
+        )
         # Marton et al 2019 YSOs
-        result2 = Vizier.query_region(coord, radius=Angle(1. / 60. / 60., "deg"), catalog='II/360/catalog')
+        result2 = Vizier.query_region(
+            coord,
+            radius=Angle(1. / 60. / 60., "deg"), catalog='II/360/catalog',
+            cache=False
+        )
 
         if(len(result1) > 0):
             return True
@@ -49,11 +57,19 @@ def check_QSO(coord):
     '''
 
     try:
-        Vizier.cache_location = None
+        #Vizier.cache_location = None
         # check if in Flesch et al. 2021 Milliquas
-        result1 = Vizier.query_region(coord, radius=Angle(2. / 60. / 60., "deg"), catalog='VII/290/catalog')
+        result1 = Vizier.query_region(
+            coord,
+            radius=Angle(2. / 60. / 60., "deg"), catalog='VII/290/catalog',
+            cache=False
+        )
         # check if in GDR3 vari_agn, Carnerer et al. 2023
-        result2 = Vizier.query_region(coord, radius=Angle(1. / 60. / 60., "deg"), catalog='I/358/vagn')
+        result2 = Vizier.query_region(
+            coord,
+            radius=Angle(1. / 60. / 60., "deg"), catalog='I/358/vagn',
+            cache=False
+        )
 
         if (len(result1) > 0):
             return True
@@ -75,9 +91,13 @@ def check_galaxy(coord):
     '''
 
     try:
-        Vizier.cache_location = None
+        #Vizier.cache_location = None
         # check if near galaxy in GLADE+ catalogue
-        result = Vizier.query_region(coord, radius=Angle(1.5 / 60. / 60., "deg"), catalog='VII/281')
+        result = Vizier.query_region(
+            coord,
+            radius=Angle(1.5 / 60. / 60., "deg"), catalog='VII/281',
+            cache=False
+        )
 
         if (len(result) > 0):
             return True
