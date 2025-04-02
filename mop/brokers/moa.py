@@ -59,26 +59,26 @@ class MOABroker(GenericBroker):
             log.info('MOA ingester: querying url: '+url_file_path)
 
             test_response = requests.get(url_file_path)
-                if test_response.status_code != 404:
-                
-                    events = urllib.request.urlopen(url_file_path).readlines()
+            if test_response.status_code != 404:
 
-                    for event in events[0:]:
+                events = urllib.request.urlopen(url_file_path).readlines()
 
-                        event = event.decode("utf-8").split(' ')
-                        name = 'MOA-'+event[0]
-                        #Create or load
+                for event in events[0:]:
 
-                        target, result = self.ingest_event(name, float(event[2]), float(event[3]))
+                    event = event.decode("utf-8").split(' ')
+                    name = 'MOA-'+event[0]
+                    #Create or load
 
-                        # This needs to store the name of the target it refers to, rather than
-                        # the input name, in case that is an alias for duplicate events
-                        self.event_dictionnary[target.name] = [event[1],event[-2],event[-1]]
+                    target, result = self.ingest_event(name, float(event[2]), float(event[3]))
 
-                        if 'new_target' in result:
-                           new_targets.append(target)
+                    # This needs to store the name of the target it refers to, rather than
+                    # the input name, in case that is an alias for duplicate events
+                    self.event_dictionnary[target.name] = [event[1],event[-2],event[-1]]
 
-                        list_of_targets.append(target)
+                    if 'new_target' in result:
+                       new_targets.append(target)
+
+                    list_of_targets.append(target)
 
         logs.stop_log(log)
 
