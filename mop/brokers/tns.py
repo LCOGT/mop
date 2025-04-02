@@ -34,7 +34,7 @@ class Custom_TNS(TNSBroker):
             response.raise_for_status()
             transients = response.json()
             names = []
-            for transient in transients['data']['reply']:
+            for transient in transients['data']:
                 tns_name = transient['objname']
                 names.append(tns_name)
         except requests.exceptions.HTTPError as e:
@@ -51,7 +51,6 @@ class Custom_TNS(TNSBroker):
         data = {
             'api_key': settings.BROKERS['TNS']['api_key'],
             'data': json.dumps({
-                'objname': parameters['objname'],
                 'photometry': 1,
                 'spectroscopy': 0,
             }
