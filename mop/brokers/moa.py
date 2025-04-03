@@ -19,6 +19,7 @@ from mop.toolbox import TAP, utilities, classifier_tools
 from microlensing_targets.match_managers import validators
 
 BROKER_URL = 'https://www.massey.ac.nz/~iabond/moa/'
+BROKER_URL_2025 = 'https://moaprime.massey.ac.nz/alerts/index/moa/2025'
 photometry = "https://www.massey.ac.nz/~iabond/moa/alert2019/fetchtxt.php?path=moa/ephot/"
 
 class MOAQueryForm(GenericQueryForm):
@@ -55,25 +56,28 @@ class MOABroker(GenericBroker):
         self.event_dictionnary = {}
         time_now = Time(datetime.datetime.now()).jd
         for year in years:
-            url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/index.dat' )
+            if year <= 2024:
+                url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/index.dat')
+            else:
+                url_file_path = BROKER_URL_2025
             log.info('MOA ingester: querying url: '+url_file_path)
 
-            test_response = requests.get(url_file_path)
-            if test_response.status_code != 404:
+            if test_url(url_file_path):
 
-                events = urllib.request.urlopen(url_file_path).readlines()
+                # MOA's event pages have been made available in different formats
+                # for different years.  Through to 2024, the events list is an ASCII
+                # filet
+                if year <= 2024:
+                    events = self.fetch_event_list_pre2025(url_file_path)
+                else:
+                    events = self.fetch_event_list_2025(url_file_path)
 
-                for event in events[0:]:
-
-                    event = event.decode("utf-8").split(' ')
-                    name = 'MOA-'+event[0]
-                    #Create or load
-
-                    target, result = self.ingest_event(name, float(event[2]), float(event[3]))
+                for name, params in events:
+                    target, result = self.ingest_event(name, params['RA'], params['Dec'])
 
                     # This needs to store the name of the target it refers to, rather than
                     # the input name, in case that is an alias for duplicate events
-                    self.event_dictionnary[target.name] = [event[1],event[-2],event[-1]]
+                    self.event_dictionnary[target.name] = params['MOA_params']
 
                     if 'new_target' in result:
                        new_targets.append(target)
@@ -83,6 +87,43 @@ class MOABroker(GenericBroker):
         logs.stop_log(log)
 
         return list_of_targets, new_targets
+
+    def test_url(self, url):
+        test_response = requests.get(url)
+        if test_response.status_code != 404:
+            return True
+        else:
+            return False
+
+    def fetch_event_list_pre2025(self, url_file_path):
+        """
+        Through until 2024, MOA events were disseminated as an ASCII .dat file,
+        which we parse here to return a dictionary of event names, RAs, Decs and MOA parameters.
+        """
+
+        html_page = requests.get(url_file_path)
+        linelist = str(html_page.text).split('\n')
+
+        events = {}
+        for line in linelist:
+            if len(line) > 0:
+                entry = line.split(' ')
+                name = 'MOA-' + entry[0]
+                ra = float(entry[2])
+                dec = float(entry[3])
+                moa_params = [entry[1], entry[-2], entry[-1]]
+                events[name] = {'RA': ra, 'Dec': dec, 'MOA_params': moa_params}
+
+        return events
+
+    def fetch_event_list_2025(self, url_file_path):
+        """
+        For 2025, MOA events are being distributed as an HTML table, as MOA transition
+        to a new alerts system for PRIME.
+        """
+
+        page_data = pd.read_html(url_file_path)
+
 
     def ingest_event(self, name, ra, dec):
         cible = SkyCoord(ra, dec, unit="deg")

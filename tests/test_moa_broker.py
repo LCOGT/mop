@@ -20,8 +20,10 @@ class TestMoaBroker(TestCase):
                     'OGLE-2023-BLG-0363',
                     'OGLE-2023-BLG-0455',
                     'Gaia24amp'
-                ]
-            }
+                ],
+            },
+            'moa_url_2024': 'https://www.massey.ac.nz/~iabond/moa/alert2024/index.dat',
+            'moa_url_2025': 'https://moaprime.massey.ac.nz/alerts/index/moa/2025'
         }
 
     def test_fetch_alerts(self):
@@ -39,3 +41,15 @@ class TestMoaBroker(TestCase):
 
         for t in new_targets:
             assert (t.name in self.params['duplicate_events']['unique_events'])
+
+    def test_fetch_event_list_pre2025(self):
+
+        broker = moa.MOABroker()
+        events = broker.fetch_event_list_pre2025(self.params['moa_url_2024'])
+
+        test_event = 'MOA-2024-BLG-001'
+        assert(type(events) == type({}))
+        assert(len(events) > 0)
+        assert('RA' in events[test_event].keys())
+        assert('Dec' in events[test_event].keys())
+        assert('MOA_params' in events[test_event].keys())
