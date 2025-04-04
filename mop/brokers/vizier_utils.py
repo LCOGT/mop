@@ -17,8 +17,6 @@ def query_vizier(target, catalog, column_list, radius=Angle(0.0083, "deg"), row_
         Vizier table
     """
 
-    print("Inside: ", column_list)
-    print("Target ra dec:", target.ra, target.dec)
     v = Vizier(columns=column_list)
     v.cache_location = None
     v.ROW_LIMIT = row_limit

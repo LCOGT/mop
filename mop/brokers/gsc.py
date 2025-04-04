@@ -19,9 +19,6 @@ def query_gsc(target, radius=Angle(0.0083, "deg"), row_limit=-1):
                          'W1mag', 'e_W1mag',
                          '+_r', 'pmRA', 'pmDE', 'plx']
 
-    print(target)
-    print(column_list)
-    print(radius)
     result = vizier_utils.query_vizier(target, 'I/353', column_list, radius=radius, row_limit=row_limit)
 
     if len(result) == 1:

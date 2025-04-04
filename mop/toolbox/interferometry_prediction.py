@@ -282,10 +282,7 @@ def search_gsc_catalog(target):
     logger.info('INTERFERO: Querying GSC catalog around event ' + target.name)
 
     # Perform Vizier catalog search of the GSC
-    print('Target: ', target)
-    print('Target type', type(target))
     gsc_table = gsc.query_gsc(target)
-    print('GSC Table: \n' + gsc_table)
 
     # If any stars are missing Ks-band magnitudes, attempt to estimate them using calibrations
     # based on other photometric bands
