@@ -4,10 +4,15 @@
   inputs = {
     nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    devenv-k8s.url = "github:LCOGT/devenv-k8s";
+    devenv-k8s.url = "github:LCOGT/devenv-k8s/v1";
 
     nixpkgs.follows = "devenv-k8s/nixpkgs";
     flake-parts.follows = "devenv-k8s/flake-parts";
+
+    devenv-root = {
+      url = "file+file:///dev/null";
+      flake = false;
+    };
   };
 
   nixConfig = {
@@ -38,6 +43,13 @@
         # https://devenv.sh/basics/
         # Enter using `nix develop --impure`
         config.devenv.shells.default = {
+
+          devenv.root = let
+            devenvRootFileContent = builtins.readFile inputs.devenv-root.outPath;
+          in pkgs.lib.mkIf (devenvRootFileContent != "") devenvRootFileContent;
+
+          devenv-k8s.local-cluster.enable = true;
+
           languages.python = {
             enable = true;
             package = pkgs.python310;
@@ -58,14 +70,6 @@
 
           # https://devenv.sh/reference/options/#entershell
           enterShell = ''
-            export KUBECONFIG="`pwd`/local-kubeconfig"
-
-            echo "Setting KUBECONFIG=$KUBECONFIG"
-            echo
-            echo "This is done to sandbox Kuberenetes tools (kubectl, skaffold, etc) to the local K8s cluster for this project."
-            echo "If you would like to use a local K8s cluster across multiple projects, then set 'KUBECONFIG' to a common path"
-            echo "in both projects before running the command to create the local cluster."
-
             cp --no-clobber $DEVENV_ROOT/k8s/envs/local/secrets.env.changeme $DEVENV_ROOT/k8s/envs/local/secrets.env
             echo
             echo "Configure application environment variables in '$DEVENV_ROOT/k8s/envs/local/secrets.env'"

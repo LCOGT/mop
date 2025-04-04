@@ -1,6 +1,0 @@
-apiVersion: ctlptl.dev/v1alpha1
-kind: Cluster
-name: kind-mop
-product: kind
-registry: lco-local
-kubernetesVersion: v1.25

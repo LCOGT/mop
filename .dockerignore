@@ -17,3 +17,10 @@
 **/*__pycache__
 **/*.pyc
 **/*.pyo
+
+# Django files
+local_settings*
+
+# Any local datafiles
+data/star*csv
+data/*ogle*
