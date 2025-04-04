@@ -283,7 +283,7 @@ def search_gsc_catalog(target):
 
     # Perform Vizier catalog search of the GSC
     gsc_table = gsc.query_gsc(target)
-    print(gsc_table)
+    logger.info('GSC Table: \n' + gsc_table)
 
     # If any stars are missing Ks-band magnitudes, attempt to estimate them using calibrations
     # based on other photometric bands
