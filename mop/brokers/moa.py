@@ -5,11 +5,13 @@ from django import forms
 from tom_targets.models import Target, TargetName
 from tom_observations import facility
 from tom_dataproducts.models import ReducedDatum
-
+from os import path
 from astropy.coordinates import SkyCoord
-import astropy.units as unit
+import astropy.units as u
 import urllib
 import requests
+import pandas as pd
+from io import StringIO
 import os
 import numpy as np
 from astropy.time import Time, TimezoneInfo
@@ -20,6 +22,8 @@ from microlensing_targets.match_managers import validators
 
 BROKER_URL = 'https://www.massey.ac.nz/~iabond/moa/'
 BROKER_URL_2025 = 'https://moaprime.massey.ac.nz/alerts/index/moa/2025'
+BROKER_EVENT_URL_2025 = 'https://moaprime.massey.ac.nz/alerts/display/'
+BROKER_PHOT_URL_2025 = 'https://moaprime.massey.ac.nz/alerts/datafile/MOA/'
 photometry = "https://www.massey.ac.nz/~iabond/moa/alert2019/fetchtxt.php?path=moa/ephot/"
 
 class MOAQueryForm(GenericQueryForm):
@@ -56,33 +60,34 @@ class MOABroker(GenericBroker):
         self.event_dictionnary = {}
         time_now = Time(datetime.datetime.now()).jd
         for year in years:
+
+            # Fetch the alert listing for the current year
+            alert_content = self.fetch_alert_page_listing(year, log)
+
+            # MOA's event pages have been made available in different formats
+            # for different years.  Through to 2024, the events list is an ASCII
+            # filet
             if year <= 2024:
-                url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/index.dat')
+                events = self.parse_event_list_pre2025(url_file_path)
             else:
-                url_file_path = BROKER_URL_2025
-            log.info('MOA ingester: querying url: '+url_file_path)
+                events = self.parse_event_list_2025(url_file_path)
 
-            if test_url(url_file_path):
+            # Ingest targets from the alerts
+            for name, params in events:
+                target, result = self.ingest_event(name, params['RA'], params['Dec'])
 
-                # MOA's event pages have been made available in different formats
-                # for different years.  Through to 2024, the events list is an ASCII
-                # filet
+                # This needs to store the name of the target it refers to, rather than
+                # the input name, in case that is an alias for duplicate events
+                # Note: this is no longer required for events post 2025
                 if year <= 2024:
-                    events = self.fetch_event_list_pre2025(url_file_path)
-                else:
-                    events = self.fetch_event_list_2025(url_file_path)
-
-                for name, params in events:
-                    target, result = self.ingest_event(name, params['RA'], params['Dec'])
-
-                    # This needs to store the name of the target it refers to, rather than
-                    # the input name, in case that is an alias for duplicate events
                     self.event_dictionnary[target.name] = params['MOA_params']
+                else:
+                    self.event_dictionnary[target.name] = [target.name]
 
-                    if 'new_target' in result:
-                       new_targets.append(target)
+                if 'new_target' in result:
+                   new_targets.append(target)
 
-                    list_of_targets.append(target)
+                list_of_targets.append(target)
 
         logs.stop_log(log)
 
@@ -95,14 +100,41 @@ class MOABroker(GenericBroker):
         else:
             return False
 
-    def fetch_event_list_pre2025(self, url_file_path):
+    def fetch_alert_page_listing(self, year, log):
+        """
+        Function to fetch the list of MOA alerts.
+
+        The URL for the alerts changed over time.  Prior to 2024, the alerts were served from
+        https://www.massey.ac.nz/~iabond/moa/alertYYYY/index.dat
+        in ASCII format, while in 2025 the alerts were located at
+        https://moaprime.massey.ac.nz/alerts/index/moa/2025
+        as an HTML table.
+        """
+
+        if year <= 2024:
+            url_file_path = os.path.join(BROKER_URL + 'alert' + str(year) + '/index.dat')
+        else:
+            url_file_path = BROKER_URL_2025
+        log.info('Searching for ' + str(year) + ' alerts at ' + url_file_path)
+
+        if test_url(url_file_path):
+            log.info('Website is live, retrieving alert information')
+            response = requests.get(url_file_path)
+            content = response.text
+
+        else:
+            log.info('Website is OFFLINE, no alert data available')
+            content = None
+
+        return content
+
+    def parse_event_list_pre2025(self, content):
         """
         Through until 2024, MOA events were disseminated as an ASCII .dat file,
         which we parse here to return a dictionary of event names, RAs, Decs and MOA parameters.
         """
 
-        html_page = requests.get(url_file_path)
-        linelist = str(html_page.text).split('\n')
+        linelist = str(content).split('\n')
 
         events = {}
         for line in linelist:
@@ -116,13 +148,40 @@ class MOABroker(GenericBroker):
 
         return events
 
-    def fetch_event_list_2025(self, url_file_path):
+    def parse_event_list_2025(self, content):
         """
         For 2025, MOA events are being distributed as an HTML table, as MOA transition
         to a new alerts system for PRIME.
         """
 
-        page_data = pd.read_html(url_file_path)
+        event_table = pd.read_html(StringIO(content))[0]
+
+        # The event name column is unlabeled
+        names = event_table['Unnamed: 0']
+
+        events = {}
+        for i,name in enumerate(names):
+            s = SkyCoord(event_table['RA'][i], event_table['Dec'][i], frame='icrs', unit=(u.hourangle, u.deg))
+            # MOA have switched to peak magnification and baseline magnitude rather than flux
+            moa_params = [name, event_table['Amax'][i], event_table['I0'][i]]
+            events[name] = {'RA': s.ra.deg, 'Dec': s.dec.deg, 'MOA_params': moa_params}
+
+        return events
+
+    def parse_event_pages_2025(self, events):
+        """As of 2025, MOA's event table no longer contains the internal MOA name for the event, typically of
+        the form gb1-R-...
+        This must now be harvested from the specific page for the event.
+        """
+
+        for name, event_params in events.items():
+            url_file_path = path.join(BROKER_EVENT_URL_2025, name)
+            print(url_file_path)
+            response = requests.get(url_file_path)
+            print(response)
+            content = response.text
+            event_page = pd.read_html(StringIO(content))
+            print(event_page)
 
 
     def ingest_event(self, name, ra, dec):
@@ -155,8 +214,13 @@ class MOABroker(GenericBroker):
             mags = []
             emags = []
             for year in year_list:
-                #year = target.name.split('-')[1]
-                url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/fetchtxt.php?path=moa/ephot/phot-'+event+'.dat' )
+                # Note the handling of the photometry changed in 2025
+                if year <= 2024:
+                    url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/fetchtxt.php?path=moa/ephot/phot-'+event+'.dat' )
+                else:
+                    url_file_path = os.path.join(
+                        BROKER_URL + 'alert' + str(year) + '/fetchtxt.php?path=moa/ephot/phot-' + event + '.dat')
+
                 lines = urllib.request.urlopen(url_file_path).readlines()
 
                 for line in lines:

@@ -4,6 +4,7 @@ from tom_targets.tests.factories import SiderealTargetFactory
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import numpy as np
+from os import path, getcwd
 
 class TestMoaBroker(TestCase):
     def setUp(self):
@@ -22,8 +23,14 @@ class TestMoaBroker(TestCase):
                     'Gaia24amp'
                 ],
             },
-            'moa_url_2024': 'https://www.massey.ac.nz/~iabond/moa/alert2024/index.dat',
-            'moa_url_2025': 'https://moaprime.massey.ac.nz/alerts/index/moa/2025'
+            'moa_url_2024': path.join(getcwd(), 'tests', 'data', 'MOA_alerts_index_2024.dat'),
+            'moa_url_2025': path.join(getcwd(), 'tests', 'data', 'MOA_alerts_index_2025.html'),
+            'events': {
+                'MOA-2025-BLG-0001': {
+                    'RA': 266.64634167, 'Dec': -3428699169,
+                    'moa_params': ['MOA-2025-BLG-0001', 30268.15, 18.38]
+                    }
+            }
         }
 
     def test_fetch_alerts(self):
@@ -42,10 +49,14 @@ class TestMoaBroker(TestCase):
         for t in new_targets:
             assert (t.name in self.params['duplicate_events']['unique_events'])
 
-    def test_fetch_event_list_pre2025(self):
+    def test_parse_event_list_pre2025(self):
+
+        # Load test URL content
+        with open(self.params['moa_url_2024'], 'r') as f:
+            content = f.read()
 
         broker = moa.MOABroker()
-        events = broker.fetch_event_list_pre2025(self.params['moa_url_2024'])
+        events = broker.parse_event_list_pre2025(content)
 
         test_event = 'MOA-2024-BLG-001'
         assert(type(events) == type({}))
@@ -53,3 +64,25 @@ class TestMoaBroker(TestCase):
         assert('RA' in events[test_event].keys())
         assert('Dec' in events[test_event].keys())
         assert('MOA_params' in events[test_event].keys())
+
+    def test_parse_event_list_2025(self):
+
+        # Load test data
+        with open(self.params['moa_url_2025'], 'r') as f:
+            content = f.read()
+
+        broker = moa.MOABroker()
+        events = broker.parse_event_list_2025(content)
+
+        test_event = 'MOA-2025-BLG-0001'
+        assert(type(events) == type({}))
+        assert(len(events) > 0)
+        assert('RA' in events[test_event].keys())
+        assert('Dec' in events[test_event].keys())
+
+    def test_parse_event_pages_2025(self):
+        broker = moa.MOABroker()
+
+        events = broker.parse_event_pages_2025(self.params['events'])
+
+        print(events)
