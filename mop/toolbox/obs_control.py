@@ -110,7 +110,10 @@ def extract_obs_request_info(result):
             elif 'EXPOSE' in config['type']:
                 if 'instrument_configs' in config.keys():
                     for inst_conf in config['instrument_configs']:
-                        obs_info['filters'].append(inst_conf['optical_elements']['filter'])
+                        if 'MUSCAT' not in obs_info['instrument_type']:
+                            obs_info['filters'].append(inst_conf['optical_elements']['filter'])
+                        else:
+                            obs_info['filters'].append('griz')
                         obs_info['exposure_times'].append(inst_conf['exposure_time'])
                         obs_info['exposure_counts'].append(inst_conf['exposure_count'])
 
