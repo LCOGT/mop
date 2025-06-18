@@ -172,6 +172,7 @@ class ActiveObsView(ListView):
 
         # Retrieve a list of pending observations from the LCO Portal
         response = fetch_all_lco_requestgroups()
+
         pending_obs = parse_lco_requestgroups(response, short_form=False, pending_only=False)
 
         pending_obs_list = {}
