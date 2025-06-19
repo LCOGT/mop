@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base/
+  - ./ing-server
 
 namespace: mop
 
@@ -18,6 +19,17 @@ secretGenerator:
       - ./secrets.env
 
 patches:
+  # suspend all cronjobs
+  - target:
+      kind: CronJob
+    patch: |-
+      apiVersion: ignored
+      kind: Cronjob
+      metadata:
+        name: ignored
+      spec:
+        suspend: true
+
   - target:
       kind: Deployment
       name: server
