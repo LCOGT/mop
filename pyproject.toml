@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
-tomtoolkit = "2.19.5"
+tomtoolkit = "2.26.0"
 whitenoise = "5.0.1"
 gunicorn = {version = "22.0.0", extras = ["gevent"]}
 psycopg2 = "=2.8.4"
