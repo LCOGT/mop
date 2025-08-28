@@ -22,6 +22,7 @@ healpy = "^1"
 django-silk = "^5"
 psutil = "^5"
 pika = "^1"
+tom-antares = "1.2.6"
 
 
 [tool.poetry.group.dev.dependencies]
