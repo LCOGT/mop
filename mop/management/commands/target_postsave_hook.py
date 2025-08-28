@@ -26,6 +26,6 @@ class Command(BaseCommand):
                 gaia_mop.fetch_gaia_dr3_entry(target)
                 utilities.open_targets_to_OMEGA_team([target])
                 print('Completed post-save target processes ' + target.name)
-                
+
             except:
                 print('Problem with post-save target processes for ' + target.name)
