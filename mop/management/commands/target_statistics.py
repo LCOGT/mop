@@ -32,7 +32,7 @@ class Command(BaseCommand):
                     t0__range=(t0.jd, t1.jd),
                     tE__range=(options['par_min'], options['par_max'])
                 )
-                
+
                 logger.info('Identified ' + str(targets.count())
                             + ' targets within tE range in ' + year)
 
