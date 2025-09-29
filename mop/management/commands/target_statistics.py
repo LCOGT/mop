@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
-from tom_targets.models import Target
-from astropy import units as u
-from astropy.coordinates import SkyCoord
+from tom_targets.models import Target, TargetName
+from astropy.time import Time
+from datetime import datetime, timedelta
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,20 @@ class Command(BaseCommand):
 
         # Query the DB for all targets matching the selection criteria
         if options['parameter'] == 'tE':
-            targets = Target.objects.filter(
-                tE__range(option['par_min'], option['par_max'])
-            )
+            for iyr in range(2021, 2024, 1):
+                year = str(iyr)
+                tstart = datetime.strptime(year+'-01-01', '%Y-%m-%d')
+                dt = timedelta(days=365.24)
+                tend = tstart + dt
+                t0 = Time(tstart, format='datetime')
+                t1 = Time(tend, format='datetime')
 
-            logger.info('Identified ' + str(targets.count()) + ' targets within tE range')
+                targets = Target.objects.filter(
+                    t0__range=(t0.jd, t1.jd),
+                    tE__range=(options['par_min'], options['par_max'])
+                )
+                
+                logger.info('Identified ' + str(targets.count())
+                            + ' targets within tE range in ' + year)
+
+
