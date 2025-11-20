@@ -21,6 +21,8 @@ from microlensing_targets.match_managers import validators
 logger = logging.getLogger(__name__)
 
 BROKER_URL = 'https://www.astrouw.edu.pl/ogle/ogle4/ews'
+BROKER_URL_OGLE3 = 'https://www.astrouw.edu.pl/ogle/ogle3/ews'
+BROKER_URL_OGLE2 = 'https://www.astrouw.edu.pl/ogle/ogle2/ews'
 
 class OGLEQueryForm(GenericQueryForm):
     target_name = forms.CharField(required=False)
@@ -78,6 +80,50 @@ class OGLEBroker(GenericBroker):
                         ra = entries[3]
                         dec = entries[4]
                         events[name] = (ra,dec)
+
+        logger.info('OGLE harvester: found ' + str(len(events)) + ' event(s)')
+
+        return events
+
+    def fetch_all_parameters(self, years):
+        """Method to retrieve the text file of the model parameters for fits by the OGLE survey"""
+        logger.info('OGLE harvester: Fetching event model parameters for years '+repr(years))
+
+
+        events = {}
+        for year in years:
+            if int(year) >= 2010:
+                URL = BROKER_URL
+            elif int(year) >= 2002 and int(year) <= 2009:
+                URL = BROKER_URL_OGLE3
+            elif int(year) <= 2000:
+                URL = BROKER_URL_OGLE2
+            par_file_url = os.path.join(URL,year,'lenses.par')
+            response = requests.request('GET', par_file_url)
+            logger.info('OGLE harvester: retrieving parameters for events from '
+                            +str(year)+' with status '+str(response.status_code))
+            if response.status_code == 200:
+                for line in response.iter_lines():
+                    line = str(line)
+                    if 'StarNo' not in line and len(line) > 5:      # Skip the file header
+                        entries = line.split()
+                        name = 'OGLE-'+entries[0].replace("b'","")
+                        ra = entries[3]
+                        dec = entries[4]
+                        t0 = entries[5]
+                        tE = entries[7]
+                        if int(year) > 2000:
+                            u0 = entries[8]
+                            Ibase = entries[12]
+                            Ibase_err = entries[13].replace("'","")
+                        else:
+                            try:
+                                u0 = str(round(1.0 / float(entries[8]),3))
+                            except:
+                                u0 = 'None'
+                            Ibase = entries[10].replace("'","")
+                            Ibase_err = 'None'
+                        events[name] = (ra,dec,t0,tE,u0,Ibase,Ibase_err)
 
         logger.info('OGLE harvester: found ' + str(len(events)) + ' event(s)')
 

@@ -17,8 +17,13 @@ import datetime
 from mop.toolbox import logs
 from mop.toolbox import TAP, utilities, classifier_tools
 from microlensing_targets.match_managers import validators
+import ssl
 
-BROKER_URL = 'https://www.massey.ac.nz/~iabond/moa/'
+ssl._create_default_https_context = ssl._create_stdlib_context
+
+#BROKER_URL = 'https://www.massey.ac.nz/~iabond/moa/'
+BROKER_URL = 'https://moaprime.massey.ac.nz/moaarchive/list/'
+NEW_BROKER_URL = 'https://moaprime.massey.ac.nz/alerts/data/index/prime/'
 photometry = "https://www.massey.ac.nz/~iabond/moa/alert2019/fetchtxt.php?path=moa/ephot/"
 
 class MOAQueryForm(GenericQueryForm):
@@ -83,6 +88,22 @@ class MOABroker(GenericBroker):
         logs.stop_log(log)
 
         return list_of_targets, new_targets
+
+    def fetch_alert_params(self, moa_files_directories, years = []):
+
+        #ingest the TOM db
+        events = []
+        time_now = Time(datetime.datetime.now()).jd
+        for year in years:
+            url_file_path = os.path.join(BROKER_URL, str(year) )
+            print(url_file_path)
+            response = requests.request('GET', url_file_path)
+            print(response)
+            if response.status_code == 200:
+                for line in response.iter_lines():
+                    print(line)
+
+        return events
 
     def ingest_event(self, name, ra, dec):
         cible = SkyCoord(ra, dec, unit="deg")
