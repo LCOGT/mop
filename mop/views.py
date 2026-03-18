@@ -12,7 +12,7 @@ from mop.toolbox.TAP import set_target_sky_location
 from django.views.generic.edit import FormView
 from django_filters.views import FilterView
 from guardian.mixins import PermissionListMixin
-from tom_targets.filters import TargetFilter
+from tom_targets.filters import TargetFilterSet
 from django.contrib import messages
 from mop.toolbox.obs_control import fetch_all_lco_requestgroups, parse_lco_requestgroups
 from mop.forms import TargetClassificationForm, TargetSelectionForm
@@ -493,7 +493,7 @@ class TargetListView(PermissionListMixin, FilterView):
     paginate_by = 25
     strict = False
     model = Target
-    filterset_class = TargetFilter
+    filterset_class = TargetFilterSet
     # Set app_name for Django-Guardian Permissions in case of Custom Target Model
     permission_required = f'{Target._meta.app_label}.view_target'
     ordering = ['-created']

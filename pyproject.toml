@@ -7,8 +7,8 @@ license = "GPL-3.0-only"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.12"
-tomtoolkit = "2.26.0"
+python = "<3.14,>=3.10.0"
+tomtoolkit = "2.31.3"
 whitenoise = "5.0.1"
 gunicorn = {version = "22.0.0", extras = ["gevent"]}
 psycopg2 = "=2.8.4"
