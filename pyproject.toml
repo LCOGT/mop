@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "<3.14,>=3.10.0"
 tomtoolkit = "2.31.3"
+django = ">=4.2.29, <5"
 whitenoise = "5.0.1"
 gunicorn = {version = "22.0.0", extras = ["gevent"]}
 psycopg2 = "=2.8.4"
@@ -23,6 +24,13 @@ django-silk = "^5"
 psutil = "^5"
 pika = "^1"
 tom-antares = "1.2.6"
+urllib3 = ">=2.6.3"
+pillow = ">9.2,<13.0"
+tornado = ">=6.5.5"
+cryptography = ">=46.0.5"
+setuptools = ">=78.1.1 "
+sqlparse = ">=0.5.4"
+fonttools = ">4.60.2"
 
 
 [tool.poetry.group.dev.dependencies]
