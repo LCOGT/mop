@@ -98,7 +98,7 @@ harvestztfdr3:
 
 # CronJob: Harvest GAIA
 harvestgaia:
-  enabled: true
+  enabled: false
   resources:
     requests:
       cpu: 10m
@@ -142,7 +142,7 @@ harvestasassn:
 
 # CronJob: Add Gaia Classifier
 gaiaclassifier:
-  enabled: true
+  enabled: false
   resources:
     requests:
       cpu: 10m

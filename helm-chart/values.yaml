@@ -37,7 +37,7 @@ harvestztfdr3:
 
 # CronJob: Harvest GAIA XX
 harvestgaia:
-  enabled: true
+  enabled: false
   schedule: "0 11 * * *"
   resources: {}
 
