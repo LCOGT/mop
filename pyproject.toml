@@ -31,6 +31,11 @@ cryptography = ">=46.0.5"
 setuptools = ">=78.1.1 "
 sqlparse = ">=0.5.4"
 fonttools = ">4.60.2"
+jinja2 = ">=3.1.6"
+requests = ">=2.32.4"
+marshmallow = ">3.26.2"
+markdown = ">=3.8.1"
+
 
 
 [tool.poetry.group.dev.dependencies]
