@@ -7,5 +7,3 @@ metadata: # kpt-merge: /svc
     internal.kpt.dev/upstream-identifier: 'kustomize.config.k8s.io|Kustomization|default|svc'
 resources:
   - ./svc.yaml
-components:
-  - ./remove-kpt-internal-annotations/

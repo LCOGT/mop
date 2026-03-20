@@ -12,6 +12,6 @@ spec:
   selector:
     app.kubernetes.io/component: server
   ports:
-  - name: http
-    port: 8080
-    targetPort: http
+    - name: http
+      port: 8080
+      targetPort: http

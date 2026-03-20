@@ -17,9 +17,5 @@ upstreamLock:
     repo: https://github.com/LCOGT/kpt-pkg-catalog
     directory: /namespace
     ref: main
-    commit: 6ae2417d130bf1ae275cc52a65d8db3e90a12da6
-pipeline:
-  mutators:
-    - image: gcr.io/kpt-fn/apply-replacements:v0.1.1
-      configPath: ./fn-replacements.yaml
-      name: apply-replacements
+    commit: 8b89fb7ae3f697300ea8f230aef2f266a0862ed8
+pipeline: {}

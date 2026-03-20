@@ -1,7 +1,7 @@
 # Source: minio/templates/standalone/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
-metadata:
+metadata: # kpt-merge: mop/minio
   name: minio
   namespace: mop
   labels:
@@ -10,6 +10,8 @@ metadata:
     app.kubernetes.io/name: minio
     app.kubernetes.io/version: 2024.10.2
     helm.sh/chart: minio-14.7.15
+  annotations:
+    internal.kpt.dev/upstream-identifier: 'apps|Deployment|mop|minio'
 spec:
   selector:
     matchLabels:
@@ -150,7 +152,7 @@ spec:
 # Source: minio/templates/pvc.yaml
 kind: PersistentVolumeClaim
 apiVersion: v1
-metadata:
+metadata: # kpt-merge: mop/minio
   name: minio
   namespace: mop
   labels:
@@ -159,6 +161,8 @@ metadata:
     app.kubernetes.io/name: minio
     app.kubernetes.io/version: 2024.10.2
     helm.sh/chart: minio-14.7.15
+  annotations:
+    internal.kpt.dev/upstream-identifier: '|PersistentVolumeClaim|mop|minio'
 spec:
   accessModes:
   - ReadWriteOnce
@@ -169,7 +173,7 @@ spec:
 # Source: minio/templates/secrets.yaml
 apiVersion: v1
 kind: Secret
-metadata:
+metadata: # kpt-merge: mop/minio
   name: minio
   namespace: mop
   labels:
@@ -178,6 +182,8 @@ metadata:
     app.kubernetes.io/name: minio
     app.kubernetes.io/version: 2024.10.2
     helm.sh/chart: minio-14.7.15
+  annotations:
+    internal.kpt.dev/upstream-identifier: '|Secret|mop|minio'
 type: Opaque
 data:
   root-user: cm9vdHJvb3Q=
@@ -186,7 +192,7 @@ data:
 # Source: minio/templates/service.yaml
 apiVersion: v1
 kind: Service
-metadata:
+metadata: # kpt-merge: mop/minio
   name: minio
   namespace: mop
   labels:
@@ -195,6 +201,8 @@ metadata:
     app.kubernetes.io/name: minio
     app.kubernetes.io/version: 2024.10.2
     helm.sh/chart: minio-14.7.15
+  annotations:
+    internal.kpt.dev/upstream-identifier: '|Service|mop|minio'
 spec:
   type: ClusterIP
   ports:
@@ -213,7 +221,7 @@ spec:
 # Source: minio/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
-metadata:
+metadata: # kpt-merge: mop/minio
   name: minio
   namespace: mop
   labels:
@@ -222,6 +230,8 @@ metadata:
     app.kubernetes.io/name: minio
     app.kubernetes.io/version: 2024.10.2
     helm.sh/chart: minio-14.7.15
+  annotations:
+    internal.kpt.dev/upstream-identifier: '|ServiceAccount|mop|minio'
 automountServiceAccountToken: false
 secrets:
 - name: minio
