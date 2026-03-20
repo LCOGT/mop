@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_gravatar',
     'django_htmx',
+    'django_tables2',
     'rest_framework',
     'rest_framework.authtoken',
     'tom_targets',
@@ -435,6 +436,15 @@ EXTRA_FIELDS = [
                 # {'name': 'TNS_class', 'type': 'string', 'default': 'None'}
     ]
 
+# Map model labels to dotted paths of custom general search functions for HTMX tables.
+# This allows overriding the default general search method without subclassing.
+# See https://tom-toolkit.readthedocs.io/en/stable/customization/htmx_tables.html.
+# Example:
+# GENERAL_SEARCH_FUNCTIONS = {
+#     'tom_targets.Target': 'custom_code.search.my_target_search',
+# }
+GENERAL_SEARCH_FUNCTIONS = {}
+
 SELECTION_EXTRA_FIELDS = [
     'mag_now',
     'tap_priority',
@@ -467,6 +477,13 @@ TARGET_PERMISSIONS_ONLY=True
 # or READ_ONLY (read only access to views)
 AUTH_STRATEGY = 'READ_ONLY'
 
+# Display these columns in the target list table. Values can be attributes or properties on
+# the Target model, tags or extra fields. The fields `observations` and `saved_data` are
+# special cases with custom implementation.
+TARGET_LIST_COLUMNS = [
+    "name", "type", "observations", "saved_data"
+]
+
 # URLs that should be allowed access even with AUTH_STRATEGY = LOCKED
 # for example: OPEN_URLS = ['/', '/about']
 OPEN_URLS = ['/mop/Home']
@@ -493,6 +510,10 @@ HINT_LEVEL = 20
 # Default Plotly theme setting, can set to any valid theme:
 # 'plotly', 'plotly_white', 'plotly_dark', 'ggplot2', 'seaborn', 'simple_white', 'none'
 PLOTLY_THEME = 'plotly_white'
+
+# Setting for displaying pagination information (e.g., "(0-0 of 0)").
+# Set this to False if you have a particularly large DB and paginated views are slow.
+SHOW_PAGINATION_INFO = True
 
 try:
     from local_settings import * # noqa
