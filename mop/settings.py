@@ -507,6 +507,8 @@ THUMBNAIL_DEFAULT_SIZE = (200, 200)
 HINTS_ENABLED = True
 HINT_LEVEL = 20
 
+CSS_THEME = 'Dark'
+
 # Default Plotly theme setting, can set to any valid theme:
 # 'plotly', 'plotly_white', 'plotly_dark', 'ggplot2', 'seaborn', 'simple_white', 'none'
 PLOTLY_THEME = 'plotly_white'

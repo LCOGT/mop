@@ -1,0 +1,311 @@
+:root {
+    --primary: #007bff;
+    --secondary: #6c757d;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --theme_primary: #fff;
+    --theme_text_primary: #000;
+    --theme_accent1: #fff;
+    --theme_accent2: rgba(0, 0, 0, .03);
+    --theme_accent3: #fff;
+    --theme_link_text: #007bff;
+    --theme_link_hover: #0056b3;
+    --theme_link_active: #0056b3;
+}
+
+body {
+  padding-top: 5rem;
+  background-color: var(--theme_primary);
+  color: var(--theme_text_primary);
+}
+
+.content {
+  padding: 3rem 1.5rem;
+}
+
+.card {
+  background-color: var(--theme_accent1);
+  color: var(--theme_text_primary);
+}
+
+.card-header {
+  background-color: var(--theme_accent2);
+}
+
+.media {
+  background-color: var(--theme_accent2);
+}
+
+/* Set Navbar themes */
+.navbar {
+  background-color: var(--theme_accent1);
+  color: var(--theme_text_primary);
+}
+
+.navbar-brand > img {
+  max-height: 25px;
+}
+
+.nav-item {
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  background-color: var(--theme_accent3);
+}
+
+.dropdown-item {
+  color: var(--theme_text_primary);
+  background-color: var(--theme_accent3);
+}
+
+.nav-link {
+  color: var(--theme_text_primary);
+}
+
+.nav-link:active, .nav-item:active {
+  color: var(--theme_text_primary);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.input-group-text {
+  font-family: monospace;
+  color: var(--theme_text_primary);
+}
+
+#login-buttons > li {
+  margin: 0 2px 0 2px;
+}
+
+/* see https://github.com/twbs/bootstrap/issues/23295 */
+textarea {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Set link themes */
+a {
+  color: var(--theme_link_text);
+}
+
+a:hover {
+  color: var(--theme_link_hover);
+}
+
+a:active {
+  color: var(--theme_link_active);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* Set Table Themes */
+table {
+  background-color: var(--theme_accent1);
+  border: none;
+  border: 1pt solid var(--theme_accent1);
+  border-radius: 10px;
+}
+
+thead {
+  color: var(--theme_text_primary);
+  border: 1pt solid var(--theme_accent1);
+}
+
+tbody {
+  border: 1pt solid var(--theme_accent1);
+}
+
+tr {
+  border: 1pt solid var(--theme_accent1);
+}
+
+td, th {
+  border: 1pt solid var(--theme_accent2);
+  background-color: var(--theme_accent1);
+  color: var(--theme_text_primary);
+}
+
+/* add up and down sorting arrows to column headers  */
+.table-container th.asc::after {
+    content: '\0000a0\0025bc';
+    float: left;
+}
+
+.table-container th.desc::after {
+    content: '\0000a0\0025b2';
+    float: left;
+}
+
+/* Create copy button class */
+.copy-button {
+    opacity: 0.75; /* Make it slightly transparent */
+    cursor: pointer; /* change cursor on hover */
+    font-size: x-small; /* smaller font */
+    padding: 0.25rem;
+    position: absolute;
+    top: 0.1rem; /* set close to the top of container */
+}
+
+.copy-button:hover {
+    opacity: 1; /* Make it fully opaque on hover */
+}
+
+/* extend basic toast to appear at top of page */
+.toast {
+  visibility: hidden; /* Hidden by default. Visible on click */
+  min-width: 250px; /* Set a default minimum width */
+  margin-left: -125px; /* Divide value of min-width by 2 */
+  background-color: var(--dark); /* success background color */
+  color: var(--light); /* White text color */
+  text-align: center; /* Centered text */
+  border-radius: 1rem; /* Rounded borders */
+  padding: 16px; /* Padding */
+  position: fixed; /* Sit on top of the screen */
+  z-index: 1; /* Add a z-index if needed */
+  left: 50%; /* Center the toast */
+  top: 60px; /* 30px from the bottom */
+}
+
+/* Change color of toast depending on class */
+.toast.success {
+  background-color: var(--success); /* success background color */
+  color: var(--light); /* White text color */
+}
+
+.toast.primary {
+  background-color: var(--primary); /* success background color */
+  color: var(--light); /* White text color */
+}
+
+.toast.warning {
+  background-color: var(--warning); /* success background color */
+  color: var(--dark); /* White text color */
+}
+
+.toast.danger {
+  background-color: var(--danger); /* success background color */
+  color: var(--light); /* White text color */
+}
+
+.toast.info {
+  background-color: var(--info); /* success background color */
+  color: var(--light); /* White text color */
+}
+
+/* Show the toast when set */
+.toast.show {
+  opacity: 1; /* Show the Toast */
+  visibility: visible; /* Show the Toast */
+}
+
+/* Indicates interactivity */
+.pointer {
+  cursor: pointer;
+}
+
+/* Set Pagination Theme */
+.pagination {
+  background-color: var(--theme_accent1);
+  color: var(--theme_text_primary);
+}
+
+.pagination a {
+  background-color: var(--theme_accent2);
+  color: var(--theme_text_primary);
+}
+
+.pagination a:hover {
+  background-color: var(--theme_accent3);
+  color: var(--theme_text_primary);
+}
+
+/* HTMX progress bar for Tables */
+.progress {
+    height: 6px;
+    width: 100%;
+    border-radius: 2px;
+    background-clip: padding-box;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress {
+    opacity: 0;
+}
+
+.htmx-request .progress {
+    opacity: 1;
+}
+
+.htmx-request.progress {
+    opacity: 1;
+}
+
+.progress .indeterminate {
+    background-color: var(--theme_primary);
+}
+
+.progress .indeterminate::before {
+    content: '';
+    position: absolute;
+    background-color: inherit;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    will-change: left, right;
+    -webkit-animation: indeterminate 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+    animation: indeterminate 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+}
+
+.progress .indeterminate::after {
+    content: '';
+    position: absolute;
+    background-color: inherit;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    will-change: left, right;
+    -webkit-animation: indeterminate-short 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) infinite;
+    animation: indeterminate-short 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) infinite;
+    -webkit-animation-delay: 1.15s;
+    animation-delay: 1.15s;
+}
+
+@keyframes indeterminate {
+    0% {
+        left: -35%;
+        right: 100%;
+    }
+
+    60% {
+        left: 100%;
+        right: -90%;
+    }
+
+    100% {
+        left: 100%;
+        right: -90%;
+    }
+}
+
+@keyframes indeterminate-short {
+    0% {
+        left: -200%;
+        right: 100%;
+    }
+
+    60% {
+        left: 107%;
+        right: -8%;
+    }
+
+    100% {
+        left: 107%;
+        right: -8%;
+    }
+}
