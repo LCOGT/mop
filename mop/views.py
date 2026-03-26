@@ -254,8 +254,8 @@ class PriorityTargetsView(ListView):
         if self.request.user.is_authenticated:
 
             # Query for matching TargetExtra entries returns a list of Target PKs
-            qs_stars = querytools.fetch_priority_targets(10.0, 'stellar')
-            qs_bh = querytools.fetch_priority_targets(10.0, 'long_tE')
+            qs_stars = querytools.fetch_priority_targets(10.0, 'stellar', verbose=False)
+            qs_bh = querytools.fetch_priority_targets(10.0, 'long_tE', verbose=False)
 
             #Check observed targets
             obs_targets = self.get_observed_targets_data()
