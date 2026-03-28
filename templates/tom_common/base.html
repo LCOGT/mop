@@ -8,7 +8,12 @@
 
     <!-- Bootstrap CSS -->
     {% bootstrap_css %}
+    <link rel="stylesheet" href="{% static 'font-awesome-4.7.0/css/font-awesome.min.css' %}">
     <link rel="stylesheet" href="{% static 'tom_common/css/main.css' %}">
+    {% get_theme as theme %}
+    {% if theme %}
+      <link rel="stylesheet" href="{% static theme %}">
+    {% endif %}
     <link rel="stylesheet" href="{% static 'tom_common/css/custom.css' %}">
     {% block additional_css %}
     {% endblock %}
@@ -18,12 +23,14 @@
     {% bootstrap_javascript jquery='True' %}
     <!-- htmx.min.js was downloaded manually and added to the project. see https://htmx.org/docs/#download-a-copy -->
     <script src="{% static 'tom_common/js/htmx.min.js' %}" defer></script>
+    <!-- Loading AlpineJS from a CDN For now, todo solution for 3rd party static assets. -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <title>MOP | {% block title %}{% endblock %}</title>
+    <title>{% tom_name %} | {% block title %}{% endblock %}</title>
   </head>
   <body>
     <nav class="navbar navbar-expand-md sticky-top" style="background: url('{% static 'tom_common/img/mop_navbar_grey_bkgd.png' %}'); background-position: center; background-repeat: no-repeat;">
-      <a class="navbar-brand" href="/"><img src="{% static 'tom_common/img/MOP.jpeg' %}" class="img-fluid"> MOP</a>
+      <a class="navbar-brand" href="/"><img src="{% static 'tom_common/img/MOP.jpeg' %}" class="img-fluid"> {% tom_name %} </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -47,30 +54,15 @@
           {% include 'tom_common/navbar_content.html' %}
 
         </ul>
-        <ul class="navbar-nav ml-auto">
-        {% if user.is_authenticated %}
-          <li class="nav-item">
-            {% if user.first_name or user.last_name %}
-            <a class="nav-link" href="{% url 'user-update' user.id %}">{{ user.first_name }} {{ user.last_name }}</a>
-            {% else %}
-            <a class="nav-link" href="{% url 'user-update' user.id %}">User {{ user.id }}</a>
-            {% endif %}
-          </li>
-          <li>
-            <a class="btn btn-outline-success" title="logout" href="{% url 'logout' %}">Logout</a>
-          </li>
-        {% else %}
-          <li class="nav-item">
-            <a class="btn btn-outline-success" title="logout" href="{% url 'login' %}">Login</a>
-          </li>
-        {% endif %}
+        <ul class="navbar-nav ml-auto" id="login-buttons">
+        {% include 'tom_common/partials/navbar_login.html' %}
         </ul>
       </div>
     </nav>
 
     <main role="main" class="container-fluid">
+      {% bootstrap_messages %}
       <div class="content">
-        {% bootstrap_messages %}
         {% block content %}
         {% endblock %}
       </div>

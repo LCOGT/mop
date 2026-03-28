@@ -1,5 +1,4 @@
-{% load static bootstrap4 %}
-
+{% load static bootstrap4 tom_common_extras %}
 {% comment %}
 The following nav-item list elements (li) are included in the tom_common/base.html navbar-nav (ul).
 For customization instructions, see tom_common/base.html
@@ -8,7 +7,6 @@ For customization instructions, see tom_common/base.html
 <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
     <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
 </li>
-
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" data-toggle="dropdown">Targets</a>
     <ul class="dropdown-menu">
@@ -26,15 +24,10 @@ For customization instructions, see tom_common/base.html
         </li>
     </ul>
 </li>
-<li class="nav-item {% if request.resolver_match.namespace == 'alerts' %}active{% endif %}">
-    <a class="nav-link" href="{% url 'alerts:list' %}">Alerts</a>
-</li>
-<li class="nav-item {% if request.resolver_match.namespace == 'observations' %}active{% endif %}">
-    <a class="nav-link" href="{% url 'activeobs' %}">Active Obs</a>
-</li>
 <li class="nav-item {% if request.resolver_match.namespace == 'dataproducts' %}active{% endif %}">
     <a class="nav-link" href="{% url 'tom_dataproducts:list' %}">Data</a>
 </li>
+{% navbar_app_addons %}
 <li class="nav-item {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
     <a class="nav-link" href="{% url 'user-list' %}">Users</a>
 </li>
