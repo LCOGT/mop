@@ -254,9 +254,9 @@ def pylima_telescopes_from_datasets(datasets, emag_limit=None):
 
         # Treating all sites as ground-based without coordinates
         tel = telescopes.Telescope(name='Tel_'+str(idx), camera_filter=name,
-                                         light_curve=photometry[mask],
-                                         light_curve_names=['time', 'mag', 'err_mag'],
-                                         light_curve_units=['JD', 'mag', 'err_mag'])
+                                         lightcurve=photometry[mask],
+                                         lightcurve_names=['time', 'mag', 'err_mag'],
+                                         lightcurve_units=['JD', 'mag', 'err_mag'])
         tel_list.append(tel)
 
     return tel_list
