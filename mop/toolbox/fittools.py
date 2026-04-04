@@ -370,7 +370,7 @@ def gather_model_parameters(pevent, model_fit):
     # Calculate the reduced chi2
     ndata = 0
     for i,tel in enumerate(pevent.telescopes):
-        ndata += len(tel.lightcurve_magnitude)
+        ndata += len(tel.lightcurve)
     model_params['red_chi2'] = np.around(model_params['chi2'] / float(ndata - len(param_keys)),3)
 
     # Retrieve the flux parameters, converting from PyLIMA's key nomenclature to MOPs
@@ -526,10 +526,10 @@ def generate_model_lightcurve(pevent, model_params):
 
     magnitude = toolbox.brightness_transformation.flux_to_magnitude(flux_model)
 
-    model_telescope.lightcurve_magnitude["mag"] = magnitude * unit.mag
+    model_telescope.lightcurve["mag"] = magnitude * unit.mag
 
     mask = ~np.isnan(magnitude)
-    model_telescope.lightcurve_magnitude = model_telescope.lightcurve_magnitude[mask]
+    model_telescope.lightcurve = model_telescope.lightcurve[mask]
 
     return model_telescope
 
@@ -545,8 +545,8 @@ def store_model_lightcurve(mulens, model):
 
     # Extract the model lightcurve timeseries from the PyLIMA fit object
     data = {
-        'lc_model_time': model.lightcurve_magnitude['time'].value.tolist(),
-        'lc_model_magnitude': model.lightcurve_magnitude['mag'].value.tolist()
+        'lc_model_time': model.lightcurve['time'].value.tolist(),
+        'lc_model_magnitude': model.lightcurve['mag'].value.tolist()
     }
 
     # If there is no existing model for this target, create one
