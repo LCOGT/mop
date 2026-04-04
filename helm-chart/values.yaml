@@ -50,7 +50,7 @@ harvestmoa:
 # CronJob: Harvest OGLE XX
 harvestogle:
   enabled: true
-  schedule: "30 1,7,13,19 * * *"
+  schedule: "30 17 * * *"
   resources: {}
 
 # CronJob: Harvest ASAS-SN
@@ -61,7 +61,7 @@ harvestasassn:
 
 # CronJob: Gaia_classifier XX
 gaiaclassifier:
-  enabled: true
+  enabled: false
   schedule: "30 14 * * *"
   resources: {}
 
