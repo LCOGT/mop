@@ -70,7 +70,8 @@ class OGLEBroker(GenericBroker):
             par_file_url = os.path.join(BROKER_URL,year,'lenses.par')
             response = requests.request('GET', par_file_url)
             logger.info('OGLE harvester: retrieving parameters for events from '
-                            +str(year)+' with status '+str(response.status_code))
+                            +str(year)+' with status '+str(response.status_code) + ': ' + response.reason)
+
             if response.status_code == 200:
                 for line in response.iter_lines():
                     line = str(line)
@@ -80,6 +81,8 @@ class OGLEBroker(GenericBroker):
                         ra = entries[3]
                         dec = entries[4]
                         events[name] = (ra,dec)
+            else:
+                logger.info(response.text)
 
         logger.info('OGLE harvester: found ' + str(len(events)) + ' event(s)')
 
