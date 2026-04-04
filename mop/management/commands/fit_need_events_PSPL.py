@@ -69,7 +69,7 @@ def run_fit(mulens, cores=0, verbose=False):
         # current time relative to its t0 and tE
         if fit_status:
             alive = fittools.check_event_alive(model_params['t0'], model_params['tE'], mulens.last_observation)
-        logger.info(mulens.name + ' alive status: ' + repr(alive))
+            logger.info(mulens.name + ' alive status: ' + repr(alive))
 
         t10 = datetime.datetime.utcnow()
         if verbose: utilities.checkpoint()
