@@ -73,8 +73,8 @@ class OGLEBroker(GenericBroker):
                 URL = BROKER_URL_OGLE3
             elif int(year) <= 2000:
                 URL = BROKER_URL_OGLE2
-            logger.info('OGLE harvester: Broker URL = ' + URL)
             par_file_url = os.path.join(BROKER_URL,year,'lenses.par')
+            logger.info('OGLE harvester: Retrieving URL = ' + par_file_url)
             response = requests.request('GET', par_file_url)
             logger.info('OGLE harvester: retrieving parameters for events from '
                             +str(year)+' with status '+str(response.status_code) + ': ' + response.reason)
