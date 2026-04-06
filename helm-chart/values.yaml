@@ -43,7 +43,7 @@ harvestgaia:
 
 # CronJob: Harvest MOA XX
 harvestmoa:
-  enabled: true
+  enabled: false
   schedule: "0 12 * * *"
   resources: {}
 

@@ -122,7 +122,7 @@ harvestgaia:
 # CronJob: Harvest MOA
 # ACTIVE
 harvestmoa:
-  enabled: true
+  enabled: false
   resources:
     requests:
       cpu: 10m
