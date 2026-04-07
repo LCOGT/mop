@@ -134,7 +134,7 @@ harvestmoa:
 # CronJob: Harvest OGLE
 # ACTIVE
 harvestogle:
-  enabled: true
+  enabled: false
   resources:
     requests:
       cpu: 10m

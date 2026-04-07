@@ -49,7 +49,7 @@ harvestmoa:
 
 # CronJob: Harvest OGLE XX
 harvestogle:
-  enabled: true
+  enabled: false
   schedule: "30 17 * * *"
   resources: {}
 
