@@ -20,6 +20,10 @@ from django.db import connection
 
 logger = logging.getLogger(__name__)
 
+def get_zeropoint():
+    "Magnitude zeropoint equivalent to 1 count of flux; must be the same as used by pyLIMA"
+    return 27.4
+
 def chi2(params, fit):
 
     chi2 = np.sum(fit.residuals_LM(params)**2)
@@ -28,7 +32,7 @@ def chi2(params, fit):
 
 def flux_to_mag(flux):
 
-    ZP_pyLIMA = 27.4
+    ZP_pyLIMA = get_zeropoint()
     magnitude = ZP_pyLIMA - 2.5 * np.log10(flux)
     return magnitude
 
@@ -40,7 +44,7 @@ def fluxerror_to_magerror(flux, flux_error):
 def mag_to_flux(mag):
     """Zeropoint taken from PyLIMA.toolbox.brightness_transformation"""
 
-    ZP_pyLIMA = 27.4
+    ZP_pyLIMA = get_zeropoint()
     flux = 10**((mag - ZP_pyLIMA) / -2.5)
 
     return flux
@@ -106,7 +110,7 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
                                 + ' tE: ' + repr(fit_tap.fit_parameters["tE"][1])
                                 + ' u0: ' + repr(fit_tap.fit_parameters["u0"][1]))
     fit_tap.fit()
-    model1_params = gather_model_parameters(current_event, fit_tap)
+    model1_params = gather_model_parameters(current_event, fit_tap, verbose)
     if verbose: logger.info('FITTOOLS: model 1 fitted parameters ' + repr(model1_params))
 
     # Evaluate the quality of the best-available model.
@@ -138,7 +142,7 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
                                 + ' tE: ' + repr(fit_tap2.fit_parameters["tE"][1])
                                 + ' u0: ' + repr(fit_tap2.fit_parameters["u0"][1]))
         fit_tap2.fit()
-        model2_params = gather_model_parameters(current_event, fit_tap2)
+        model2_params = gather_model_parameters(current_event, fit_tap2, verbose)
         # default null as in the former implementation
         #model2_params['blend_magnitude'] = np.nan
         if verbose: logger.info('FITTOOLS: model 2 fitted parameters ' + repr(model2_params))
@@ -175,7 +179,7 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
 
     # Generate the model lightcurve timeseries with the fitted parameters
     if not np.isnan(best_model['tE']):
-        model_telescope = generate_model_lightcurve(current_event,best_model)
+        model_telescope = generate_model_lightcurve(current_event, best_model, verbose)
         if verbose: logger.info('FITTOOLS: generated model lightcurve')
     else:
         model_telescope = None
@@ -336,7 +340,7 @@ def check_event_alive(t0_fit, tE_fit, last_obs_jd):
 
     return alive
 
-def gather_model_parameters(pevent, model_fit):
+def gather_model_parameters(pevent, model_fit, verbose):
     """
     Function to gather the parameters of a PyLIMA fitted model into a dictionary for easier handling.
     """
@@ -388,6 +392,11 @@ def gather_model_parameters(pevent, model_fit):
     except:
         model_params['source_magnitude'] = np.nan
         model_params['source_mag_error'] = np.nan
+    if verbose: logger.info('FITTOOLS: source flux ' + str(source_flux) + '+/-' + str(source_flux_error))
+    if verbose: logger.info(
+        'FITTOOLS: source mag ' + str(model_params['source_magnitude'])
+        + '+/-' + str(model_params['source_mag_error'])
+    )
 
     # Handle blend flux, computed from ftotal
     try:
@@ -405,8 +414,21 @@ def gather_model_parameters(pevent, model_fit):
                                   blend_flux_error),
             3)
     except:
-        model_params['blend_magnitude'] = np.nan
-        model_params['blend_mag_error'] = np.nan
+        model_params['blend_magnitude'] = get_zeropoint()
+        model_params['blend_mag_error'] = 0.0
+
+    # Occasionally fits with negative blend flux are possible
+    if blend_flux < 0.0:
+        blend_flux = 0.0
+        blend_flux_error = 0.0
+        model_params['blend_magnitude'] = get_zeropoint()
+        model_params['blend_mag_error'] = 0.0
+
+    if verbose: logger.info('FITTOOLS: blend flux ' + str(blend_flux) + '+/-' + str(blend_flux_error))
+    if verbose: logger.info(
+        'FITTOOLS: blend mag ' + str(model_params['blend_magnitude'])
+        + '+/-' + str(model_params['blend_mag_error'])
+    )
 
     # If the model fitted contains valid entries for both source and blend flux,
     # use these to calculate the baseline magnitude.  Otherwise, use the source magnitude
@@ -422,6 +444,10 @@ def gather_model_parameters(pevent, model_fit):
     else:
         model_params['baseline_magnitude'] = model_params['source_magnitude']
         model_params['baseline_mag_error'] = model_params['source_mag_error']
+    if verbose: logger.info(
+        'FITTOOLS: baseline mag ' + str(model_params['baseline_magnitude'])
+        + '+/-' + str(model_params['baseline_mag_error'])
+    )
 
     model_params['fit_covariance'] = model_fit.fit_results["covariance_matrix"]
 
@@ -506,7 +532,7 @@ def evaluate_model(best_model, verbose=False):
 
     return best_model
 
-def generate_model_lightcurve(pevent, model_params):
+def generate_model_lightcurve(pevent, model_params, verbose):
     """Function to generate a photometric timeseries corresponding to the given model parameters"""
 
     pyLIMA_plots.list_of_fake_telescopes = []
@@ -523,6 +549,7 @@ def generate_model_lightcurve(pevent, model_params):
     params.append(source_flux)
     blend_flux = mag_to_flux(model_params['blend_magnitude'])
     params.append(source_flux+blend_flux)
+    if verbose: logger.info('GENERATE LC parameter set: ' + repr(params))
 
     pyLIMA_parameters = pspl.compute_pyLIMA_parameters(params)
 
