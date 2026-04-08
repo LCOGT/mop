@@ -38,6 +38,7 @@ def fluxerror_to_magerror(flux, flux_error):
     return mag_err
 
 def mag_to_flux(mag):
+    """Zeropoint taken from PyLIMA.toolbox.brightness_transformation"""
 
     ZP_pyLIMA = 27.4
     flux = 10**((mag - ZP_pyLIMA) / -2.5)
@@ -88,7 +89,8 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
     current_event.check_event()
 
     # MODEL 1: PSPL model without parallax
-    pspl = PSPL_model.PSPLmodel(current_event, parallax=['None', 0.])
+    pspl = PSPL_model.PSPLmodel(current_event, parallax=['None', 0.],
+                                    blend_flux_parameter='ftotal')
     pspl.define_model_parameters()
     fit_tap = TRF_fit.TRFfit(pspl, loss_function='soft_l1')
     if verbose: logger.info('FITTOOLS: Set model 1, static PSPL')
@@ -97,7 +99,7 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
         default_t0_lower = fit_tap.fit_parameters["t0"][1][0]
         default_t0_upper = fit_tap.fit_parameters["t0"][1][1]
         fit_tap.fit_parameters["t0"][1] = [default_t0_lower, default_t0_upper + delta_t0]
-        fit_tap.fit_parameters["tE"][1] = [1., 3000.]
+        fit_tap.fit_parameters["tE"][1] = [1., 1000.]
         fit_tap.fit_parameters["u0"][1] = [0.0, 2.0]
         if verbose: logger.info('FITTOOLS: model 1 fit boundaries: t0: '
                                 + repr(fit_tap.fit_parameters["t0"][1])
@@ -123,13 +125,13 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
     # MODEL 2: PSPL model without blending or parallax
     if do_noblend_model:
         pspl2 = PSPL_model.PSPLmodel(current_event, parallax=['None', 0.],
-                                    blend_flux_parameter='noblend')
+                                    blend_flux_parameter='ftotal')
         pspl2.define_model_parameters()
         fit_tap2 = TRF_fit.TRFfit(pspl2, loss_function='soft_l1')
         if verbose: logger.info('FITTOOLS: Set model 2, static PSPL without blending')
         if use_boundaries:
             fit_tap2.fit_parameters["t0"][1] = [default_t0_lower, default_t0_upper + delta_t0]
-            fit_tap2.fit_parameters["tE"][1] = [1., 3000.]
+            fit_tap2.fit_parameters["tE"][1] = [1., 1000.]
             fit_tap2.fit_parameters["u0"][1] = [0.0, 2.0]
             if verbose: logger.info('FITTOOLS: model 2 fit boundaries: t0: '
                                 + repr(fit_tap2.fit_parameters["t0"][1])
@@ -138,7 +140,7 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
         fit_tap2.fit()
         model2_params = gather_model_parameters(current_event, fit_tap2)
         # default null as in the former implementation
-        model2_params['blend_magnitude'] = np.nan
+        #model2_params['blend_magnitude'] = np.nan
         if verbose: logger.info('FITTOOLS: model 2 fitted parameters ' + repr(model2_params))
 
         # Evaluate the quality of this model
@@ -161,9 +163,9 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
                                 + ', threshold dchi2 = ' + str(dchi2_threshold))
         if delta_chi2 >= dchi2_threshold:
             best_model = model1_params
-            if verbose: logger.info('FITTOOLS: Using model 1 (with blending and parallax) as best-fit model')
+            if verbose: logger.info('FITTOOLS: Using model 1 (with  parallax) as best-fit model')
         else:
-            if verbose: logger.info('FITTOOLS: Using model 2 (no blending or parallax) as best-fit model')
+            if verbose: logger.info('FITTOOLS: Using model 2 (no parallax) as best-fit model')
 
     # Exception handling if PyLIMA rejects data internally
     #except:
@@ -374,45 +376,49 @@ def gather_model_parameters(pevent, model_fit):
     model_params['red_chi2'] = np.around(model_params['chi2'] / float(ndata - len(param_keys)),3)
 
     # Retrieve the flux parameters, converting from PyLIMA's key nomenclature to MOPs
-    key_map = {
-        'fsource_Tel_0': 'source_magnitude',
-        'fblend_Tel_0': 'blend_magnitude'
-    }
+    # Fetch the source flux
+    try:
+        source_flux = model_params['fsource_Tel_0']
+        source_flux_error = model_params['fsource_Tel_0_error']
+        model_params['source_magnitude'] = np.around(flux_to_mag(source_flux), 3)
 
-    flux_index = []
-    for pylima_key,mop_key in key_map.items():
-        try:
-            idx = param_keys.index(pylima_key)
-            model_params[mop_key] = np.around(flux_to_mag(model_fit.fit_results["best_model"][idx]), 3)
-            flux_index.append(idx)
-        except ValueError:
-            model_params[mop_key] = np.nan
+        source_mag_error = fluxerror_to_magerror(model_params['fsource_Tel_0'],
+                                  model_params['fsource_Tel_0_error'])
+        model_params['source_mag_error'] = np.around(source_mag_error, 3)
+    except:
+        model_params['source_magnitude'] = np.nan
+        model_params['source_mag_error'] = np.nan
 
-    # Retrieve the flux uncertainties and convert to magnitudes
-    model_params['source_mag_error'] = np.around(
-                                                fluxerror_to_magerror(model_params['fsource_Tel_0'],
-                                                             model_params['fsource_Tel_0_error']),
-                                                3)
-    if 'fblend_Tel_0' in model_params.keys():
+    # Handle blend flux, computed from ftotal
+    try:
+        total_flux = model_params['ftotal_Tel_0']
+        total_flux_error = model_params['ftotal_Tel_0_error']
+        blend_flux = total_flux - source_flux
+        model_params['blend_magnitude'] = np.around(flux_to_mag(blend_flux), 3)
+
+        blend_flux_error = np.sqrt(
+            total_flux_error * total_flux_error
+            + source_flux_error * source_flux_error
+        )
         model_params['blend_mag_error'] = np.around(
-                                                fluxerror_to_magerror(model_params['fblend_Tel_0'],
-                                                             model_params['fblend_Tel_0_error']),
-                                                3)
-    else:
+            fluxerror_to_magerror(blend_flux,
+                                  blend_flux_error),
+            3)
+    except:
+        model_params['blend_magnitude'] = np.nan
         model_params['blend_mag_error'] = np.nan
 
     # If the model fitted contains valid entries for both source and blend flux,
     # use these to calculate the baseline magnitude.  Otherwise, use the source magnitude
     if not np.isnan(model_params['source_magnitude']) \
            and not np.isnan(model_params['blend_magnitude']):
-        unlensed_flux = model_fit.fit_results["best_model"][flux_index[0]] \
-                            + model_fit.fit_results["best_model"][flux_index[1]]
-        unlensed_flux_error = np.sqrt(
-                                (model_params['fsource_Tel_0_error']**2 + model_params['fblend_Tel_0_error']**2)
-                                + (model_params['fsource_Tel_0_error']*model_params['fblend_Tel_0_error'])
-                            )
-        model_params['baseline_magnitude'] = np.around(flux_to_mag(unlensed_flux), 3)
-        model_params['baseline_mag_error'] = np.around(fluxerror_to_magerror(unlensed_flux,unlensed_flux_error), 3)
+        baseline_flux = source_flux + blend_flux
+        baseline_flux_error = np.sqrt(
+            source_flux_error ** 2 + blend_flux_error ** 2
+            + source_flux_error * blend_flux_error
+        )
+        model_params['baseline_magnitude'] = np.around(flux_to_mag(baseline_flux), 3)
+        model_params['baseline_mag_error'] = np.around(fluxerror_to_magerror(baseline_flux, baseline_flux_error), 3)
     else:
         model_params['baseline_magnitude'] = model_params['source_magnitude']
         model_params['baseline_mag_error'] = model_params['source_mag_error']
@@ -506,18 +512,18 @@ def generate_model_lightcurve(pevent, model_params):
     pyLIMA_plots.list_of_fake_telescopes = []
 
     # This doesn't include parallax right now, since none of the fitted models do either yet
-    pspl = PSPL_model.PSPLmodel(pevent, parallax=['None', 0.])
+    pspl = PSPL_model.PSPLmodel(pevent, parallax=['None', 0.], blend_flux_parameter='ftotal')
 
     params = []
-    parameters = ['t0', 'u0', 'tE', 'source_magnitude', 'blend_magnitude']
+    parameters = ['t0', 'u0', 'tE']
     for key in parameters:
         value = model_params[key]
-        if 'magnitude' in key:
-            if not np.isnan(value):
-                value = mag_to_flux(value)
-            else:
-                value = 0.0
         params.append(value)
+    source_flux = mag_to_flux(model_params['source_magnitude'])
+    params.append(source_flux)
+    blend_flux = mag_to_flux(model_params['blend_magnitude'])
+    params.append(source_flux+blend_flux)
+
     pyLIMA_parameters = pspl.compute_pyLIMA_parameters(params)
 
     model_telescope = pyLIMA_plots.create_telescopes_to_plot_model(pspl, pyLIMA_parameters)[0]
