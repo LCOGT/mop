@@ -247,6 +247,29 @@ class OGLEBroker(GenericBroker):
 
         return np.array(photometry)
 
+    def download_ogle_lightcurve(self, ogle_name, lc_file_path):
+        """Method to download the OGLE lightcurve via HTTP"""
+
+
+        if ogle_name:
+            year = ogle_name.split('-')[1]
+            event = ogle_name.split('-')[2] + '-' + ogle_name.split('-')[3]
+
+            lc_file_url = os.path.join(BROKER_URL, year, event.lower(), 'phot.dat')
+
+            with requests.get(lc_file_url, stream=True) as r:
+                r.raise_for_status()  # Check for HTTP errors
+                with open(lc_file_path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+            logger.info('OGLE harvester: downloaded photometry for event ' + ogle_name
+                        + ' to file ' + lc_file_path)
+
+        else:
+            logger.info('OGLE Harvester WARNING: No OGLE name available for target '
+                        + ogle_name + ' so cannot find lightcurve to download')
+
     def ingest_ogle_photometry(self, target, photometry):
         """Method to store the photometry datapoints in the TOM as ReducedDatums"""
 
