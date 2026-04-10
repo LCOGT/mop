@@ -117,6 +117,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--cores', help='Number of workers (CPU cores) to use', default=os.cpu_count(), type=int)
         parser.add_argument('--run-every', help='Run each Fit every N hours', default=4, type=int)
+        parser.add_argument('--force', help='Require model fits', default=False, action='store_true')
 
     def handle(self, *args, **options):
 
@@ -168,7 +169,7 @@ class Command(BaseCommand):
                         # not the event is still alive, based on the new model.
                         # If the event is not to be fitted for any reason, we need to check whether or not
                         # it is still alive.
-                        if mulens.need_to_fit:
+                        if mulens.need_to_fit or options['force']:
                             target_data[mulens.name] = mulens
 
                         else:
