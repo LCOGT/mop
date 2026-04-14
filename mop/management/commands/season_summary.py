@@ -29,14 +29,18 @@ class Command(BaseCommand):
                 obs_start = datetime.fromisoformat(obs.parameters['start']).replace(tzinfo=timezone.utc)
 
             except KeyError:
+                print(obs.parameters['requests'])
+                obs_ts = obs.parameters['requests'][0]['windows'][0]['start']
+                print(obs_ts)
                 obs_start = datetime.strptime(
                     obs.parameters['requests'][0]['windows'][0]['start'],
                     "%Y-%m-%d %H:%M:%d"
                 ).replace(tzinfo=timezone.utc)
-
+                breakpoint()
+                
             if obs_start >= start_date and obs_start <= end_date:
                 if obs.target not in targets: targets.append(Target.objects.get(id=obs.target.pk))
-                
+
         print('Found ' + str(len(targets)) + ' targets with observation records')
 
         # For those targets, review the ReducedDatums obtained
