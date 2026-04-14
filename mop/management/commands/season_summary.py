@@ -56,7 +56,7 @@ class Command(BaseCommand):
 
             # Check what data OMEGA obtained
             for key in mulens.datasets.keys():
-                if 'OMEGA' in key and len(mulens.dataset[key]) >= min_obs:
+                if 'OMEGA' in key and len(mulens.datasets[key]) >= min_obs:
                     if mulens.tE < te_thresh:
                         nstellar += 1
                     else:
