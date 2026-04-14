@@ -33,17 +33,24 @@ class Command(BaseCommand):
         # For those targets, review the ReducedDatums obtained
         datums = ReducedDatum.objects.filter(target__in=targets).order_by("timestamp")
         event_data = {x: {} for x in targets}
-        nomega = 0
+        nstellar = 0
+        nlong = 0
         min_obs = 10 # Threshold for meaningful observations
+        te_thresh = 100 # tE threshold for long events
         for mulens in event_data.keys():
             mulens.get_reduced_data(datums.filter(target=mulens))
             event_data[mulens] = {key: len(arr) for key,arr in mulens.datasets.items()}
 
-            print(mulens.name + ' : '
+            print(mulens.name + ' : tE=' + str(mulens.tE) + 'd '
                   + ' '.join([key + '=' + str(count) for key,count in event_data[mulens].items()]))
 
             # Check what data OMEGA obtained
             for key in mulens.datasets.keys():
                 if 'OMEGA' in key and len(mulens.dataset[key]) >= min_obs:
-                    nomega += 1
-        print('OMEGA observations of ' + str(nomega) + ' targets')
+                    if mulens.tE < te_thresh:
+                        nstellar += 1
+                    else:
+                        nlong += 1
+
+        print('OMEGA observations of ' + str(nstellar) + ' stellar targets')
+        print('OMEGA observations of ' + str(nlong) + ' long-timescale targets')
