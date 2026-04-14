@@ -25,9 +25,13 @@ class Command(BaseCommand):
         targets = []
         qs = ObservationRecord.objects.all()
         for obs in qs:
-            obs_start = datetime.fromisoformat(obs.parameters['start'])
-            if obs_start >= start_date and obs_start <= end_date:
-                if obs.target not in targets: targets.append(Target.objects.get(id=obs.target.pk))
+            try:
+                obs_start = datetime.fromisoformat(obs.parameters['start'])
+
+                if obs_start >= start_date and obs_start <= end_date:
+                    if obs.target not in targets: targets.append(Target.objects.get(id=obs.target.pk))
+            except KeyError:
+                print(obs.parameters)
         print('Found ' + str(len(targets)) + ' targets with observation records')
 
         # For those targets, review the ReducedDatums obtained
