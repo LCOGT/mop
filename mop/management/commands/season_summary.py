@@ -26,12 +26,17 @@ class Command(BaseCommand):
         qs = ObservationRecord.objects.all()
         for obs in qs:
             try:
-                obs_start = datetime.fromisoformat(obs.parameters['start'])
+                obs_start = datetime.fromisoformat(obs.parameters['start']).replace(tzinfo=timezone.utc)
 
-                if obs_start >= start_date and obs_start <= end_date:
-                    if obs.target not in targets: targets.append(Target.objects.get(id=obs.target.pk))
             except KeyError:
-                print(obs.parameters)
+                obs_start = datetime.strptime(
+                    obs.parameters['requests'][0]['windows'][0]['start'],
+                    "%Y-%m-%d %H:%M:%d"
+                ).replace(tzinfo=timezone.utc)
+
+            if obs_start >= start_date and obs_start <= end_date:
+                if obs.target not in targets: targets.append(Target.objects.get(id=obs.target.pk))
+                
         print('Found ' + str(len(targets)) + ' targets with observation records')
 
         # For those targets, review the ReducedDatums obtained
