@@ -34,10 +34,10 @@ class Command(BaseCommand):
                 print(obs_ts)
                 obs_start = datetime.strptime(
                     obs.parameters['requests'][0]['windows'][0]['start'],
-                    "%Y-%m-%d %H:%M:%d"
+                    "%Y-%m-%d %H:%M:%S"
                 ).replace(tzinfo=timezone.utc)
                 breakpoint()
-                
+
             if obs_start >= start_date and obs_start <= end_date:
                 if obs.target not in targets: targets.append(Target.objects.get(id=obs.target.pk))
 
