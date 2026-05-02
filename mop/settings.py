@@ -57,10 +57,10 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'tom_targets',
     'tom_alerts',
-    'tom_catalogs',
     'tom_observations',
     'tom_dataproducts',
     'tom_dataservices',
+    'tom_calendar',
     'silk',
     'mop',
     'microlensing_targets',
@@ -99,6 +99,8 @@ TEMPLATES = [
         },
     },
 ]
+
+CSS_THEME = 'Dark'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 

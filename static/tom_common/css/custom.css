@@ -136,3 +136,7 @@ td, th {
 .warning {
   color: #fe8300;
 }
+
+.modal-content {
+  color: #000;
+}

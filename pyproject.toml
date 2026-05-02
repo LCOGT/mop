@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "<3.13,>=3.10.0"
-tomtoolkit = "3.0.0a0"
+tomtoolkit = "3.0.0a7"
 django = ">=4.2.29, <5"
 whitenoise = "5.0.1"
 gunicorn = {version = "22.0.0", extras = ["gevent"]}
