@@ -1175,18 +1175,18 @@ dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "setuptools ; python_version
 
 [[package]]
 name = "django"
-version = "4.2.29"
+version = "5.2.13"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "django-4.2.29-py3-none-any.whl", hash = "sha256:074d7c4d2808050e528388bda442bd491f06def4df4fe863f27066851bba010c"},
-    {file = "django-4.2.29.tar.gz", hash = "sha256:86d91bc8086569c8d08f9c55888b583a921ac1f95ed3bdc7d5659d4709542014"},
+    {file = "django-5.2.13-py3-none-any.whl", hash = "sha256:5788fce61da23788a8ce6f02583765ab060d396720924789f97fa42119d37f7a"},
+    {file = "django-5.2.13.tar.gz", hash = "sha256:a31589db5188d074c63f0945c3888fad104627dfcc236fb2b97f71f89da33bc4"},
 ]
 
 [package.dependencies]
-asgiref = ">=3.6.0,<4"
+asgiref = ">=3.8.1"
 sqlparse = ">=0.3.1"
 tzdata = {version = "*", markers = "sys_platform == \"win32\""}
 
@@ -4553,14 +4553,14 @@ files = [
 
 [[package]]
 name = "tomtoolkit"
-version = "3.0.0a5"
+version = "3.0.0a7"
 description = "TOM Toolkit and base modules"
 optional = false
 python-versions = "<3.14,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "tomtoolkit-3.0.0a5-py3-none-any.whl", hash = "sha256:a128ffbd7cdb1d0690322c263354e9a15b4db006c164ad46fc40c9eed61520c0"},
-    {file = "tomtoolkit-3.0.0a5.tar.gz", hash = "sha256:a50bd8779c37fc2aac9f11e150d15f71d3484a23f354b9e99aee93abc564103d"},
+    {file = "tomtoolkit-3.0.0a7-py3-none-any.whl", hash = "sha256:91f0da8897d87eb83516d03a2127bf7c429aec85bd45f357c2990f279d629769"},
+    {file = "tomtoolkit-3.0.0a7.tar.gz", hash = "sha256:a789eb237598819d40beb164870f4a928cc7b96a86cd400bd084dc2c4741c068"},
 ]
 
 [package.dependencies]
@@ -4571,7 +4571,7 @@ astroquery = "<1"
 beautifulsoup4 = "<5"
 crispy-bootstrap4 = ">=2023.1,<2024.11"
 cryptography = "<=47"
-django = "<6"
+django = ">=5,<6"
 django-bootstrap4 = ">3,<25"
 django-contrib-comments = ">=2.0,<3.0"
 django-crispy-forms = ">=2.0,<3.0"
@@ -4996,4 +4996,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "<3.13,>=3.10.0"
-content-hash = "9712e97cbfbc112050ad4b124388964c91a31d9775b20de4c9f6022bb8e79b23"
+content-hash = "8c8bcf987fc5349edb23a8de39e0e1ed84d516a5c9e837412bd58ada41399c85"
