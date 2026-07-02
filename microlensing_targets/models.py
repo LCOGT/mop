@@ -164,6 +164,7 @@ class MicrolensingTarget(BaseTarget):
 
         # Unpack the lightcurve data:
         self.repackage_lightcurves(self.red_data)
+        print('REPACK: ', self.ndata)
 
         # Extract the timestamp of the last observation
         time = [Time(i.timestamp).jd for i in self.red_data]
