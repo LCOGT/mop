@@ -40,8 +40,9 @@ def mop_pylima_model(mulens):
 def mop_photometry(mulens):
     """
     Renders a photometric plot for a target.
-    This templatetag requires all ``ReducedDatum`` objects with a data_type of ``photometry`` to be structured with the
-    following keys in the JSON representation: magnitude, error, filter
+    This templatetag relies on ``mulens.datasets``, a dict of per-bandpass lightcurve arrays already
+    repackaged from the target's ``PhotometryReducedDatum`` rows (brightness, brightness_error, bandpass)
+    by ``MicrolensingTarget.repackage_lightcurves``.
     """
 
     t1 = datetime.utcnow()

@@ -1,5 +1,5 @@
 from tom_targets.models import Target, TargetName, TargetExtra
-from tom_dataproducts.models import DataProduct, ReducedDatum
+from tom_dataproducts.models import DataProduct, ReducedDatum, PhotometryReducedDatum
 import logging
 from django.db.utils import IntegrityError
 from django.core.exceptions import ValidationError
@@ -280,7 +280,8 @@ def sanity_check_data_sources(t, datums_qs):
                 raise IOError('Target ' + t.name + ' has ReducedDatum (pk=' + str(rd.pk) \
                               + ') from unknown source ' + rd.source_name)
 
-def merge_data_products(options, primary_target, primary_datums, matching_targets, matching_dataproducts):
+def merge_data_products(options, primary_target, primary_datums, primary_photometry,
+                         matching_targets, matching_dataproducts):
     """
     Function to merge the data products associated with duplicated targets
 
@@ -293,12 +294,20 @@ def merge_data_products(options, primary_target, primary_datums, matching_target
     It should also be noted that this function does not update any DataProductGroups, since MOP
     doesn't make use of these.
     """
-    # Distill a list of the unique data sources of ReducedDatums that the primary target already has
-    primary_data_sources = list(set([rd.source_name for rd in primary_datums]))
+    # Distill a list of the unique data sources of ReducedDatums and PhotometryReducedDatums that
+    # the primary target already has
+    primary_data_sources = list(set(
+        [rd.source_name for rd in primary_datums] + [rd.source_name for rd in primary_photometry]
+    ))
     sanity_check_data_sources(primary_target, primary_datums)
+    sanity_check_data_sources(primary_target, primary_photometry)
 
     matching_datums = [ReducedDatum.objects.filter(target=t) for t in matching_targets]
     for i, qs in enumerate(matching_datums):
+        sanity_check_data_sources(matching_targets[i], qs)
+
+    matching_photometry = [PhotometryReducedDatum.objects.filter(target=t) for t in matching_targets]
+    for i, qs in enumerate(matching_photometry):
         sanity_check_data_sources(matching_targets[i], qs)
 
     # Transfer 'ownership' of the dataproducts from the matching targets to the primary target
@@ -307,8 +316,9 @@ def merge_data_products(options, primary_target, primary_datums, matching_target
             dp.target = primary_target
             dp.save()
 
-    # Review all the ReducedDatums for all matching targets.
-    for i, qs in enumerate(matching_datums):
+    # Review all the PhotometryReducedDatums for all matching targets. Only photometry sources
+    # (OGLE/MOA/Gaia/ZTF/ATLAS/ASAS-SN/OMEGA) are ever transferred here.
+    for i, qs in enumerate(matching_photometry):
         for rd in qs:
             transfer_ownership = False
 
@@ -329,7 +339,7 @@ def merge_data_products(options, primary_target, primary_datums, matching_target
 
             if transfer_ownership:
                 rd.source_name = rd.source_name + '_' + matching_targets[i].name
-                rd.value['filter'] = rd.value['filter'] + '_' + matching_targets[i].name
+                rd.bandpass = rd.bandpass + '_' + matching_targets[i].name
                 rd.target = primary_target
 
                 try:

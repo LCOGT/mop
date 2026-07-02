@@ -1,6 +1,6 @@
 from django.test import TestCase
 from tom_targets.tests.factories import SiderealTargetFactory
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from .test_fittools import generate_test_ReducedDatums
 from mop.toolbox import TAP
 from unittest import skip
@@ -158,10 +158,10 @@ class TestLightcurveData(TestCase):
         # Retrieve the photometry for the test target.  Note that we retrieve it here rather than
         # pass the photometry array into the test because the DB applies a TimeZone correction
         # which adjusts the datapoints.  So the timestamps of the ReducedDatums are slightly different.
-        photometry = ReducedDatum.objects.filter(target=self.params['target']).order_by('timestamp')
+        photometry = PhotometryReducedDatum.objects.filter(target=self.params['target']).order_by('timestamp')
 
         # Review timestamps of generated data
-        ts = [Time(rd.timestamp, format='datetime').jd for rd in photometry if rd.data_type == 'photometry']
+        ts = [Time(rd.timestamp, format='datetime').jd for rd in photometry]
         ts = np.array(ts)
         idx = np.argsort(ts)
         expected_t_last = ts.max()
@@ -186,12 +186,12 @@ class TestLightcurveData(TestCase):
         assert (type(t_last_date) == type(tnow))
 
         # Now repeat this test for OGLE data only
-        photometry = ReducedDatum.objects.filter(
+        photometry = PhotometryReducedDatum.objects.filter(
             target=self.params['target'], source_name__icontains='OGLE'
         ).order_by('timestamp')
 
         # Recalculate the time of last datapoint:
-        ts = [Time(rd.timestamp, format='datetime').jd for rd in photometry if rd.data_type == 'photometry']
+        ts = [Time(rd.timestamp, format='datetime').jd for rd in photometry]
         ts = np.array(ts)
         idx = np.argsort(ts)
         expected_t_last = ts.max()
@@ -316,7 +316,7 @@ def generate_test_lc_model(target):
 
 def generate_gaia_ReducedDatums(target, lightcurve_file, tel_label):
     """Taken from test_fittools, by R. Street. Modified to match this test case.
-    Method generates a set of ReducedDatums for different telescopes, as is held in the TOM for a
+    Method generates a set of PhotometryReducedDatums for different telescopes, as is held in the TOM for a
     single target
     """
 
@@ -327,18 +327,14 @@ def generate_gaia_ReducedDatums(target, lightcurve_file, tel_label):
     for i in range(len(mags)):
         if('untrusted' not in mags[i] and 'null' not in mags[i]):
             jd = Time(float(ts_jds[i]), format='jd', scale='utc')
-            datum = {
-                    'magnitude': float(mags[i]),
-                    'filter': tel_label,
-                    'error': gaia_mop.estimateGaiaError(float(mags[i]))
-                    }
-            rd, created = ReducedDatum.objects.get_or_create(
+            rd, created = PhotometryReducedDatum.objects.get_or_create(
                 timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                value=datum,
                 source_name='Gaia',
                 source_location=target.name,
-                data_type='photometry',
-                target=target)
+                target=target,
+                bandpass=tel_label,
+                brightness=float(mags[i]),
+                brightness_error=gaia_mop.estimateGaiaError(float(mags[i])))
 
             if created:
                 data.append(rd)

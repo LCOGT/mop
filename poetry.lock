@@ -1039,15 +1039,15 @@ test = ["Pillow", "contourpy[test-no-images]", "matplotlib"]
 test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures", "pytest-xdist", "wurlitzer"]
 
 [[package]]
-name = "crispy-bootstrap4"
-version = "2024.10"
-description = "Bootstrap4 template pack for django-crispy-forms"
+name = "crispy-bootstrap5"
+version = "2026.3"
+description = "Bootstrap5 template pack for django-crispy-forms"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "crispy-bootstrap4-2024.10.tar.gz", hash = "sha256:503e8922b0f3b5262a6fdf303a3a94eb2a07514812f1ca130b88f7c02dd25e2b"},
-    {file = "crispy_bootstrap4-2024.10-py3-none-any.whl", hash = "sha256:138a97884044ae4c4799c80595b36c42066e4e933431e2e971611e251c84f96c"},
+    {file = "crispy_bootstrap5-2026.3-py3-none-any.whl", hash = "sha256:e0fff85c0503e9aed610a0ee31368e2191d340657f813669491c288c1c2e2dfa"},
+    {file = "crispy_bootstrap5-2026.3.tar.gz", hash = "sha256:e7f5adb36acfbb456444c46e82c436931c796c539e9c620be4fa9dc9c9d6679c"},
 ]
 
 [package.dependencies]
@@ -1195,20 +1195,22 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
-name = "django-bootstrap4"
-version = "24.4"
-description = "Bootstrap 4 for Django"
+name = "django-bootstrap5"
+version = "26.2"
+description = "Bootstrap 5 for Django"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "django_bootstrap4-24.4-py3-none-any.whl", hash = "sha256:90f642d8c9a6622694544a4fdbf8e6734a037b33b5d6b2884cfd79c87c5d610f"},
-    {file = "django_bootstrap4-24.4.tar.gz", hash = "sha256:b6147eeaa534057f866962d50bcf506b3d378720340d7a8243494a6e33f4e23e"},
+    {file = "django_bootstrap5-26.2-py3-none-any.whl", hash = "sha256:179af37c59f4e9b1070fc650f30961c5d903c2c0ad60280ad5b63ed394f68658"},
+    {file = "django_bootstrap5-26.2.tar.gz", hash = "sha256:12331059c8230ba372ffaad990a706151e1ad8f721a870aa2e862cf6746f0d33"},
 ]
 
 [package.dependencies]
-beautifulsoup4 = ">=4.10.0"
-Django = ">=4.2"
+django = ">=4.2"
+
+[package.extras]
+jinja = ["jinja2 (>=3.0,<4)"]
 
 [[package]]
 name = "django-contrib-comments"
@@ -3511,25 +3513,19 @@ test = ["enum34 ; python_version <= \"3.4\"", "ipaddress ; python_version < \"3.
 
 [[package]]
 name = "psycopg2"
-version = "2.8.4"
+version = "2.9.12"
 description = "psycopg2 - Python-PostgreSQL Database Adapter"
 optional = false
-python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "psycopg2-2.8.4-cp27-cp27m-win32.whl", hash = "sha256:72772181d9bad1fa349792a1e7384dde56742c14af2b9986013eb94a240f005b"},
-    {file = "psycopg2-2.8.4-cp27-cp27m-win_amd64.whl", hash = "sha256:893c11064b347b24ecdd277a094413e1954f8a4e8cdaf7ffbe7ca3db87c103f0"},
-    {file = "psycopg2-2.8.4-cp34-cp34m-win32.whl", hash = "sha256:9ab75e0b2820880ae24b7136c4d230383e07db014456a476d096591172569c38"},
-    {file = "psycopg2-2.8.4-cp34-cp34m-win_amd64.whl", hash = "sha256:b0845e3bdd4aa18dc2f9b6fb78fbd3d9d371ad167fd6d1b7ad01c0a6cdad4fc6"},
-    {file = "psycopg2-2.8.4-cp35-cp35m-win32.whl", hash = "sha256:ef6df7e14698e79c59c7ee7cf94cd62e5b869db369ed4b1b8f7b729ea825712a"},
-    {file = "psycopg2-2.8.4-cp35-cp35m-win_amd64.whl", hash = "sha256:965c4c93e33e6984d8031f74e51227bd755376a9df6993774fd5b6fb3288b1f4"},
-    {file = "psycopg2-2.8.4-cp36-cp36m-win32.whl", hash = "sha256:ed686e5926929887e2c7ae0a700e32c6129abb798b4ad2b846e933de21508151"},
-    {file = "psycopg2-2.8.4-cp36-cp36m-win_amd64.whl", hash = "sha256:dca2d7203f0dfce8ea4b3efd668f8ea65cd2b35112638e488a4c12594015f67b"},
-    {file = "psycopg2-2.8.4-cp37-cp37m-win32.whl", hash = "sha256:8396be6e5ff844282d4d49b81631772f80dabae5658d432202faf101f5283b7c"},
-    {file = "psycopg2-2.8.4-cp37-cp37m-win_amd64.whl", hash = "sha256:47fc642bf6f427805daf52d6e52619fe0637648fe27017062d898f3bf891419d"},
-    {file = "psycopg2-2.8.4-cp38-cp38-win32.whl", hash = "sha256:4212ca404c4445dc5746c0d68db27d2cbfb87b523fe233dc84ecd24062e35677"},
-    {file = "psycopg2-2.8.4-cp38-cp38-win_amd64.whl", hash = "sha256:92a07dfd4d7c325dd177548c4134052d4842222833576c8391aab6f74038fc3f"},
-    {file = "psycopg2-2.8.4.tar.gz", hash = "sha256:f898e5cc0a662a9e12bde6f931263a1bbd350cfb18e1d5336a12927851825bb6"},
+    {file = "psycopg2-2.9.12-cp310-cp310-win_amd64.whl", hash = "sha256:d5fbe092315fb007c03544704e6d1e678a6c0378139d01cea433dc59edf041b4"},
+    {file = "psycopg2-2.9.12-cp311-cp311-win_amd64.whl", hash = "sha256:2532c0cdc6ad18c9c35cd935cc3159712e14f05276a6d29a6435c52d24b840c1"},
+    {file = "psycopg2-2.9.12-cp312-cp312-win_amd64.whl", hash = "sha256:83d48e66e18c301d832e93c984a7bcbc0f4ac3bb79e2137e3bc335978c756dc0"},
+    {file = "psycopg2-2.9.12-cp313-cp313-win_amd64.whl", hash = "sha256:3d23e684927d37b95cee9a943f6927b04ae2fdcd056fd0e2a30929ee89fee5a9"},
+    {file = "psycopg2-2.9.12-cp314-cp314-win_amd64.whl", hash = "sha256:a73d5513bfe929c56555006c7a9cc7ae6e4276aa99dd2b1e2544eb8bb54f8b23"},
+    {file = "psycopg2-2.9.12-cp39-cp39-win_amd64.whl", hash = "sha256:09826a6b89714626a662275d03f21639f1c68d183e2dcc9ba134d463a3da753e"},
+    {file = "psycopg2-2.9.12.tar.gz", hash = "sha256:1dedb1c7a1d8552c4a6044c6b1c41a52e6a8e2d144af83eccac758076b1b7c15"},
 ]
 
 [[package]]
@@ -4553,14 +4549,14 @@ files = [
 
 [[package]]
 name = "tomtoolkit"
-version = "3.0.0a8"
+version = "3.0.0a11"
 description = "TOM Toolkit and base modules"
 optional = false
 python-versions = "<3.14,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "tomtoolkit-3.0.0a8-py3-none-any.whl", hash = "sha256:5faa14e086926821b49c25e8619769f7d9459f51a7873c97f2dfcf3181ce1155"},
-    {file = "tomtoolkit-3.0.0a8.tar.gz", hash = "sha256:82a34457fa7bf587bd1d693082b71c0b9b361b9c8589b39f8fb30421a127614a"},
+    {file = "tomtoolkit-3.0.0a11-py3-none-any.whl", hash = "sha256:7a03b1c20a620a6e905942fe70fd8a3f286ec3f66f19bb044c10b68d2a7f5344"},
+    {file = "tomtoolkit-3.0.0a11.tar.gz", hash = "sha256:a99587ec37c167db369b63f47a745fe10addcb7d19bce2f816bccd990b5de355"},
 ]
 
 [package.dependencies]
@@ -4569,10 +4565,10 @@ astroplan = ">=0.8,<0.11"
 astropy = {version = ">=5.3.3,<8", markers = "python_version >= \"3.10\""}
 astroquery = "<1"
 beautifulsoup4 = "<5"
-crispy-bootstrap4 = ">=2023.1,<2024.11"
+crispy-bootstrap5 = "<2027"
 cryptography = "<=47"
 django = ">=5,<6"
-django-bootstrap4 = ">3,<25"
+django-bootstrap5 = "<27"
 django-contrib-comments = ">=2.0,<3.0"
 django-crispy-forms = ">=2.0,<3.0"
 django-extensions = ">=3.0.0,<4.0.0"
@@ -4996,4 +4992,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "<3.13,>=3.10.0"
-content-hash = "f7cdb1dd7e1d10aff7da7c304dff0b01b325295e03362ffac04211cabba042c9"
+content-hash = "8765afb1bb7d4c302b70a2ac4ce5de5066abbf3d9ca18e7facb5446fab0b9120"

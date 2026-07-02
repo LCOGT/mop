@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 from mop.brokers import asassn
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 from tom_targets.models import Target
 
 BROKER_URL = 'http://www.astronomy.ohio-state.edu/asassn/transients.html'
@@ -67,11 +67,11 @@ class TestActivity(unittest.TestCase):
 
     def test_find_and_ingest_photometry(self):
         '''
-        Tests that find_and_ingest_photometry() returns at least one ReducedDatum object
+        Tests that find_and_ingest_photometry() returns at least one PhotometryReducedDatum object
         '''
         table = broker.retrieve_transient_table()
         events = broker.retrieve_microlensing_coordinates(table)
         targetlist = broker.fetch_alerts(events)
         rd_list = broker.find_and_ingest_photometry(events, targetlist)
         objecttype = type(rd_list[0])
-        assert (objecttype == ReducedDatum)
+        assert (objecttype == PhotometryReducedDatum)

@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from mop.toolbox import utilities
 import logging
 from tom_targets.models import Target, TargetName, TargetList
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from django.db.models import Q
 import pandas as pd
 from os import path
@@ -39,10 +39,11 @@ class Command(BaseCommand):
 
         # Extract dataums for the whole list
         datums = ReducedDatum.objects.filter(target__in=ogle_events).order_by("timestamp")
+        photometry_datums = PhotometryReducedDatum.objects.filter(target__in=ogle_events).order_by("timestamp")
 
         # Output to text file
         for mulens in ogle_events:
-            mulens.get_reduced_data(datums.filter(target=mulens))
+            mulens.get_reduced_data(photometry_datums.filter(target=mulens), datums.filter(target=mulens))
 
             df = pd.DataFrame(mulens.datasets['OGLE_I'], columns=['time', 'magnitude', 'error'])
             df.insert(1, 'filter', ['OGLE-I']*len(df))

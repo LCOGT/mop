@@ -11,7 +11,7 @@ import requests
 import urllib
 from urllib.error import HTTPError
 
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 from tom_targets.models import Target
 from mop.toolbox import TAP, utilities
 
@@ -233,25 +233,24 @@ class ASASSNBroker():
                 i = i + 1
             n = 0
             while(n < len(hjd)):
-                data = {'magnitude': mag[n], 'filter': myfilter[n],
-                    'error': mag_error[n]}
                 time_to_float = float(hjd[n])
                 jd = Time(time_to_float, format='jd').jd
                 jd = Time(jd, format='jd', scale='utc')
                 index = indices_with_photometry_data[k]
                 target = targets[index]
                 try:
-                    times = [Time(i.timestamp).jd for i in ReducedDatum.objects.filter(target=target) if i.data_type == 'photometry']
-                except: 
+                    times = [Time(i.timestamp).jd for i in PhotometryReducedDatum.objects.filter(target=target)]
+                except:
                     times = []
-                if  (jd.value not in times):  
-                                rd, _ = ReducedDatum.objects.get_or_create(
+                if  (jd.value not in times):
+                                rd, _ = PhotometryReducedDatum.objects.get_or_create(
                                         timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                                        value=data,
                                         source_name='ASAS-SN',
                                         source_location='ASAS-SN',
-                                        data_type='photometry',
-                                        target=target)
+                                        target=target,
+                                        bandpass=myfilter[n],
+                                        brightness=mag[n],
+                                        brightness_error=mag_error[n])
                                 rd.save()
                                 rd_list.append(rd)
                 else:

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_observations.models import ObservationRecord
 from tom_targets.models import Target, TargetName, TargetList
 from django.db.models import Q
@@ -42,13 +42,14 @@ class Command(BaseCommand):
 
         # For those targets, review the ReducedDatums obtained
         datums = ReducedDatum.objects.filter(target__in=targets).order_by("timestamp")
+        photometry_datums = PhotometryReducedDatum.objects.filter(target__in=targets).order_by("timestamp")
         event_data = {x: {} for x in targets}
         nstellar = 0
         nlong = 0
         min_obs = 10 # Threshold for meaningful observations
         te_thresh = 100 # tE threshold for long events
         for mulens in event_data.keys():
-            mulens.get_reduced_data(datums.filter(target=mulens))
+            mulens.get_reduced_data(photometry_datums.filter(target=mulens), datums.filter(target=mulens))
             event_data[mulens] = {key: len(arr) for key,arr in mulens.datasets.items()}
 
             print(mulens.name + ' : tE=' + str(mulens.tE) + 'd '

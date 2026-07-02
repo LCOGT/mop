@@ -4,7 +4,7 @@ from tom_alerts.alerts import GenericBroker, GenericQueryForm
 from django import forms
 from tom_targets.models import Target, TargetName
 from tom_observations import facility
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 
 from astropy.coordinates import SkyCoord
 import astropy.units as unit
@@ -127,8 +127,8 @@ class MOABroker(GenericBroker):
         time_now = Time(datetime.datetime.now()).jd
         for target in targets:
 
-            datasets = ReducedDatum.objects.filter(target=target)
-            existing_time = [Time(i.timestamp).jd for i in datasets if i.data_type == 'photometry']
+            datasets = PhotometryReducedDatum.objects.filter(target=target)
+            existing_time = [Time(i.timestamp).jd for i in datasets]
             event = self.event_dictionnary[target.name][0]
 
             jd = []
@@ -165,17 +165,14 @@ class MOABroker(GenericBroker):
                 try:
                     jd = Time(point[0], format='jd', scale='utc')
                     jd.to_datetime(timezone=TimezoneInfo())
-                    data = {   'magnitude': point[1],
-                           'filter': 'R',
-                           'error': point[2]
-                       }
-                    rd, created = ReducedDatum.objects.get_or_create(
+                    rd, created = PhotometryReducedDatum.objects.get_or_create(
                     timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                    value=data,
                     source_name='MOA',
                     source_location=target.name,
-                    data_type='photometry',
-                    target=target)
+                    target=target,
+                    bandpass='R',
+                    brightness=point[1],
+                    brightness_error=point[2])
 
                 except:
                         pass
