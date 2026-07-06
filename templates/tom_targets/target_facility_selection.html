@@ -1,5 +1,5 @@
 {% extends 'tom_common/base.html' %}
-{% load bootstrap4 targets_extras dataproduct_extras static %}
+{% load django_bootstrap5 targets_extras dataproduct_extras static %}
 {% block title %}Target Selection{% endblock %}
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_targets/css/main.css' %}">
@@ -23,7 +23,7 @@
 <div class="row">
   <form method="post" class="form" id='target-selection-form'>
     {% csrf_token %}
-    <div class="form-row" style="padding-inline:1rem">
+    <div class="row" style="padding-inline:1rem">
         <div class="col-sm-3">
             {% bootstrap_field form.observatory %}
         </div>
@@ -33,8 +33,10 @@
         <div class="col-sm-3">
             {% bootstrap_field form.target_list %}
         </div>
+    </div>
+    <div class="row" style="padding-inline:1rem">
         <div class="col-sm-1">
-            <input type="submit" class="btn btn-primary" formaction="{% url 'target-selection' %}" id="submit_target_selection" value="Submit" name="target_selection_form" style="position:absolute; bottom:1rem"">
+            <input type="submit" class="btn btn-primary" formaction="{% url 'target-selection' %}" id="submit_target_selection" value="Submit" name="target_selection_form">
         </div>
     </div>
   </form>
