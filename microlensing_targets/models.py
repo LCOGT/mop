@@ -152,7 +152,7 @@ class MicrolensingTarget(BaseTarget):
         return extras
 
     def get_reduced_data(self, photometry_qs, qs):
-        """Extracts the timeseries data from a QuerySet of PhotometryReducedDatums, and
+        """Function to extract the timeseries data from a QuerySet of PhotometryReducedDatums, and
         creates the necessary arrays.
         Also accepts a QuerySet of generic ReducedDatums (lc_model, tabular, etc.) for the same
         target, used to identify pre-existing derived datasets.
