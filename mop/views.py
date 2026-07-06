@@ -458,7 +458,7 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
                 visibility_data = get_sidereal_visibility(
                     object, start_time, end_time,
                     visibiliy_intervals, airmass_max,
-                    facility_name=request.POST.get('observatory')
+                    observation_facility=request.POST.get('observatory')
                 )
                 logger.info('FacilitySelectView: Got visibility data')
                 for site, vis_data in visibility_data.items():

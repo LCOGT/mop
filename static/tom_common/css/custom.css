@@ -90,38 +90,29 @@ a:active {
     overflow: scroll;
 }
 
-table,
-.table {
-  --bs-table-bg: #191c17;
-  --bs-table-striped-bg: #191c17;
-  --bs-table-hover-bg: #191c17;
-  --bs-table-active-bg: #191c17;
-  --bs-table-color: #fff;
-  --bs-table-striped-color: #fff;
-  --bs-table-hover-color: #fff;
-  --bs-table-active-color: #fff;
-  --bs-table-border-color: #888888;
+table {
   background-color: #191c17;
+  border: none;
   margin: 10pt;
-  border: 1pt solid #888888;
+  border: 1pt solid #191c17;
   border-radius: 10px;
 }
 
 thead {
   color: #fff;
-  border: 1pt solid #888888;
+  border: 1pt solid #191c17;
 }
 
 tbody {
-  border: 1pt solid #888888;
+  border: 1pt solid #191c17;
 }
 
 tr {
-  border: 1pt solid #888888;
+  border: 1pt solid #191c17;
 }
 
 td, th {
-  border: 1pt solid #888888;
+  border: 1pt solid #191c17;
   background-color: #272626;
   color: #fff;
 }
@@ -147,5 +138,5 @@ td, th {
 }
 
 .modal-content {
-  color: #fff;
+  color: #000;
 }

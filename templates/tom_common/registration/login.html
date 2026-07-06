@@ -1,5 +1,5 @@
 {% extends 'tom_common/base.html' %}
-{% load django_bootstrap5 %}
+{% load bootstrap4 %}
 {% block title %}Login{% endblock %}
 {% block content %}
 <div class="row content">
@@ -7,7 +7,9 @@
     <form action="{% url 'login' %}?next={{next}}" method="POST" class="form">
       {% csrf_token %}
       {% bootstrap_form form %}
+      {% buttons %}
         <button type="submit" class="btn btn-primary">Login</button>
+      {% endbuttons %}
     </form>
   </div>
 </div>

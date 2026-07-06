@@ -1,5 +1,5 @@
 {% extends 'tom_common/base.html' %}
-{% load comments django_bootstrap5 tom_common_extras targets_extras observation_extras dataproduct_extras static cache dataproduct_extras mop_extras %}
+{% load comments bootstrap4 tom_common_extras targets_extras observation_extras dataproduct_extras static cache dataproduct_extras mop_extras %}
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_targets/css/main.css' %}">
 {% endblock %}
@@ -37,7 +37,7 @@
             {% for target in targets %}
                 <tr>
                     <td><a href="{% url 'targets:detail' target.id %}">{{target.name}}</a></td>
-                    <td><a class="nav-link" data-bs-target="#{{target.name}}" data-bs-toggle="tab">Display</a></td>
+                    <td><a class="nav-link" data-target="#{{target.name}}" data-toggle="tab">Display</a></td>
                     <td>{{target.tE}}</td>
                     <td>{{target.t0}}</td>
                     <td>{{target.mag_now}}</td>

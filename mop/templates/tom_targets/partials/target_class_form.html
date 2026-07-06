@@ -1,4 +1,4 @@
-{% load django_bootstrap5 %}
+{% load bootstrap4 %}
 <div id="class-form">
   <form action="{% url 'targets:detail' target.id %}" method="GET" class="form">
     {% csrf_token %}
@@ -51,6 +51,8 @@
         </td>
       </tr>
     </table>
-    <input type="submit" class="btn btn-primary" value="Update class or category">
+    {% buttons %}
+        <input type="submit" class="btn btn-primary" value="Update class or category">
+    {% endbuttons %}
   </form>
 </div>

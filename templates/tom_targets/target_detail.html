@@ -1,5 +1,5 @@
 {% extends 'tom_common/base.html' %}
-{% load comments django_bootstrap5 tom_common_extras targets_extras observation_extras dataproduct_extras static cache mop_extras %}
+{% load comments bootstrap4 tom_common_extras targets_extras observation_extras dataproduct_extras static cache mop_extras %}
 {% block title %}Target {{ object.name }}{% endblock %}
 {% block additional_css %}
 <link rel="stylesheet" href="{% static 'tom_common/css/custom.css' %}">
@@ -43,7 +43,7 @@
       </div>
       {% endif %}
       {% target_unknown_statuses object %}
-      {% target_buttons target %}
+      {% target_buttons object %}
       {% mulens_target_data target request %}
       {% if object.type == 'SIDEREAL' %}
         {% aladin_finderchart object %}
@@ -53,34 +53,34 @@
   <div class="col-8 target-content">
     <ul class="nav nav-tabs" id="tabs">
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#observe" data-bs-toggle="tab">Observe</span>
+        <span class="nav-link" data-target="#observe" data-toggle="tab">Observe</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#observations" data-bs-toggle="tab">Observations</span>
+        <span class="nav-link" data-target="#observations" data-toggle="tab">Observations</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#manage-data" data-bs-toggle="tab">Manage Data</span>
+        <span class="nav-link" data-target="#manage-data" data-toggle="tab">Manage Data</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#manage-groups" data-bs-toggle="tab">Manage Groups</span>
+        <span class="nav-link" data-target="#manage-groups" data-toggle="tab">Manage Groups</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link active" data-bs-target="#photometry" data-bs-toggle="tab">Photometry</span>
+        <span class="nav-link active" data-target="#photometry" data-toggle="tab">Photometry</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#spectroscopy" data-bs-toggle="tab">Spectroscopy</span>
+        <span class="nav-link" data-target="#spectroscopy" data-toggle="tab">Spectroscopy</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#pylima-model" data-bs-toggle="tab">pyLIMA Results</span>
+        <span class="nav-link" data-target="#pylima-model" data-toggle="tab">pyLIMA Results</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#interferometry" data-bs-toggle="tab">Interferometry</span>
+        <span class="nav-link" data-target="#interferometry" data-toggle="tab">Interferometry</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#gaia_neighbours" data-bs-toggle="tab">Gaia</span>
+        <span class="nav-link" data-target="#gaia_neighbours" data-toggle="tab">Gaia</span>
       </li>
       <li class="nav-item">
-        <span class="nav-link" data-bs-target="#comments" data-bs-toggle="tab">Comments</span>
+        <span class="nav-link" data-target="#comments" data-toggle="tab">Comments</span>
       </li>
     </ul>
     <div class="tab-content">

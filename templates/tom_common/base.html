@@ -1,4 +1,4 @@
-{% load static django_bootstrap5 tom_common_extras %}
+{% load static bootstrap4 tom_common_extras %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -20,7 +20,7 @@
     <link rel="icon" type="image/x-icon" href="{% static 'tom_common/img/MOP.jpeg' %}" sizes="32x32" />
     <link rel="icon" type="image/x-icon" href="{% static 'tom_common/img/MOP.jpeg' %}" sizes="16x16" />
 
-    {% bootstrap_javascript %}
+    {% bootstrap_javascript jquery='True' %}
     <!-- htmx.min.js was downloaded manually and added to the project. see https://htmx.org/docs/#download-a-copy -->
     <script src="{% static 'tom_common/js/htmx.min.js' %}" defer></script>
     <!-- Loading AlpineJS from a CDN For now, todo solution for 3rd party static assets. -->
@@ -31,12 +31,12 @@
   <body>
     <nav class="navbar navbar-expand-md sticky-top" style="background: url('{% static 'tom_common/img/mop_navbar_grey_bkgd.png' %}'); background-position: center; background-repeat: no-repeat;">
       <a class="navbar-brand" href="/"><img src="{% static 'tom_common/img/MOP.jpeg' %}" class="img-fluid"> {% tom_name %} </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-        <ul class="navbar-nav me-auto">
+        <ul class="navbar-nav mr-auto">
           {% comment "Navbar Content Template" %}
           The navbar_content.html template defines the list (li) of nav-items that appear
           in the navbar-nav (ul).
@@ -54,7 +54,7 @@
           {% include 'tom_common/navbar_content.html' %}
 
         </ul>
-        <ul class="navbar-nav ms-auto" id="login-buttons">
+        <ul class="navbar-nav ml-auto" id="login-buttons">
         {% include 'tom_common/partials/navbar_login.html' %}
         </ul>
       </div>
