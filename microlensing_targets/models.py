@@ -156,7 +156,7 @@ class MicrolensingTarget(BaseTarget):
         creates the necessary arrays.
         Also accepts a QuerySet of generic ReducedDatums (lc_model, tabular, etc.) for the same
         target, used to identify pre-existing derived datasets.
-        Note that the querysets must be provided separately and not derived from a query
+        Note that the querysets must be provided separately and not derived directly from a query
         """
 
         # Store the complete set of results
