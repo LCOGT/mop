@@ -5,7 +5,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        qs = ReducedDatum.objects.filter(data_type='photometry')
+        qs = ReducedDatum.objects.filter(data_type='photometry').iterator(chunk_size=2000)
 
         BANDPASS_FIELDS = ('bandpass', 'filter', 'band', 'f')
 
