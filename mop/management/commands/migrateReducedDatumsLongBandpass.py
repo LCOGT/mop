@@ -53,7 +53,7 @@ def _build_photometry(rd):
     bandpass = _pop_first(value, BANDPASS_FIELDS, default='')
     telescope = rd.telescope or value.get('telescope', '')
     if 'BH-' in str(bandpass):
-        bandpass, telescope, observer = self._parse_extended_bandpass(bandpass)
+        bandpass, telescope, observer = _parse_extended_bandpass(bandpass)
         value['observer'] = observer
 
     return PhotometryReducedDatum(
