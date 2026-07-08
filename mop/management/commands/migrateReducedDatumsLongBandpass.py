@@ -74,7 +74,7 @@ def _build_photometry(rd):
 
 def _parse_extended_bandpass(bandpass):
     """
-    Sometimes ReducedDatums have extremely long strings for the filter bandpass
+    Some ReducedDatums have extremely long strings for the filter bandpass
     because they need to record the observer and telescope as well as the filter.
     This function splits these entries and records them as separate attributes.
     The known instance of this occurs with datapoints from BHTOM, hence the points
