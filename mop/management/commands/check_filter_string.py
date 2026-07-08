@@ -16,7 +16,12 @@ class Command(BaseCommand):
             print(rd.pk, bandpass)
             unit = value.get('unit')
             if bandpass and len(str(bandpass)) > 32:
-                bad.append((rd.pk, rd.target_id, rd.source_name, 'bandpass', str(bandpass)))
+                if 'BH-' in str(bandpass):
+                    bandpass = self.fix_bhtom_bandpasses(bandpass)
+                    if len(bandpass) > 32:
+                        bad.append((rd.pk, rd.target_id, rd.source_name, 'bandpass', str(bandpass)))
+                else:
+                    bad.append((rd.pk, rd.target_id, rd.source_name, 'bandpass', str(bandpass)))
             if unit and len(str(unit)) > 32:
                 bad.append((rd.pk, rd.target_id, rd.source_name, 'unit', str(unit)))
 
@@ -29,3 +34,14 @@ class Command(BaseCommand):
             if k in d and d[k] is not None:
                 return d[k]
         return None
+
+    def fix_bhtom_bandpasses(self, bandpass):
+        """
+        BHTOM datapoints have extremely long strings indicating the filter bandpass
+        because they need to record the observer.
+        """
+        if 'BH-' in str(bandpass):
+            short_bandpass = str(bandpass).split('-')[2]
+        else:
+            short_bandpass = bandpass
+        return short_bandpass
