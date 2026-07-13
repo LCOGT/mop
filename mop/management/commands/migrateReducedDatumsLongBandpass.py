@@ -57,7 +57,7 @@ def _build_photometry(rd):
         bandpass, telescope, observer = _parse_extended_bandpass(bandpass)
         value['observer'] = observer
 
-    print(bandpass, telescope, observer, value)
+    print(bandpass, telescope, value)
 
     return PhotometryReducedDatum(
         target_id=rd.target_id,
