@@ -30,10 +30,8 @@ def _run_batched(queryset, build_fn, TypedModel, dry_run, stdout):
 
         if len(to_create) >= BATCH_SIZE:
             if not dry_run:
-                try:
-                    TypedModel.objects.bulk_create(to_create, ignore_conflicts=True)
-                    ReducedDatum.objects.filter(pk__in=pks_to_delete).delete()
-                except django.db.utils.DataError:
+                TypedModel.objects.bulk_create(to_create, ignore_conflicts=True)
+                ReducedDatum.objects.filter(pk__in=pks_to_delete).delete()
 
             total_created += len(to_create)
             total_deleted += len(pks_to_delete)
@@ -60,7 +58,7 @@ def _build_photometry(rd):
         value['observer'] = observer
 
     print(bandpass, telescope, observer, value)
-    
+
     return PhotometryReducedDatum(
         target_id=rd.target_id,
         data_product_id=rd.data_product_id,
