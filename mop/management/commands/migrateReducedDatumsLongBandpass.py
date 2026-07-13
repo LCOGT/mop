@@ -129,7 +129,7 @@ def _build_astrometry(rd):
 
 class Command(BaseCommand):
     help = """
-        Migrates generic ReducedDatum rows into their concrete typed models
+        Modified command to migrate generic ReducedDatum rows into their concrete typed models
         (PhotometryReducedDatum, SpectroscopyReducedDatum, AstrometryReducedDatum)
         and deletes the originals. Run this once after deploying the reduceddatum refactor.
         Only necessary for TOMs that existed prior to v3.
