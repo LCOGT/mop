@@ -56,6 +56,10 @@ def _build_photometry(rd):
     if 'BH-' in str(bandpass):
         bandpass, telescope, observer = _parse_extended_bandpass(bandpass)
         value['observer'] = observer
+    elif 'OMEGA_sinistro_' in bandpass and len(str(bandpass)) >= 32:
+        bandpass = str(bandpass).replace('_sinistro_', '_')
+    elif len(str(bandpass)) >= 32:
+        bandpass = bandpass[0:32]
 
     print(bandpass, telescope, value)
 
