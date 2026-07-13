@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import Target, TargetExtra
 from astropy.time import Time
 from mop.toolbox.mop_classes import MicrolensingEvent
@@ -33,6 +33,7 @@ class Command(BaseCommand):
 
         #try:
         mulens.get_reduced_data(
+            PhotometryReducedDatum.objects.filter(target=mulens).order_by("timestamp"),
             ReducedDatum.objects.filter(target=mulens).order_by("timestamp")
         )
 

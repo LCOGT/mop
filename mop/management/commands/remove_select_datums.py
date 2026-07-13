@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from tom_targets.models import Target
-from tom_dataproducts.models import ReducedDatum, DataProduct
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum, DataProduct
 import json
 
 class Command(BaseCommand):
@@ -18,8 +18,8 @@ class Command(BaseCommand):
         # Find the Target
         t = Target.objects.get(name=options['target_name'])
 
-        # Find all ReducedDatums associated with this Target
-        datums_qs = ReducedDatum.objects.filter(target=t)
+        # Find all ReducedDatums and PhotometryReducedDatums associated with this Target
+        datums_qs = list(ReducedDatum.objects.filter(target=t)) + list(PhotometryReducedDatum.objects.filter(target=t))
 
         for rd in datums_qs:
             print(rd.pk, rd.source_name, rd.value, rd.timestamp)
@@ -28,8 +28,10 @@ class Command(BaseCommand):
                 if key in rd.value:
                     if rd.value[key] == entry[key]:
                         got_rd[i] = True
+                elif getattr(rd, key, None) == entry[key]:
+                    got_rd[i] = True
 
             if all(i for i in got_rd):
-                opt = input(str(rd.pk) + ' identified as ReducedDatum.  Remove? Y or n: ')
+                opt = input(str(rd.pk) + ' identified as ' + type(rd).__name__ + '.  Remove? Y or n: ')
                 if opt == 'Y':
                     rd.delete()

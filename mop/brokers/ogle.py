@@ -6,7 +6,7 @@ from django import forms
 from django.db.utils import IntegrityError
 from tom_targets.models import Target
 from tom_observations import facility
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 
 from astropy.coordinates import SkyCoord, Galactic
 import astropy.units as unit
@@ -276,18 +276,15 @@ class OGLEBroker(GenericBroker):
         for i in range(0,len(photometry),1):
             jd = Time(photometry[i][0], format='jd', scale='utc')
             jd.to_datetime(timezone=TimezoneInfo())
-            datum = {'magnitude': photometry[i][1],
-                    'filter': 'OGLE_I',
-                    'error': photometry[i][2]
-                    }
             try:
-                rd, created = ReducedDatum.objects.get_or_create(
+                rd, created = PhotometryReducedDatum.objects.get_or_create(
                     timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                    value=datum,
                     source_name='OGLE',
                     source_location=target.name,
-                    data_type='photometry',
-                    target=target)
+                    target=target,
+                    bandpass='OGLE_I',
+                    brightness=photometry[i][1],
+                    brightness_error=photometry[i][2])
 
             except MultipleObjectsReturned:
                 logger.error('OGLE HARVESTER: Found duplicated data for event '+target.name)

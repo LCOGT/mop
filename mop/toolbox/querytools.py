@@ -1,4 +1,4 @@
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import Target, TargetName, TargetList
 from django.db.models import Q
 from mop.toolbox import utilities
@@ -90,6 +90,7 @@ def fetch_data_for_targetset(target_list, check_need_to_fit=True, fetch_photomet
 
     # Perform the search for associated data
     datums = ReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
+    photometry_datums = PhotometryReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
     names = TargetName.objects.filter(target__in=target_list)
 
     t2 = datetime.datetime.utcnow()
@@ -104,7 +105,7 @@ def fetch_data_for_targetset(target_list, check_need_to_fit=True, fetch_photomet
     for i, mulens in enumerate(target_list):
         mulens.get_target_names(names.filter(target=mulens))
         if fetch_photometry:
-            mulens.get_reduced_data(datums.filter(target=mulens))
+            mulens.get_reduced_data(photometry_datums.filter(target=mulens), datums.filter(target=mulens))
         if check_need_to_fit:
             (status, reason) = mulens.check_need_to_fit()
             logger.info('queryTools: Need to fit: ' + repr(status) + ', reason: ' + reason)

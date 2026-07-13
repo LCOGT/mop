@@ -22,6 +22,7 @@ urlpatterns = [
     path('activeobs/', ActiveObsView.as_view(), name='activeobs'),
     path('prioritytargets/', PriorityTargetsView.as_view(), name='prioritytargets'),
     path('', include('tom_common.urls')),
+    path('alerts/', include('tom_alerts.urls', namespace='alerts')),
     path('silk/', include('silk.urls', namespace='silk')),
     path('targetselection/', TargetFacilitySelectionView.as_view(), name='target-selection'),
 ]

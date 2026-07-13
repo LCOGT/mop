@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from tom_targets.models import Target
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from mop.management.commands.fit_need_events_PSPL import run_fit
 
 import logging
@@ -31,12 +31,13 @@ class Command(BaseCommand):
         logger.info('FIT_ALL_EVENTS: Found ' + str(target_list.count()) + ' targets to fit')
 
         datums = ReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
+        photometry_datums = PhotometryReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
         logger.info('FIT_ALL_EVENTS: Retrieved photometry for selected targets')
 
         for i,mulens in enumerate(target_list):
             logger.info('FIT_ALL_EVENTS: Fitting data for ' + mulens.name + ', '
                         + str(i) + ' out of ' + str(target_list.count()))
-            mulens.get_reduced_data(datums.filter(target=mulens))
+            mulens.get_reduced_data(photometry_datums.filter(target=mulens), datums.filter(target=mulens))
 
             try:
                 result = run_fit(mulens)

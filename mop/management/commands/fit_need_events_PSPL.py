@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import Target,TargetExtra
 from django.db import transaction
 from astropy.time import Time
@@ -146,6 +146,7 @@ class Command(BaseCommand):
             utilities.checkpoint()
 
             datums = ReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
+            photometry_datums = PhotometryReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
 
             t2 = datetime.datetime.utcnow()
             logger.info('FIT_NEED_EVENTS: Retrieved associated data for ' + str(len(target_list)) + ' Targets')
@@ -159,7 +160,7 @@ class Command(BaseCommand):
                 # Catch for events where the RA, Dec is not set - source of this error unknown
                 try:
                     if type(mulens.ra) == float:
-                        mulens.get_reduced_data(datums.filter(target=mulens))
+                        mulens.get_reduced_data(photometry_datums.filter(target=mulens), datums.filter(target=mulens))
 
                         (status, reason) = mulens.check_need_to_fit()
                         logger.info('FIT_NEED_EVENTS: Need to fit ' + mulens.name

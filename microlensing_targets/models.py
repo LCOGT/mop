@@ -151,21 +151,23 @@ class MicrolensingTarget(BaseTarget):
 
         return extras
 
-    def get_reduced_data(self, qs):
-        """Extracts the timeseries data from a QuerySet of ReducedDatums, and
+    def get_reduced_data(self, photometry_qs, qs):
+        """Function to extract the timeseries data from a QuerySet of PhotometryReducedDatums, and
         creates the necessary arrays.
-        Note that the queryset of ReducedDatums must be provided separately and not
-        derived from a qeruy
+        Also accepts a QuerySet of generic ReducedDatums (lc_model, tabular, etc.) for the same
+        target, used to identify pre-existing derived datasets.
+        Note that the querysets must be provided separately and not derived directly from a query
         """
 
         # Store the complete set of results
-        self.red_data = qs
+        self.red_data = photometry_qs
 
         # Unpack the lightcurve data:
         self.repackage_lightcurves(self.red_data)
+        print('REPACK: ', self.ndata)
 
         # Extract the timestamp of the last observation
-        time = [Time(i.timestamp).jd for i in self.red_data if i.data_type == 'photometry']
+        time = [Time(i.timestamp).jd for i in self.red_data]
         if len(time) > 0:
             self.first_observation = min(time)
             self.last_observation = max(time)
@@ -195,18 +197,17 @@ class MicrolensingTarget(BaseTarget):
                     and self.gsc_results and self.aoft_table:
                 break
 
-    def repackage_lightcurves(self, qs):
-        """Method to sort through a QuerySet of the ReducedDatums for a given event and repackage the data as a
+    def repackage_lightcurves(self, photometry_qs):
+        """Method to sort through a QuerySet of PhotometryReducedDatums for a given event and repackage the data as a
          dictionary of individual lightcurves in PyLIMA-compatible format for different facilities.
-         Note that not all of the QuerySet of ReducedDatums may be photometry, so some sorting is required.
          """
 
         datasets = {}
 
-        for rd in qs:
-            if rd.data_type == 'photometry' and rd.source_name != 'Interferometry_predictor':
+        for rd in photometry_qs:
+            if rd.source_name != 'Interferometry_predictor':
                 # Identify different lightcurves from the filter label given
-                passband = rd.value['filter']
+                passband = rd.bandpass
                 if passband in datasets.keys():
                     lc = datasets[passband]
                 else:
@@ -214,12 +215,12 @@ class MicrolensingTarget(BaseTarget):
 
                 # Append the datapoint to the corresponding dataset
                 try:
-                    lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], rd.value['error']])
+                    lc.append([Time(rd.timestamp).jd, rd.brightness, rd.brightness_error])
                 except:
                     # Necessary to handle the datapoints where only a limit is available.
                     # Skipping these for now
                     try:
-                        lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], 1.0])
+                        lc.append([Time(rd.timestamp).jd, rd.brightness, 1.0])
                     except KeyError:
                         pass
 

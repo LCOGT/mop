@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 from tom_targets.models import Target, TargetName
 from astropy.time import Time
 from mop.toolbox import querytools, fittools
@@ -113,22 +113,21 @@ def retrieve_target_photometry(target):
     """Function to retrieve all available photometry for a target, combining
     all datasets.  Based on code by E. Bachelet."""
 
-    datasets = ReducedDatum.objects.filter(target=target)
+    datasets = PhotometryReducedDatum.objects.filter(target=target)
 
     phot = []
     time = []
     for data in datasets:
-        if data.data_type == 'photometry':
-            if 'magnitude' in data.value.keys():
-                try:
-                    phot.append([float(data.value['magnitude']),
-                    float(data.value['error'])])
-                    time.append(Time(data.timestamp).jd)
-                except:
-                    # Weights == 1
-                    phot.append([float(data.value['magnitude']),
-                    1])
-                    time.append(Time(data.timestamp).jd)
+        if data.brightness is not None:
+            try:
+                phot.append([float(data.brightness),
+                float(data.brightness_error)])
+                time.append(Time(data.timestamp).jd)
+            except:
+                # Weights == 1
+                phot.append([float(data.brightness),
+                1])
+                time.append(Time(data.timestamp).jd)
 
     photometry = np.c_[time,phot]
 
