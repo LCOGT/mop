@@ -39,7 +39,6 @@ CSS_THEME = 'Dark'
 
 INSTALLED_APPS = TOMTOOKIT_INSTALLED_APPS + [
     'mop',
-    'tom_alerts',
     'microlensing_targets',
     'silk',
 ]
