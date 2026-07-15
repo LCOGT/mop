@@ -444,6 +444,17 @@ TARGETLIST_FIELDS = [
     ('mag_now', 'float')
 ]
 
+# Data sharing
+DATA_SHARING = {
+    'OPM': {
+        # For sharing data with another TOM
+        'DISPLAY_NAME': os.getenv('OPM_DISPLAY_NAME', 'OPM'),
+        'BASE_URL': os.getenv('OPM_BASE_URL', 'https://lensingtom.zah.uni-heidelberg.de'),
+        'USERNAME': os.getenv('OPM_USERNAME', 'None'),
+        'PASSWORD': os.getenv('OPM_PASSWORD', 'None'),
+    }
+}
+
 # Authentication strategy can either be LOCKED (required login for all views, bypassed with OPEN_URLS)
 # or READ_ONLY (read only access to views)
 AUTH_STRATEGY = 'READ_ONLY'
