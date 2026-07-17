@@ -4668,14 +4668,14 @@ tomtoolkit = ">=3.0.0a0"
 
 [[package]]
 name = "tomtoolkit"
-version = "3.0.0a11"
+version = "3.0.0"
 description = "TOM Toolkit and base modules"
 optional = false
 python-versions = "<3.14,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "tomtoolkit-3.0.0a11-py3-none-any.whl", hash = "sha256:7a03b1c20a620a6e905942fe70fd8a3f286ec3f66f19bb044c10b68d2a7f5344"},
-    {file = "tomtoolkit-3.0.0a11.tar.gz", hash = "sha256:a99587ec37c167db369b63f47a745fe10addcb7d19bce2f816bccd990b5de355"},
+    {file = "tomtoolkit-3.0.0-py3-none-any.whl", hash = "sha256:364e6c49e1d88c0e19e44a3a6bc059873984506cb38f7e02dc88ecd81348799d"},
+    {file = "tomtoolkit-3.0.0.tar.gz", hash = "sha256:b23a2d54f621b0188db9d66c20a5d27709041bc81fe7fb03e386362bb7197a8e"},
 ]
 
 [package.dependencies]
@@ -4685,7 +4685,7 @@ astropy = {version = ">=5.3.3,<8", markers = "python_version >= \"3.10\""}
 astroquery = "<1"
 beautifulsoup4 = "<5"
 crispy-bootstrap5 = "<2027"
-cryptography = "<=47"
+cryptography = "<=48.0.1"
 django = ">=5,<6"
 django-bootstrap5 = "<27"
 django-contrib-comments = ">=2.0,<3.0"
@@ -5119,4 +5119,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "<3.13,>=3.10.0"
-content-hash = "b7d7666a247296676ae1f9a888d75e085c6114e2dfd673249127707d5cf87357"
+content-hash = "3a73f3fdf5eaa95a2cc9770f972a874c5fb96c468f03c3e649bcc16d47a5ff06"
