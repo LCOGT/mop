@@ -133,6 +133,7 @@ def mop_spectroscopy_for_target(context, target, dataproduct=None):
     """
     Mirrors tom_dataproducts.templatetags.dataproduct_extras.spectroscopy_for_target,
     with include_plotlyjs='cdn'.
+    Can be reverted to TOM Toolkit version when updated
     """
     plot_data = []
     if settings.TARGET_PERMISSIONS_ONLY:
