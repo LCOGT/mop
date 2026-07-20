@@ -92,8 +92,8 @@
         <hr/>
         <h4>Plan</h4>
         {% if object.type == 'SIDEREAL' %}
-            {% mop_target_plan %}
-            {% mop_moon_distance object %}
+            {% target_plan %}
+            {% moon_distance object %}
         {% elif target.type == 'NON_SIDEREAL' %}
             <p>Airmass plotting for non-sidereal targets is not currently supported. If you would like to add this functionality, please check out the <a href="https://github.com/TOMToolkit/tom_nonsidereal_airmass" target="_blank">non-sidereal airmass plugin.</a></p>
         {% endif %}
@@ -123,7 +123,7 @@
         {% get_photometry_data object %}
       </div>
       <div class="tab-pane" id="spectroscopy">
-        {% mop_spectroscopy_for_target target %}
+        {% spectroscopy_for_target target %}
       </div>
       <div class="tab-pane" id="pylima-model">
         {% mop_pylima_model target %}

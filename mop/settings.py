@@ -41,6 +41,7 @@ INSTALLED_APPS = TOMTOOKIT_INSTALLED_APPS + [
     'mop',
     'microlensing_targets',
     'silk',
+    'tom_antares',
 ]
 
 

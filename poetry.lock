@@ -3571,14 +3571,14 @@ files = [
 
 [[package]]
 name = "plotly"
-version = "5.24.1"
+version = "5.23.0"
 description = "An open-source, interactive data visualization library for Python"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "plotly-5.24.1-py3-none-any.whl", hash = "sha256:f67073a1e637eb0dc3e46324d9d51e2fe76e9727c892dde64ddf1e1b51f29089"},
-    {file = "plotly-5.24.1.tar.gz", hash = "sha256:dbc8ac8339d248a4bcc36e08a5659bacfe1b079390b8953533f4eb22169b4bae"},
+    {file = "plotly-5.23.0-py3-none-any.whl", hash = "sha256:76cbe78f75eddc10c56f5a4ee3e7ccaade7c0a57465546f02098c0caed6c2d1a"},
+    {file = "plotly-5.23.0.tar.gz", hash = "sha256:89e57d003a116303a34de6700862391367dd564222ab71f8531df70279fc0193"},
 ]
 
 [package.dependencies]
@@ -4651,20 +4651,20 @@ files = [
 
 [[package]]
 name = "tom-antares"
-version = "2.0.0"
+version = "3.0.1"
 description = "Antares Data Service module for the TOM Toolkit"
 optional = false
-python-versions = "<3.13,>=3.10.0"
+python-versions = "<3.14,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "tom_antares-2.0.0-py3-none-any.whl", hash = "sha256:f2d82a4860db7463b53719c9134886751b9921bf5c364eeef47652acdfef0ca9"},
-    {file = "tom_antares-2.0.0.tar.gz", hash = "sha256:811bb03ab286ef0ae364106d61e70ba14f26c93ae7a3faabd2792ded19b7887a"},
+    {file = "tom_antares-3.0.1-py3-none-any.whl", hash = "sha256:6e204742bb51322e27f01e7473d7dfdc281344c0333892ed2789605767fba5cc"},
+    {file = "tom_antares-3.0.1.tar.gz", hash = "sha256:cb80d33a02100212ca7bcd75fa7bd90848016470efe88e92688b27db9c1572ad"},
 ]
 
 [package.dependencies]
 antares-client = ">=1.11.1,<2.0.0"
 elasticsearch-dsl = ">=8.18.0,<9.0.0"
-tomtoolkit = ">=3.0.0a0"
+tomtoolkit = ">=3.0.0,<4.0.0"
 
 [[package]]
 name = "tomtoolkit"
@@ -5119,4 +5119,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "<3.13,>=3.10.0"
-content-hash = "3a73f3fdf5eaa95a2cc9770f972a874c5fb96c468f03c3e649bcc16d47a5ff06"
+content-hash = "2cd7478d2e15b0fbd4cf3c5dd462acd543bb50016f04b67e66a4bc4b70777e3f"
