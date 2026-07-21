@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import Target
 from astropy.time import Time
 from mop.toolbox import fittools
@@ -35,7 +35,11 @@ class Command(BaseCommand):
                     list_of_targets.append(event)
                                  
        for target in list_of_targets:
-           
-           ReducedDatum.objects.filter(target=target, data_type=settings.DATA_PRODUCT_TYPES[data_type[0]][0]).delete()
-           print(target.name, ' : Clean!') 
+
+           resolved_type = settings.DATA_PRODUCT_TYPES[data_type[0]][0]
+           if resolved_type == 'photometry':
+               PhotometryReducedDatum.objects.filter(target=target).delete()
+           else:
+               ReducedDatum.objects.filter(target=target, data_type=resolved_type).delete()
+           print(target.name, ' : Clean!')
 

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from tom_observations.models import ObservationRecord
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import TargetExtra
 from astropy import units as u
 from astropy.coordinates import Angle
@@ -282,13 +282,13 @@ def TAP_time_last_datapoint(target, source_name=None):
     photometry should be considered to be more recent and therefore ingested.
     """
     if not source_name:
-        datasets = ReducedDatum.objects.filter(target=target).order_by('timestamp')
+        datasets = PhotometryReducedDatum.objects.filter(target=target).order_by('timestamp')
     else:
-        datasets = ReducedDatum.objects.filter(target=target, source_name__icontains=source_name).order_by('timestamp')
+        datasets = PhotometryReducedDatum.objects.filter(target=target, source_name__icontains=source_name).order_by('timestamp')
 
     # If there is existing photometry for this object, identify the most recent datapoint
     if datasets.count() > 0:
-        time = [Time(i.timestamp, format='datetime').jd for i in datasets if i.data_type == 'photometry']
+        time = [Time(i.timestamp, format='datetime').jd for i in datasets]
 
         # It's apparently possible for targets to get ingested with a single, zero-length dataset array,
         # in which case this exception handling is needed

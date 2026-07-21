@@ -3,7 +3,7 @@ from tom_targets.models import Target
 from mop.toolbox import obs_control
 from astropy.time import Time
 import datetime
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 
 import numpy as np
 
@@ -18,11 +18,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
       
         target, created = Target.objects.get_or_create(name= options['target_name'])
-        datasets = ReducedDatum.objects.filter(target=target)
+        datasets = PhotometryReducedDatum.objects.filter(target=target)
 
-        time = [Time(i.timestamp).jd for i in datasets if i.data_type == 'photometry']
-        names = [i.source_name for i in datasets if i.data_type == 'photometry']
-        phot = [[i.value['magnitude'],i.value['error'],i.value['filter']] for i in datasets if i.data_type == 'photometry']
+        time = [Time(i.timestamp).jd for i in datasets]
+        names = [i.source_name for i in datasets]
+        phot = [[i.brightness,i.brightness_error,i.bandpass] for i in datasets]
 
         photometry = np.c_[names,time,phot]
 

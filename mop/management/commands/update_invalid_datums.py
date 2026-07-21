@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from tom_targets.models import Target
-from tom_dataproducts.models import ReducedDatum, DataProduct
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum, DataProduct
 import copy
 
 class Command(BaseCommand):
@@ -11,8 +11,11 @@ class Command(BaseCommand):
 
         dataproducts = DataProduct.objects.filter(data__icontains='auto.csv')
 
-        data_list = ReducedDatum.objects.filter(data_product__in=dataproducts)
-        print('Found ' + str(data_list.count()) + ' ReducedDatums to review')
+        self.review_datums(ReducedDatum.objects.filter(data_product__in=dataproducts))
+        self.review_datums(PhotometryReducedDatum.objects.filter(data_product__in=dataproducts))
+
+    def review_datums(self, data_list):
+        print('Found ' + str(data_list.count()) + ' ' + data_list.model.__name__ + 's to review')
 
         for i,rd in enumerate(data_list):
             print('Reviewing rd ' + str(rd.pk) + ' source=' + rd.source_name + ', ' + str(i)
@@ -28,4 +31,4 @@ class Command(BaseCommand):
                 rd_new.source_location = 'MOP'
                 rd_new.save()
 
-                print('Updated ReducedDatum to ' + str(rd_new.pk))
+                print('Updated ' + data_list.model.__name__ + ' to ' + str(rd_new.pk))

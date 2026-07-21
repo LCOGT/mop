@@ -1,6 +1,6 @@
 from django.test import TestCase
 from tom_targets.tests.factories import SiderealTargetFactory
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import Target
 from mop.toolbox import classifier_tools
 from mop.management.commands import gaia_classifier
@@ -104,18 +104,14 @@ def generate_test_ReducedDatums(target, lightcurve_file, tel_label):
     for i in range(len(mags)):
         if('untrusted' not in mags[i] and 'null' not in mags[i]):
             jd = Time(float(ts_jds[i]), format='jd', scale='utc')
-            datum = {
-                    'magnitude': float(mags[i]),
-                    'filter': tel_label,
-                    'error': gaia_mop.estimateGaiaError(float(mags[i]))
-                    }
-            rd, created = ReducedDatum.objects.get_or_create(
+            rd, created = PhotometryReducedDatum.objects.get_or_create(
                 timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                value=datum,
                 source_name='Gaia',
                 source_location=target.name,
-                data_type='photometry',
-                target=target)
+                target=target,
+                bandpass=tel_label,
+                brightness=float(mags[i]),
+                brightness_error=gaia_mop.estimateGaiaError(float(mags[i])))
 
             if created:
                 lc.append( [float(ts_jds[i]), float(mags[i]), gaia_mop.estimateGaiaError(float(mags[i]))] )
