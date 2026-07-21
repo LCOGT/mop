@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import Target, TargetExtra
 from astropy.time import Time
 from mop.toolbox.mop_classes import MicrolensingEvent
@@ -31,16 +31,17 @@ class Command(BaseCommand):
         mulens, created = Target.objects.get_or_create(name= options['target_name'])
         logger.info('Fitting single event: '+mulens.name)
 
-        try:
-            mulens.get_reduced_data(
-                ReducedDatum.objects.filter(target=mulens).order_by("timestamp")
-            )
+        #try:
+        mulens.get_reduced_data(
+            PhotometryReducedDatum.objects.filter(target=mulens).order_by("timestamp"),
+            ReducedDatum.objects.filter(target=mulens).order_by("timestamp")
+        )
 
-            if len(mulens.red_data) > 0:
-                result = run_fit(mulens, cores=options['cores'], verbose=True)
+        if len(mulens.red_data) > 0:
+            result = run_fit(mulens, cores=options['cores'], verbose=True)
 
-        except:
-            logger.warning('Fitting event '+t.name+' hit an exception')
+        #except:
+        #    logger.warning('Fitting event '+mulens.name+' hit an exception')
 
         connection.close()
         tend = datetime.datetime.utcnow()

@@ -1,18 +1,24 @@
+from datetime import datetime, timedelta
+
 from django import template
 from django.conf import settings
 from django.core.paginator import Paginator
-from datetime import datetime
 
+from astroplan import moon_illumination
+from astropy import units as u
+from astropy.coordinates import GCRS, get_body, SkyCoord
+from astropy.time import Time
+from guardian.shortcuts import get_objects_for_user
 from plotly import offline
 import plotly.graph_objs as go
+import numpy as np
 
-from tom_dataproducts.models import DataProduct, ReducedDatum
+from tom_dataproducts.models import DataProduct, ReducedDatum, SpectroscopyReducedDatum
 from tom_dataproducts.processors.data_serializers import SpectrumSerializer
+from tom_observations.utils import get_sidereal_visibility
+from tom_targets.forms import TargetVisibilityForm
 from mop.toolbox import utilities
 from mop.forms import TargetClassificationForm
-from astropy.time import Time
-from datetime import datetime
-import numpy as np
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,8 +46,9 @@ def mop_pylima_model(mulens):
 def mop_photometry(mulens):
     """
     Renders a photometric plot for a target.
-    This templatetag requires all ``ReducedDatum`` objects with a data_type of ``photometry`` to be structured with the
-    following keys in the JSON representation: magnitude, error, filter
+    This templatetag relies on ``mulens.datasets``, a dict of per-bandpass lightcurve arrays already
+    repackaged from the target's ``PhotometryReducedDatum`` rows (brightness, brightness_error, bandpass)
+    by ``MicrolensingTarget.repackage_lightcurves``.
     """
 
     t1 = datetime.utcnow()

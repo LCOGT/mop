@@ -1,4 +1,4 @@
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 from django.core.exceptions import  ValidationError
 from astroquery.vizier import Vizier
 from astropy.coordinates import Angle
@@ -30,15 +30,14 @@ def estimateGaiaError(mag) :
 
 def update_gaia_errors(target):
 
-    datasets = ReducedDatum.objects.filter(target=target)
+    datasets = PhotometryReducedDatum.objects.filter(target=target)
 
     for i in datasets:
 
-        if (i.data_type == 'photometry') & ("error" not in i.value.keys())  &  ('Gaia' in i.source_name):
-           
-            magnitude = i.value['magnitude']
-            error = estimateGaiaError(magnitude)
-            i.value['error'] = error 
+        if (i.brightness_error is None) & ('Gaia' in i.source_name):
+
+            error = estimateGaiaError(i.brightness)
+            i.brightness_error = error
 
             try:
                 i.save()

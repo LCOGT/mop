@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.conf import settings
 from unittest import skip
 from tom_targets.tests.factories import SiderealTargetFactory
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import Target, TargetExtra
 import numpy as np
 from os import getcwd, path
@@ -273,7 +273,7 @@ class TestModelingTools(TestCase):
 
 
 def generate_test_ReducedDatums(target, tel_configs, source_name='OGLE'):
-    """Method generates a set of ReducedDatums for different telescopes, as is held in the TOM for a
+    """Method generates a set of PhotometryReducedDatums for different telescopes, as is held in the TOM for a
     single target"""
 
     data = []
@@ -282,18 +282,14 @@ def generate_test_ReducedDatums(target, tel_configs, source_name='OGLE'):
         mag_errs = np.random.normal(loc=config[2], scale=config[2], size=config[0])
         for i in range(0,config[0],1):
             ts = config[3] + i*config[4]
-            datum = {
-                    'magnitude': mags[i],
-                    'filter': tel_label,
-                    'error': mag_errs[i]
-                    }
-            rd, created = ReducedDatum.objects.get_or_create(
+            rd, created = PhotometryReducedDatum.objects.get_or_create(
                 timestamp=ts.to_datetime(timezone=TimezoneInfo()),
-                value=datum,
                 source_name=source_name,
                 source_location=target.name,
-                data_type='photometry',
-                target=target)
+                target=target,
+                bandpass=tel_label,
+                brightness=mags[i],
+                brightness_error=mag_errs[i])
 
             if created:
                 data.append(rd)

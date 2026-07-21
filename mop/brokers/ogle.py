@@ -6,7 +6,7 @@ from django import forms
 from django.db.utils import IntegrityError
 from tom_targets.models import Target
 from tom_observations import facility
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 
 from astropy.coordinates import SkyCoord, Galactic
 import astropy.units as unit
@@ -21,6 +21,8 @@ from microlensing_targets.match_managers import validators
 logger = logging.getLogger(__name__)
 
 BROKER_URL = 'https://www.astrouw.edu.pl/ogle/ogle4/ews'
+BROKER_URL_OGLE3 = 'https://www.astrouw.edu.pl/ogle/ogle3/ews'
+BROKER_URL_OGLE2 = 'https://www.astrouw.edu.pl/ogle/ogle2/ews'
 
 class OGLEQueryForm(GenericQueryForm):
     target_name = forms.CharField(required=False)
@@ -65,7 +67,49 @@ class OGLEBroker(GenericBroker):
 
         events = {}
         for year in years:
+            if int(year) >= 2010:
+                URL = BROKER_URL
+            elif int(year) >= 2002 and int(year) <= 2009:
+                URL = BROKER_URL_OGLE3
+            elif int(year) <= 2000:
+                URL = BROKER_URL_OGLE2
             par_file_url = os.path.join(BROKER_URL,year,'lenses.par')
+            logger.info('OGLE harvester: Retrieving URL = ' + par_file_url)
+            response = requests.request('GET', par_file_url)
+            logger.info('OGLE harvester: retrieving parameters for events from '
+                            +str(year)+' with status '+str(response.status_code) + ': ' + response.reason)
+
+            if response.status_code == 200:
+                for line in response.iter_lines():
+                    line = str(line)
+                    if 'StarNo' not in line and len(line) > 5:      # Skip the file header
+                        entries = line.split()
+                        name = 'OGLE-'+entries[0].replace("b'","")
+                        ra = entries[3]
+                        dec = entries[4]
+                        events[name] = (ra,dec)
+            else:
+                logger.info(response.text)
+
+        logger.info('OGLE harvester: found ' + str(len(events)) + ' event(s)')
+
+        return events
+
+    def fetch_all_parameters(self, years):
+        """Method to retrieve the text file of the model parameters for fits by the OGLE survey"""
+        logger.info('OGLE harvester: Fetching event model parameters for years '+repr(years))
+
+
+        events = {}
+        for year in years:
+            if int(year) >= 2010:
+                URL = BROKER_URL
+            elif int(year) >= 2002 and int(year) <= 2009:
+                URL = BROKER_URL_OGLE3
+            elif int(year) <= 2000:
+                URL = BROKER_URL_OGLE2
+            logger.info('OGLE harvester: Broker URL = ' + URL)
+            par_file_url = os.path.join(URL,year,'lenses.par')
             response = requests.request('GET', par_file_url)
             logger.info('OGLE harvester: retrieving parameters for events from '
                             +str(year)+' with status '+str(response.status_code))
@@ -77,7 +121,20 @@ class OGLEBroker(GenericBroker):
                         name = 'OGLE-'+entries[0].replace("b'","")
                         ra = entries[3]
                         dec = entries[4]
-                        events[name] = (ra,dec)
+                        t0 = entries[5]
+                        tE = entries[7]
+                        if int(year) > 2000:
+                            u0 = entries[8]
+                            Ibase = entries[12]
+                            Ibase_err = entries[13].replace("'","")
+                        else:
+                            try:
+                                u0 = str(round(1.0 / float(entries[8]),3))
+                            except:
+                                u0 = 'None'
+                            Ibase = entries[10].replace("'","")
+                            Ibase_err = 'None'
+                        events[name] = (ra,dec,t0,tE,u0,Ibase,Ibase_err)
 
         logger.info('OGLE harvester: found ' + str(len(events)) + ' event(s)')
 
@@ -190,24 +247,44 @@ class OGLEBroker(GenericBroker):
 
         return np.array(photometry)
 
+    def download_ogle_lightcurve(self, ogle_name, lc_file_path):
+        """Method to download the OGLE lightcurve via HTTP"""
+
+
+        if ogle_name:
+            year = ogle_name.split('-')[1]
+            event = ogle_name.split('-')[2] + '-' + ogle_name.split('-')[3]
+
+            lc_file_url = os.path.join(BROKER_URL, year, event.lower(), 'phot.dat')
+
+            with requests.get(lc_file_url, stream=True) as r:
+                r.raise_for_status()  # Check for HTTP errors
+                with open(lc_file_path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+
+            logger.info('OGLE harvester: downloaded photometry for event ' + ogle_name
+                        + ' to file ' + lc_file_path)
+
+        else:
+            logger.info('OGLE Harvester WARNING: No OGLE name available for target '
+                        + ogle_name + ' so cannot find lightcurve to download')
+
     def ingest_ogle_photometry(self, target, photometry):
         """Method to store the photometry datapoints in the TOM as ReducedDatums"""
 
         for i in range(0,len(photometry),1):
             jd = Time(photometry[i][0], format='jd', scale='utc')
             jd.to_datetime(timezone=TimezoneInfo())
-            datum = {'magnitude': photometry[i][1],
-                    'filter': 'OGLE_I',
-                    'error': photometry[i][2]
-                    }
             try:
-                rd, created = ReducedDatum.objects.get_or_create(
+                rd, created = PhotometryReducedDatum.objects.get_or_create(
                     timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                    value=datum,
                     source_name='OGLE',
                     source_location=target.name,
-                    data_type='photometry',
-                    target=target)
+                    target=target,
+                    bandpass='OGLE_I',
+                    brightness=photometry[i][1],
+                    brightness_error=photometry[i][2])
 
             except MultipleObjectsReturned:
                 logger.error('OGLE HARVESTER: Found duplicated data for event '+target.name)

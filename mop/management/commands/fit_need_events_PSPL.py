@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 from tom_targets.models import Target,TargetExtra
 from django.db import transaction
 from astropy.time import Time
@@ -29,77 +29,77 @@ def run_fit(mulens, cores=0, verbose=False):
     t5 = datetime.datetime.utcnow()
     if verbose: utilities.checkpoint()
 
-    try:
-        t6 = datetime.datetime.utcnow()
+    #try:
+    t6 = datetime.datetime.utcnow()
+    if verbose: utilities.checkpoint()
+    if verbose: logger.info('Time taken chk 2: ' + str(t6 - t5))
+
+    # Retrieve all available ReducedDatum entries for this target.  Note that this may include data
+    # other than lightcurve photometry, so the data are then filtered and repackaged for later
+    # convenience
+    logger.info('FIT: Found '+str(len(mulens.datasets))+' datasets and a total of '
+                +str(mulens.ndata)+' datapoints to model for event '+mulens.name)
+
+    t7 = datetime.datetime.utcnow()
+    if verbose: utilities.checkpoint()
+    if verbose: logger.info('Time taken chk 3: ' + str(t7 - t6))
+
+    if mulens.ndata > 10:
+        (model_params, model_telescope, fit_status) = fittools.fit_pspl_omega2(
+            mulens.ra, mulens.dec, mulens.datasets)
+        logger.info('FIT: completed modeling process for ' + mulens.name
+                    + ' with status ' + repr(fit_status))
+
+        t8 = datetime.datetime.utcnow()
         if verbose: utilities.checkpoint()
-        if verbose: logger.info('Time taken chk 2: ' + str(t6 - t5))
+        if verbose: logger.info('Time taken chk 4: ' + str(t8 - t7))
 
-        # Retrieve all available ReducedDatum entries for this target.  Note that this may include data
-        # other than lightcurve photometry, so the data are then filtered and repackaged for later
-        # convenience
-        logger.info('FIT: Found '+str(len(mulens.datasets))+' datasets and a total of '
-                    +str(mulens.ndata)+' datapoints to model for event '+mulens.name)
+        # Store model lightcurve
+        if model_telescope and fit_status:
+            fittools.store_model_lightcurve(mulens, model_telescope)
+            logger.info('FIT: Stored model lightcurve for event '+mulens.name)
+        else:
+            logger.warning('FIT: No valid model fit produced so not model lightcurve for event '+mulens.name)
 
-        t7 = datetime.datetime.utcnow()
+        t9 = datetime.datetime.utcnow()
         if verbose: utilities.checkpoint()
-        if verbose: logger.info('Time taken chk 3: ' + str(t7 - t6))
+        if verbose: logger.info('Time taken chk 5: ' + str(t9 - t8))
 
-        if mulens.ndata > 10:
-            (model_params, model_telescope, fit_status) = fittools.fit_pspl_omega2(
-                mulens.ra, mulens.dec, mulens.datasets)
-            logger.info('FIT: completed modeling process for ' + mulens.name
-                        + ' with status ' + repr(fit_status))
-
-            t8 = datetime.datetime.utcnow()
-            if verbose: utilities.checkpoint()
-            if verbose: logger.info('Time taken chk 4: ' + str(t8 - t7))
-
-            # Store model lightcurve
-            if model_telescope and fit_status:
-                fittools.store_model_lightcurve(mulens, model_telescope)
-                logger.info('FIT: Stored model lightcurve for event '+mulens.name)
-            else:
-                logger.warning('FIT: No valid model fit produced so not model lightcurve for event '+mulens.name)
-
-            t9 = datetime.datetime.utcnow()
-            if verbose: utilities.checkpoint()
-            if verbose: logger.info('Time taken chk 5: ' + str(t9 - t8))
-
-            # Determine whether or not an event is still active based on the
-            # current time relative to its t0 and tE
-            if fit_status:
-                alive = fittools.check_event_alive(model_params['t0'], model_params['tE'], mulens.last_observation)
+        # Determine whether or not an event is still active based on the
+        # current time relative to its t0 and tE
+        if fit_status:
+            alive = fittools.check_event_alive(model_params['t0'], model_params['tE'], mulens.last_observation)
             logger.info(mulens.name + ' alive status: ' + repr(alive))
 
-            t10 = datetime.datetime.utcnow()
-            if verbose: utilities.checkpoint()
-            if verbose: logger.info('Time taken chk 6: ' + str(t10 - t9))
+        t10 = datetime.datetime.utcnow()
+        if verbose: utilities.checkpoint()
+        if verbose: logger.info('Time taken chk 6: ' + str(t10 - t9))
 
-            # Store model parameters
-            if fit_status:
-                model_params['last_fit'] = Time(datetime.datetime.utcnow()).jd
-                model_params['alive'] = alive
-                mulens.store_model_parameters(model_params)
-                logger.info('FIT: Stored model parameters for event ' + mulens.name)
+        # Store model parameters
+        if fit_status:
+            model_params['last_fit'] = Time(datetime.datetime.utcnow()).jd
+            model_params['alive'] = alive
+            mulens.store_model_parameters(model_params)
+            logger.info('FIT: Stored model parameters for event ' + mulens.name)
 
-            t11 = datetime.datetime.utcnow()
-            if verbose: utilities.checkpoint()
-            if verbose: logger.info('Time taken chk 6: ' + str(t11 - t10))
+        t11 = datetime.datetime.utcnow()
+        if verbose: utilities.checkpoint()
+        if verbose: logger.info('Time taken chk 6: ' + str(t11 - t10))
 
-        else:
-            logger.info('Insufficient lightcurve data available to model event '+mulens.name)
+    else:
+        logger.info('Insufficient lightcurve data available to model event '+mulens.name)
 
-            # Determine whether or not an event is still active based on the
-            # current time relative to its t0 and tE, and the date it was last observed
-            alive = fittools.check_event_alive(float(mulens.t0), float(mulens.tE), mulens.last_observation)
-            mulens.store_parameter_set({'alive': alive})
+        # Determine whether or not an event is still active based on the
+        # current time relative to its t0 and tE, and the date it was last observed
+        alive = fittools.check_event_alive(float(mulens.t0), float(mulens.tE), mulens.last_observation)
+        mulens.store_parameter_set({'alive': alive})
 
-            # Return True because no further processing is required
-            return True
+        # Return True because no further processing is required
+        return True
 
-    except:
-        logger.error('Job failed: '+mulens.name)
-        return False
+    #except:
+    #    logger.error('Job failed: '+mulens.name)
+    #    return False
 
 def select_random_events(target_list, max_nevents):
     """
@@ -117,6 +117,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--cores', help='Number of workers (CPU cores) to use', default=os.cpu_count(), type=int)
         parser.add_argument('--run-every', help='Run each Fit every N hours', default=4, type=int)
+        parser.add_argument('--force', help='Require model fits', default=False, action='store_true')
 
     def handle(self, *args, **options):
 
@@ -145,6 +146,7 @@ class Command(BaseCommand):
             utilities.checkpoint()
 
             datums = ReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
+            photometry_datums = PhotometryReducedDatum.objects.filter(target__in=target_list).order_by("timestamp")
 
             t2 = datetime.datetime.utcnow()
             logger.info('FIT_NEED_EVENTS: Retrieved associated data for ' + str(len(target_list)) + ' Targets')
@@ -158,7 +160,7 @@ class Command(BaseCommand):
                 # Catch for events where the RA, Dec is not set - source of this error unknown
                 try:
                     if type(mulens.ra) == float:
-                        mulens.get_reduced_data(datums.filter(target=mulens))
+                        mulens.get_reduced_data(photometry_datums.filter(target=mulens), datums.filter(target=mulens))
 
                         (status, reason) = mulens.check_need_to_fit()
                         logger.info('FIT_NEED_EVENTS: Need to fit ' + mulens.name
@@ -168,7 +170,7 @@ class Command(BaseCommand):
                         # not the event is still alive, based on the new model.
                         # If the event is not to be fitted for any reason, we need to check whether or not
                         # it is still alive.
-                        if mulens.need_to_fit:
+                        if mulens.need_to_fit or options['force']:
                             target_data[mulens.name] = mulens
 
                         else:

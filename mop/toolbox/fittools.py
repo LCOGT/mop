@@ -13,12 +13,16 @@ import pytz
 from scipy import stats
 import logging
 from datetime import datetime, timedelta
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 import json
 from django.db import connection
 
 
 logger = logging.getLogger(__name__)
+
+def get_zeropoint():
+    "Magnitude zeropoint equivalent to 1 count of flux; must be the same as used by pyLIMA"
+    return 27.4
 
 def chi2(params, fit):
 
@@ -28,7 +32,7 @@ def chi2(params, fit):
 
 def flux_to_mag(flux):
 
-    ZP_pyLIMA = 27.4
+    ZP_pyLIMA = get_zeropoint()
     magnitude = ZP_pyLIMA - 2.5 * np.log10(flux)
     return magnitude
 
@@ -38,8 +42,9 @@ def fluxerror_to_magerror(flux, flux_error):
     return mag_err
 
 def mag_to_flux(mag):
+    """Zeropoint taken from PyLIMA.toolbox.brightness_transformation"""
 
-    ZP_pyLIMA = 27.4
+    ZP_pyLIMA = get_zeropoint()
     flux = 10**((mag - ZP_pyLIMA) / -2.5)
 
     return flux
@@ -81,99 +86,100 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
     # Exception handling here because pyLIMA does its own weeding of poor data from the
     # lightcurves.  Occasionally this leads to all data in a lightcurve being rejected,
     # and pyLIMA will crash if you feed it an empty lightcurve
-    try:
-        # The above function imposes a priority order on the list of lightcurves to model,
-        # so the reference dataset will always be the first one
-        current_event.find_survey('Tel_0')
-        current_event.check_event()
+    #try:
+    # The above function imposes a priority order on the list of lightcurves to model,
+    # so the reference dataset will always be the first one
+    current_event.find_survey('Tel_0')
+    current_event.check_event()
 
-        # MODEL 1: PSPL model without parallax
-        pspl = PSPL_model.PSPLmodel(current_event, parallax=['None', 0.])
-        pspl.define_model_parameters()
-        fit_tap = TRF_fit.TRFfit(pspl, loss_function='soft_l1')
-        if verbose: logger.info('FITTOOLS: Set model 1, static PSPL')
+    # MODEL 1: PSPL model without parallax
+    pspl = PSPL_model.PSPLmodel(current_event, parallax=['None', 0.],
+                                    blend_flux_parameter='ftotal')
+    pspl.define_model_parameters()
+    fit_tap = TRF_fit.TRFfit(pspl, loss_function='soft_l1')
+    if verbose: logger.info('FITTOOLS: Set model 1, static PSPL')
+    if use_boundaries:
+        delta_t0 = 10.
+        default_t0_lower = fit_tap.fit_parameters["t0"][1][0]
+        default_t0_upper = fit_tap.fit_parameters["t0"][1][1]
+        fit_tap.fit_parameters["t0"][1] = [default_t0_lower, default_t0_upper + delta_t0]
+        fit_tap.fit_parameters["tE"][1] = [1., 1000.]
+        fit_tap.fit_parameters["u0"][1] = [0.0, 2.0]
+        if verbose: logger.info('FITTOOLS: model 1 fit boundaries: t0: '
+                                + repr(fit_tap.fit_parameters["t0"][1])
+                                + ' tE: ' + repr(fit_tap.fit_parameters["tE"][1])
+                                + ' u0: ' + repr(fit_tap.fit_parameters["u0"][1]))
+    fit_tap.fit()
+    model1_params = gather_model_parameters(current_event, fit_tap, verbose)
+    if verbose: logger.info('FITTOOLS: model 1 fitted parameters ' + repr(model1_params))
+
+    # Evaluate the quality of the best-available model.
+    # If the fitted values of key parameters are at the boundaries of then they are considered to
+    # be unreliable, and the fit parameters are reset to nan
+    model1_params = evaluate_model(model1_params)
+    if verbose: logger.info('FITTOOLS: model 1 evaluated parameters ' + repr(model1_params))
+
+    # By default, we accept the results of this first model fit as our best model.
+    # Then we test whether the initial PSPL fit results indicate a low degree of
+    # blend flux.  If so, we attempt to refit the data without blending
+    best_model = model1_params
+    do_noblend_model = test_quality_of_model_fit(model1_params)
+    if verbose: logger.info('FITTOOLS: fit no-blend model? ' + repr(do_noblend_model))
+
+    # MODEL 2: PSPL model without blending or parallax
+    if do_noblend_model:
+        pspl2 = PSPL_model.PSPLmodel(current_event, parallax=['None', 0.],
+                                    blend_flux_parameter='ftotal')
+        pspl2.define_model_parameters()
+        fit_tap2 = TRF_fit.TRFfit(pspl2, loss_function='soft_l1')
+        if verbose: logger.info('FITTOOLS: Set model 2, static PSPL without blending')
         if use_boundaries:
-            delta_t0 = 10.
-            default_t0_lower = fit_tap.fit_parameters["t0"][1][0]
-            default_t0_upper = fit_tap.fit_parameters["t0"][1][1]
-            fit_tap.fit_parameters["t0"][1] = [default_t0_lower, default_t0_upper + delta_t0]
-            fit_tap.fit_parameters["tE"][1] = [1., 3000.]
-            fit_tap.fit_parameters["u0"][1] = [0.0, 2.0]
-            if verbose: logger.info('FITTOOLS: model 1 fit boundaries: t0: '
-                                    + repr(fit_tap.fit_parameters["t0"][1])
-                                    + ' tE: ' + repr(fit_tap.fit_parameters["tE"][1])
-                                    + ' u0: ' + repr(fit_tap.fit_parameters["u0"][1]))
-        fit_tap.fit()
-        model1_params = gather_model_parameters(current_event, fit_tap)
-        if verbose: logger.info('FITTOOLS: model 1 fitted parameters ' + repr(model1_params))
+            fit_tap2.fit_parameters["t0"][1] = [default_t0_lower, default_t0_upper + delta_t0]
+            fit_tap2.fit_parameters["tE"][1] = [1., 1000.]
+            fit_tap2.fit_parameters["u0"][1] = [0.0, 2.0]
+            if verbose: logger.info('FITTOOLS: model 2 fit boundaries: t0: '
+                                + repr(fit_tap2.fit_parameters["t0"][1])
+                                + ' tE: ' + repr(fit_tap2.fit_parameters["tE"][1])
+                                + ' u0: ' + repr(fit_tap2.fit_parameters["u0"][1]))
+        fit_tap2.fit()
+        model2_params = gather_model_parameters(current_event, fit_tap2, verbose)
+        # default null as in the former implementation
+        #model2_params['blend_magnitude'] = np.nan
+        if verbose: logger.info('FITTOOLS: model 2 fitted parameters ' + repr(model2_params))
 
-        # Evaluate the quality of the best-available model.
-        # If the fitted values of key parameters are at the boundaries of then they are considered to
-        # be unreliable, and the fit parameters are reset to nan
-        model1_params = evaluate_model(model1_params)
-        if verbose: logger.info('FITTOOLS: model 1 evaluated parameters ' + repr(model1_params))
+        # Evaluate the quality of this model
+        model2_params = evaluate_model(model2_params)
+        if verbose: logger.info('FITTOOLS: model 2 evaluated parameters ' + repr(model2_params))
 
-        # By default, we accept the results of this first model fit as our best model.
-        # Then we test whether the initial PSPL fit results indicate a low degree of
-        # blend flux.  If so, we attempt to refit the data without blending
-        best_model = model1_params
-        do_noblend_model = test_quality_of_model_fit(model1_params)
-        if verbose: logger.info('FITTOOLS: fit no-blend model? ' + repr(do_noblend_model))
-
-        # MODEL 2: PSPL model without blending or parallax
-        if do_noblend_model:
-            pspl2 = PSPL_model.PSPLmodel(current_event, parallax=['None', 0.],
-                                        blend_flux_parameter='noblend')
-            pspl2.define_model_parameters()
-            fit_tap2 = TRF_fit.TRFfit(pspl2, loss_function='soft_l1')
-            if verbose: logger.info('FITTOOLS: Set model 2, static PSPL without blending')
-            if use_boundaries:
-                fit_tap2.fit_parameters["t0"][1] = [default_t0_lower, default_t0_upper + delta_t0]
-                fit_tap2.fit_parameters["tE"][1] = [1., 3000.]
-                fit_tap2.fit_parameters["u0"][1] = [0.0, 2.0]
-                if verbose: logger.info('FITTOOLS: model 2 fit boundaries: t0: '
-                                    + repr(fit_tap2.fit_parameters["t0"][1])
-                                    + ' tE: ' + repr(fit_tap2.fit_parameters["tE"][1])
-                                    + ' u0: ' + repr(fit_tap2.fit_parameters["u0"][1]))
-            fit_tap2.fit()
-            model2_params = gather_model_parameters(current_event, fit_tap2)
-            # default null as in the former implementation
-            model2_params['blend_magnitude'] = np.nan
-            if verbose: logger.info('FITTOOLS: model 2 fitted parameters ' + repr(model2_params))
-
-            # Evaluate the quality of this model
-            model2_params = evaluate_model(model2_params)
-            if verbose: logger.info('FITTOOLS: model 2 evaluated parameters ' + repr(model2_params))
-
-            # Decide which fit to accept based on the fitted chi2 in each case.
-            # Ordinarily, model1 (with blending, parallax) should produce a lower chi2 because it has more parameters.
-            # This test is designed to require evidence that these extra parameters are justified.
-            # It should also catch cases where for some reason this fit fails, and the simpler model 2
-            # (no blending or parallax) is more reliable.
-            # This delta_chi2 will be positive if model 1 is a better fit than model 2.
-            # The threshold is calculated assuming a 3-sigma distribution.
-            best_model = model2_params
-            delta_chi2 = model2_params['chi2'] - model1_params['chi2']
-            dchi2_threshold = stats.chi2.ppf(0.9973, len(tel_list))
-            if verbose: logger.info('FITTOOLS: Model 1 chi2 = ' + str(model1_params['chi2']) \
-                                    + ', model 2 chi2 = ' + str(model2_params['chi2']) \
-                                    + ', delta_chi2 = ' + str(delta_chi2) \
-                                    + ', threshold dchi2 = ' + str(dchi2_threshold))
-            if delta_chi2 >= dchi2_threshold:
-                best_model = model1_params
-                if verbose: logger.info('FITTOOLS: Using model 1 (with blending and parallax) as best-fit model')
-            else:
-                if verbose: logger.info('FITTOOLS: Using model 2 (no blending or parallax) as best-fit model')
+        # Decide which fit to accept based on the fitted chi2 in each case.
+        # Ordinarily, model1 (with blending, parallax) should produce a lower chi2 because it has more parameters.
+        # This test is designed to require evidence that these extra parameters are justified.
+        # It should also catch cases where for some reason this fit fails, and the simpler model 2
+        # (no blending or parallax) is more reliable.
+        # This delta_chi2 will be positive if model 1 is a better fit than model 2.
+        # The threshold is calculated assuming a 3-sigma distribution.
+        best_model = model2_params
+        delta_chi2 = model2_params['chi2'] - model1_params['chi2']
+        dchi2_threshold = stats.chi2.ppf(0.9973, len(tel_list))
+        if verbose: logger.info('FITTOOLS: Model 1 chi2 = ' + str(model1_params['chi2']) \
+                                + ', model 2 chi2 = ' + str(model2_params['chi2']) \
+                                + ', delta_chi2 = ' + str(delta_chi2) \
+                                + ', threshold dchi2 = ' + str(dchi2_threshold))
+        if delta_chi2 >= dchi2_threshold:
+            best_model = model1_params
+            if verbose: logger.info('FITTOOLS: Using model 1 (with  parallax) as best-fit model')
+        else:
+            if verbose: logger.info('FITTOOLS: Using model 2 (no parallax) as best-fit model')
 
     # Exception handling if PyLIMA rejects data internally
-    except:
-        best_model = {'tE': np.nan}
-        logger.info('FITTOOLS: Exception during PyLIMA modeling, possible data issue.  Skipping model fit')
-        status = False
+    #except:
+    #    best_model = {'tE': np.nan}
+     #   logger.info('FITTOOLS: Exception during PyLIMA modeling, possible data issue.  Skipping model fit')
+     #   status = False
 
     # Generate the model lightcurve timeseries with the fitted parameters
     if not np.isnan(best_model['tE']):
-        model_telescope = generate_model_lightcurve(current_event,best_model)
+        model_telescope = generate_model_lightcurve(current_event, best_model, verbose)
         if verbose: logger.info('FITTOOLS: generated model lightcurve')
     else:
         model_telescope = None
@@ -182,18 +188,17 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
     return best_model, model_telescope, status
 
 
-def repackage_lightcurves(qs):
-    """Function to sort through a QuerySet of the ReducedDatums for a given event and repackage the data as a
+def repackage_lightcurves(photometry_qs):
+    """Function to sort through a QuerySet of PhotometryReducedDatums for a given event and repackage the data as a
      dictionary of individual lightcurves in PyLIMA-compatible format for different facilities.
-     Note that not all of the QuerySet of ReducedDatums may be photometry, so some sorting is required.
      """
 
     datasets = {}
 
-    for rd in qs:
-        if rd.data_type == 'photometry' and rd.source_name != 'Interferometry_predictor':
+    for rd in photometry_qs:
+        if rd.source_name != 'Interferometry_predictor':
             # Identify different lightcurves from the filter label given
-            passband = rd.value['filter']
+            passband = rd.bandpass
             if passband in datasets.keys():
                 lc = datasets[passband]
             else:
@@ -201,9 +206,9 @@ def repackage_lightcurves(qs):
 
             # Append the datapoint to the corresponding dataset
             try:
-                lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], rd.value['error']])
+                lc.append([Time(rd.timestamp).jd, rd.brightness, rd.brightness_error])
             except:
-                lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], 1.0])
+                lc.append([Time(rd.timestamp).jd, rd.brightness, 1.0])
 
             datasets[passband] = lc
 
@@ -254,9 +259,9 @@ def pylima_telescopes_from_datasets(datasets, emag_limit=None):
 
         # Treating all sites as ground-based without coordinates
         tel = telescopes.Telescope(name='Tel_'+str(idx), camera_filter=name,
-                                         light_curve=photometry[mask],
-                                         light_curve_names=['time', 'mag', 'err_mag'],
-                                         light_curve_units=['JD', 'mag', 'err_mag'])
+                                         lightcurve=photometry[mask],
+                                         lightcurve_names=['time', 'mag', 'err_mag'],
+                                         lightcurve_units=['JD', 'mag', 'err_mag'])
         tel_list.append(tel)
 
     return tel_list
@@ -334,7 +339,7 @@ def check_event_alive(t0_fit, tE_fit, last_obs_jd):
 
     return alive
 
-def gather_model_parameters(pevent, model_fit):
+def gather_model_parameters(pevent, model_fit, verbose):
     """
     Function to gather the parameters of a PyLIMA fitted model into a dictionary for easier handling.
     """
@@ -370,52 +375,78 @@ def gather_model_parameters(pevent, model_fit):
     # Calculate the reduced chi2
     ndata = 0
     for i,tel in enumerate(pevent.telescopes):
-        ndata += len(tel.lightcurve_magnitude)
+        ndata += len(tel.lightcurve)
     model_params['red_chi2'] = np.around(model_params['chi2'] / float(ndata - len(param_keys)),3)
 
     # Retrieve the flux parameters, converting from PyLIMA's key nomenclature to MOPs
-    key_map = {
-        'fsource_Tel_0': 'source_magnitude',
-        'fblend_Tel_0': 'blend_magnitude'
-    }
+    # Fetch the source flux
+    try:
+        source_flux = model_params['fsource_Tel_0']
+        source_flux_error = model_params['fsource_Tel_0_error']
+        model_params['source_magnitude'] = np.around(flux_to_mag(source_flux), 3)
 
-    flux_index = []
-    for pylima_key,mop_key in key_map.items():
-        try:
-            idx = param_keys.index(pylima_key)
-            model_params[mop_key] = np.around(flux_to_mag(model_fit.fit_results["best_model"][idx]), 3)
-            flux_index.append(idx)
-        except ValueError:
-            model_params[mop_key] = np.nan
+        source_mag_error = fluxerror_to_magerror(model_params['fsource_Tel_0'],
+                                  model_params['fsource_Tel_0_error'])
+        model_params['source_mag_error'] = np.around(source_mag_error, 3)
+    except:
+        model_params['source_magnitude'] = np.nan
+        model_params['source_mag_error'] = np.nan
+    if verbose: logger.info('FITTOOLS: source flux ' + str(source_flux) + '+/-' + str(source_flux_error))
+    if verbose: logger.info(
+        'FITTOOLS: source mag ' + str(model_params['source_magnitude'])
+        + '+/-' + str(model_params['source_mag_error'])
+    )
 
-    # Retrieve the flux uncertainties and convert to magnitudes
-    model_params['source_mag_error'] = np.around(
-                                                fluxerror_to_magerror(model_params['fsource_Tel_0'],
-                                                             model_params['fsource_Tel_0_error']),
-                                                3)
-    if 'fblend_Tel_0' in model_params.keys():
+    # Handle blend flux, computed from ftotal
+    try:
+        total_flux = model_params['ftotal_Tel_0']
+        total_flux_error = model_params['ftotal_Tel_0_error']
+        blend_flux = total_flux - source_flux
+        model_params['blend_magnitude'] = np.around(flux_to_mag(blend_flux), 3)
+
+        blend_flux_error = np.sqrt(
+            total_flux_error * total_flux_error
+            + source_flux_error * source_flux_error
+        )
         model_params['blend_mag_error'] = np.around(
-                                                fluxerror_to_magerror(model_params['fblend_Tel_0'],
-                                                             model_params['fblend_Tel_0_error']),
-                                                3)
-    else:
-        model_params['blend_mag_error'] = np.nan
+            fluxerror_to_magerror(blend_flux,
+                                  blend_flux_error),
+            3)
+    except:
+        model_params['blend_magnitude'] = get_zeropoint()
+        model_params['blend_mag_error'] = 0.0
+
+    # Occasionally fits with negative blend flux are possible
+    if blend_flux < 0.0:
+        blend_flux = 0.0
+        blend_flux_error = 0.0
+        model_params['blend_magnitude'] = get_zeropoint()
+        model_params['blend_mag_error'] = 0.0
+
+    if verbose: logger.info('FITTOOLS: blend flux ' + str(blend_flux) + '+/-' + str(blend_flux_error))
+    if verbose: logger.info(
+        'FITTOOLS: blend mag ' + str(model_params['blend_magnitude'])
+        + '+/-' + str(model_params['blend_mag_error'])
+    )
 
     # If the model fitted contains valid entries for both source and blend flux,
     # use these to calculate the baseline magnitude.  Otherwise, use the source magnitude
     if not np.isnan(model_params['source_magnitude']) \
            and not np.isnan(model_params['blend_magnitude']):
-        unlensed_flux = model_fit.fit_results["best_model"][flux_index[0]] \
-                            + model_fit.fit_results["best_model"][flux_index[1]]
-        unlensed_flux_error = np.sqrt(
-                                (model_params['fsource_Tel_0_error']**2 + model_params['fblend_Tel_0_error']**2)
-                                + (model_params['fsource_Tel_0_error']*model_params['fblend_Tel_0_error'])
-                            )
-        model_params['baseline_magnitude'] = np.around(flux_to_mag(unlensed_flux), 3)
-        model_params['baseline_mag_error'] = np.around(fluxerror_to_magerror(unlensed_flux,unlensed_flux_error), 3)
+        baseline_flux = source_flux + blend_flux
+        baseline_flux_error = np.sqrt(
+            source_flux_error ** 2 + blend_flux_error ** 2
+            + source_flux_error * blend_flux_error
+        )
+        model_params['baseline_magnitude'] = np.around(flux_to_mag(baseline_flux), 3)
+        model_params['baseline_mag_error'] = np.around(fluxerror_to_magerror(baseline_flux, baseline_flux_error), 3)
     else:
         model_params['baseline_magnitude'] = model_params['source_magnitude']
         model_params['baseline_mag_error'] = model_params['source_mag_error']
+    if verbose: logger.info(
+        'FITTOOLS: baseline mag ' + str(model_params['baseline_magnitude'])
+        + '+/-' + str(model_params['baseline_mag_error'])
+    )
 
     model_params['fit_covariance'] = model_fit.fit_results["covariance_matrix"]
 
@@ -500,24 +531,25 @@ def evaluate_model(best_model, verbose=False):
 
     return best_model
 
-def generate_model_lightcurve(pevent, model_params):
+def generate_model_lightcurve(pevent, model_params, verbose):
     """Function to generate a photometric timeseries corresponding to the given model parameters"""
 
     pyLIMA_plots.list_of_fake_telescopes = []
 
     # This doesn't include parallax right now, since none of the fitted models do either yet
-    pspl = PSPL_model.PSPLmodel(pevent, parallax=['None', 0.])
+    pspl = PSPL_model.PSPLmodel(pevent, parallax=['None', 0.], blend_flux_parameter='ftotal')
 
     params = []
-    parameters = ['t0', 'u0', 'tE', 'source_magnitude', 'blend_magnitude']
+    parameters = ['t0', 'u0', 'tE']
     for key in parameters:
         value = model_params[key]
-        if 'magnitude' in key:
-            if not np.isnan(value):
-                value = mag_to_flux(value)
-            else:
-                value = 0.0
         params.append(value)
+    source_flux = mag_to_flux(model_params['source_magnitude'])
+    params.append(source_flux)
+    blend_flux = mag_to_flux(model_params['blend_magnitude'])
+    params.append(source_flux+blend_flux)
+    if verbose: logger.info('GENERATE LC parameter set: ' + repr(params))
+
     pyLIMA_parameters = pspl.compute_pyLIMA_parameters(params)
 
     model_telescope = pyLIMA_plots.create_telescopes_to_plot_model(pspl, pyLIMA_parameters)[0]
@@ -526,10 +558,10 @@ def generate_model_lightcurve(pevent, model_params):
 
     magnitude = toolbox.brightness_transformation.flux_to_magnitude(flux_model)
 
-    model_telescope.lightcurve_magnitude["mag"] = magnitude * unit.mag
+    model_telescope.lightcurve["mag"] = magnitude * unit.mag
 
     mask = ~np.isnan(magnitude)
-    model_telescope.lightcurve_magnitude = model_telescope.lightcurve_magnitude[mask]
+    model_telescope.lightcurve = model_telescope.lightcurve[mask]
 
     return model_telescope
 
@@ -545,8 +577,8 @@ def store_model_lightcurve(mulens, model):
 
     # Extract the model lightcurve timeseries from the PyLIMA fit object
     data = {
-        'lc_model_time': model.lightcurve_magnitude['time'].value.tolist(),
-        'lc_model_magnitude': model.lightcurve_magnitude['mag'].value.tolist()
+        'lc_model_time': model.lightcurve['time'].value.tolist(),
+        'lc_model_magnitude': model.lightcurve['mag'].value.tolist()
     }
 
     # If there is no existing model for this target, create one

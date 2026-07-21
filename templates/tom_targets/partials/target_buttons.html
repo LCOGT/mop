@@ -5,5 +5,5 @@
     <a href="{% url 'tom_targets:share' pk=target.id %}" title="Share target" class="btn  btn-outline-warning">Share</a>
     {% endif %}
     <a href="{% url 'tom_targets:delete' pk=target.id %}" title="Delete target" class="btn  btn-outline-danger">Delete</a>
-    {% get_buttons target %}
+    {% get_buttons %}
 </div>

@@ -216,8 +216,12 @@ class Command(BaseCommand):
                                 logger.info('runTAP: Submitted spectroscopic observations for ' + mulens.name)
 
                         ### Inteferometry
-                        interferometry_prediction.evaluate_target_for_interferometry(mulens)
-                        logger.info('runTAP: Evaluated ' + mulens.name + ' for interferometry')
+                        try:
+                            interferometry_prediction.evaluate_target_for_interferometry(mulens)
+                            logger.info('runTAP: Evaluated ' + mulens.name + ' for interferometry')
+                        except Exception as e:
+                            logger.warning('runTAP: Could not perform interferometry evaluation for ' + mulens.name)
+                            logger.warning('Exception: ' + repr(e))
 
                         t7 = datetime.datetime.utcnow()
                         logger.info('runTAP: Time taken for obscontrol block' + str(t7 - t6))

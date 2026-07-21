@@ -2,10 +2,8 @@
   description = "We harvest, fit, rank and observe all events in the sky!";
 
   inputs = {
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    devenv-k8s.url = "github:LCOGT/devenv-k8s/v1";
-
+    devenv-k8s.url = "github:LCOGT/devenv-k8s";
+    
     nixpkgs.follows = "devenv-k8s/nixpkgs";
     flake-parts.follows = "devenv-k8s/flake-parts";
 

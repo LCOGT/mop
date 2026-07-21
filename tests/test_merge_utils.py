@@ -2,7 +2,7 @@ from django.test import TestCase
 from tom_targets.tests.factories import SiderealTargetFactory
 from datetime import datetime, timedelta
 from tom_targets.models import Target, TargetExtra, TargetName, TargetList
-from tom_dataproducts.models import DataProduct, ReducedDatum, DataProductGroup
+from tom_dataproducts.models import DataProduct, ReducedDatum, PhotometryReducedDatum, DataProductGroup
 from tom_observations.models import ObservationRecord, ObservationGroup
 from django_comments.models import Comment
 from django.contrib.sites.models import Site
@@ -159,13 +159,13 @@ class TestMergeExtraParams(TestCase):
             data_product_type = 'photometry'
         )
 
-        rd1 = ReducedDatum.objects.create(
+        rd1 = PhotometryReducedDatum.objects.create(
             target=self.primary_target,
             data_product = dp1,
             source_name = 'OGLE',
-            data_type = 'photometry',
             timestamp = datetime.utcnow(),
-            value = {'datum': 1, 'filter': 'I'}
+            bandpass = 'I',
+            brightness = 1
         )
         self.primary_target_data = [rd1]
 
@@ -214,13 +214,13 @@ class TestMergeExtraParams(TestCase):
             data_product_type = 'photometry'
         )
 
-        rd2 = ReducedDatum.objects.create(
+        rd2 = PhotometryReducedDatum.objects.create(
             target=tmatch1,
             data_product = dp2,
             source_name = 'OMEGA',
-            data_type = 'photometry',
             timestamp = datetime.utcnow()+timedelta(seconds=5),
-            value = {'datum': 2, 'filter': 'ip'}
+            bandpass = 'ip',
+            brightness = 2
         )
 
         obs4 = ObservationRecord.objects.create(
@@ -247,13 +247,13 @@ class TestMergeExtraParams(TestCase):
             data_product_type = 'photometry'
         )
 
-        rd3 = ReducedDatum.objects.create(
+        rd3 = PhotometryReducedDatum.objects.create(
             target=tmatch1,
             data_product = dp3,
             source_name = 'OMEGA',
-            data_type = 'photometry',
             timestamp = datetime.utcnow()+timedelta(seconds=5),
-            value = {'datum': 2, 'filter': 'gp'}
+            bandpass = 'gp',
+            brightness = 2
         )
         self.matching_data = [rd2, rd3]
         self.matching_observations = {
@@ -513,18 +513,23 @@ class TestMergeExtraParams(TestCase):
 
     def test_merge_data_products(self):
 
+        options = {'remove': 'no'}
+
         # Call function to transfer ownership of the data products of the matched targets to
         # the primary target
         primary_data = ReducedDatum.objects.filter(target=self.primary_target)
-        matched_data = [ReducedDatum.objects.filter(target=x) for x in self.matching_targets]
+        primary_photometry = PhotometryReducedDatum.objects.filter(target=self.primary_target)
+        matched_dataproducts = [DataProduct.objects.filter(target=x) for x in self.matching_targets]
 
-        merge_utils.merge_data_products(self.primary_target,
+        merge_utils.merge_data_products(options,
+                            self.primary_target,
                             primary_data,
+                            primary_photometry,
                             self.matching_targets,
-                            matched_data)
+                            matched_dataproducts)
 
         # Query the DB to retrieve all data now associated with the primary target
-        updated_data = ReducedDatum.objects.filter(
+        updated_data = PhotometryReducedDatum.objects.filter(
             target=self.primary_target
         )
 
@@ -538,10 +543,12 @@ class TestMergeExtraParams(TestCase):
 
 
         # Test that the code properly skips ReducedDatums where they are exactly duplicated.
-        merge_utils.merge_data_products(self.primary_target,
+        merge_utils.merge_data_products(options,
+                                        self.primary_target,
                                         primary_data,
+                                        primary_photometry,
                                         self.matching_targets,
-                                        matched_data)
+                                        matched_dataproducts)
 
     def test_merge_targetgroups(self):
         """
@@ -593,7 +600,7 @@ class TestMergeExtraParams(TestCase):
     def test_sanity_check_data_sources(self):
 
         # This should not raise any errors
-        datums_qs = ReducedDatum.objects.filter(target=self.primary_target)
+        datums_qs = PhotometryReducedDatum.objects.filter(target=self.primary_target)
 
         merge_utils.sanity_check_data_sources(self.primary_target, datums_qs)
 
@@ -604,15 +611,15 @@ class TestMergeExtraParams(TestCase):
             data='path/to/dataproduct',
             data_product_type='photometry'
         )
-        rd1 = ReducedDatum.objects.create(
+        rd1 = PhotometryReducedDatum.objects.create(
             target=self.primary_target,
             data_product=dp1,
             source_name='UNKNOWN',
-            data_type='photometry',
             timestamp=datetime.utcnow(),
-            value={'datum': 1, 'filter': 'I'}
+            bandpass='I',
+            brightness=1
         )
-        datums_qs = ReducedDatum.objects.filter(target=self.primary_target)
+        datums_qs = PhotometryReducedDatum.objects.filter(target=self.primary_target)
 
         with self.assertRaises(OSError):
             merge_utils.sanity_check_data_sources(self.primary_target, datums_qs)

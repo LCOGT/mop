@@ -4,11 +4,12 @@ from tom_alerts.alerts import GenericBroker, GenericQueryForm
 from django import forms
 from tom_targets.models import Target, TargetName
 from tom_observations import facility
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 
 from astropy.coordinates import SkyCoord
 import astropy.units as unit
 import urllib
+import requests
 import os
 import numpy as np
 from astropy.time import Time, TimezoneInfo
@@ -16,8 +17,13 @@ import datetime
 from mop.toolbox import logs
 from mop.toolbox import TAP, utilities, classifier_tools
 from microlensing_targets.match_managers import validators
+import ssl
 
-BROKER_URL = 'https://www.massey.ac.nz/~iabond/moa/'
+ssl._create_default_https_context = ssl._create_stdlib_context
+
+#BROKER_URL = 'https://www.massey.ac.nz/~iabond/moa/'
+BROKER_URL = 'https://moaprime.massey.ac.nz/moaarchive/list/'
+NEW_BROKER_URL = 'https://moaprime.massey.ac.nz/alerts/data/index/prime/'
 photometry = "https://www.massey.ac.nz/~iabond/moa/alert2019/fetchtxt.php?path=moa/ephot/"
 
 class MOAQueryForm(GenericQueryForm):
@@ -56,29 +62,48 @@ class MOABroker(GenericBroker):
         for year in years:
             url_file_path = os.path.join(BROKER_URL+'alert'+str(year)+'/index.dat' )
             log.info('MOA ingester: querying url: '+url_file_path)
-            
-            events = urllib.request.urlopen(url_file_path).readlines()
 
-            for event in events[0:]:
+            test_response = requests.get(url_file_path)
+            if test_response.status_code != 404:
 
-                event = event.decode("utf-8").split(' ')
-                name = 'MOA-'+event[0]
-                #Create or load
+                events = urllib.request.urlopen(url_file_path).readlines()
 
-                target, result = self.ingest_event(name, float(event[2]), float(event[3]))
+                for event in events[0:]:
 
-                # This needs to store the name of the target it refers to, rather than
-                # the input name, in case that is an alias for duplicate events
-                self.event_dictionnary[target.name] = [event[1],event[-2],event[-1]]
+                    event = event.decode("utf-8").split(' ')
+                    name = 'MOA-'+event[0]
+                    #Create or load
 
-                if 'new_target' in result:
-                   new_targets.append(target)
+                    target, result = self.ingest_event(name, float(event[2]), float(event[3]))
 
-                list_of_targets.append(target)
+                    # This needs to store the name of the target it refers to, rather than
+                    # the input name, in case that is an alias for duplicate events
+                    self.event_dictionnary[target.name] = [event[1],event[-2],event[-1]]
+
+                    if 'new_target' in result:
+                       new_targets.append(target)
+
+                    list_of_targets.append(target)
 
         logs.stop_log(log)
 
         return list_of_targets, new_targets
+
+    def fetch_alert_params(self, moa_files_directories, years = []):
+
+        #ingest the TOM db
+        events = []
+        time_now = Time(datetime.datetime.now()).jd
+        for year in years:
+            url_file_path = os.path.join(BROKER_URL, str(year) )
+            print(url_file_path)
+            response = requests.request('GET', url_file_path)
+            print(response)
+            if response.status_code == 200:
+                for line in response.iter_lines():
+                    print(line)
+
+        return events
 
     def ingest_event(self, name, ra, dec):
         cible = SkyCoord(ra, dec, unit="deg")
@@ -102,8 +127,8 @@ class MOABroker(GenericBroker):
         time_now = Time(datetime.datetime.now()).jd
         for target in targets:
 
-            datasets = ReducedDatum.objects.filter(target=target)
-            existing_time = [Time(i.timestamp).jd for i in datasets if i.data_type == 'photometry']
+            datasets = PhotometryReducedDatum.objects.filter(target=target)
+            existing_time = [Time(i.timestamp).jd for i in datasets]
             event = self.event_dictionnary[target.name][0]
 
             jd = []
@@ -140,17 +165,14 @@ class MOABroker(GenericBroker):
                 try:
                     jd = Time(point[0], format='jd', scale='utc')
                     jd.to_datetime(timezone=TimezoneInfo())
-                    data = {   'magnitude': point[1],
-                           'filter': 'R',
-                           'error': point[2]
-                       }
-                    rd, created = ReducedDatum.objects.get_or_create(
+                    rd, created = PhotometryReducedDatum.objects.get_or_create(
                     timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                    value=data,
                     source_name='MOA',
                     source_location=target.name,
-                    data_type='photometry',
-                    target=target)
+                    target=target,
+                    bandpass='R',
+                    brightness=point[1],
+                    brightness_error=point[2])
 
                 except:
                         pass

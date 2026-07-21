@@ -7,17 +7,26 @@ from astropy.table import Table, Column
 class Command(BaseCommand):
     help = 'Review all available events and list those within OMEGA-IIs observing area'
 
+    def add_arguments(self, parser):
+        parser.add_argument('events', help='name of a specific event or all')
+
     def handle(self, *args, **options):
 
         # Load the field definitions of the Bulge High Cadence Zone
         KMTNet_fields = TAP.load_KMTNet_fields()
+
+        # Parse the events to be checked
+        if 'all' in str(options['events']).lower():
+            target_list = Target.objects.all()
+        else:
+            target_list = Target.objects.filter(name= options['events'])
 
         # Review all available events
         target_names = []
         target_ra = []
         target_dec = []
         target_status = []
-        for target in Target.objects.all():
+        for target in target_list:
 
             # Determine whether the target falls within the HCZ or not
             try:
@@ -43,13 +52,9 @@ class Command(BaseCommand):
                     except AttributeError:
                         alive = 'True'
 
-                    if '23' in target.name:
-                        target_names.append(target.name)
-                        target_ra.append(target.ra)
-                        target_dec.append(target.dec)
-                        target_status.append(alive)
-
-                target.save(extras ={'Sky_location': sky_location})
+                print('Target location: ' + sky_location)
+                target.sky_location = sky_location
+                target.save()
 
             except TypeError:
                 print('TypeError exception raised for event ' + target.name)

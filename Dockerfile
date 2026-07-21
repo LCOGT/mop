@@ -1,5 +1,5 @@
-FROM python:3.10
-LABEL maintainer="etibachelet@gmail.com"
+FROM python:3.10.11
+LABEL maintainer="rstreet@lco.global"
 
 WORKDIR /mop
 

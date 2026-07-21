@@ -12,7 +12,7 @@ from mop.toolbox.TAP import set_target_sky_location
 from django.views.generic.edit import FormView
 from django_filters.views import FilterView
 from guardian.mixins import PermissionListMixin
-from tom_targets.filters import TargetFilter
+from tom_targets.filters import TargetFilterSet
 from django.contrib import messages
 from mop.toolbox.obs_control import fetch_all_lco_requestgroups, parse_lco_requestgroups
 from mop.forms import TargetClassificationForm, TargetSelectionForm
@@ -172,6 +172,7 @@ class ActiveObsView(ListView):
 
         # Retrieve a list of pending observations from the LCO Portal
         response = fetch_all_lco_requestgroups()
+
         pending_obs = parse_lco_requestgroups(response, short_form=False, pending_only=False)
 
         pending_obs_list = {}
@@ -253,8 +254,8 @@ class PriorityTargetsView(ListView):
         if self.request.user.is_authenticated:
 
             # Query for matching TargetExtra entries returns a list of Target PKs
-            qs_stars = querytools.fetch_priority_targets(10.0, 'stellar')
-            qs_bh = querytools.fetch_priority_targets(10.0, 'long_tE')
+            qs_stars = querytools.fetch_priority_targets(10.0, 'stellar', verbose=False)
+            qs_bh = querytools.fetch_priority_targets(10.0, 'long_tE', verbose=False)
 
             #Check observed targets
             obs_targets = self.get_observed_targets_data()
@@ -457,7 +458,7 @@ class TargetFacilitySelectionView(Raise403PermissionRequiredMixin, FormView):
                 visibility_data = get_sidereal_visibility(
                     object, start_time, end_time,
                     visibiliy_intervals, airmass_max,
-                    observation_facility=request.POST.get('observatory')
+                    facility_name=request.POST.get('observatory')
                 )
                 logger.info('FacilitySelectView: Got visibility data')
                 for site, vis_data in visibility_data.items():
@@ -492,7 +493,7 @@ class TargetListView(PermissionListMixin, FilterView):
     paginate_by = 25
     strict = False
     model = Target
-    filterset_class = TargetFilter
+    filterset_class = TargetFilterSet
     # Set app_name for Django-Guardian Permissions in case of Custom Target Model
     permission_required = f'{Target._meta.app_label}.view_target'
     ordering = ['-created']
