@@ -21,10 +21,6 @@ deploy:
   kubectl: {}
   logs:
     prefix: podAndContainer
-portForward:
-  - resourceType: Service
-    resourceName: server
-    port: http
 ---
 apiVersion: skaffold/v4beta10
 kind: Config
