@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from tom_targets.models import Target
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 
 class Command(BaseCommand):
     help = 'Retrieve all ReducedDatums for a given Target'
@@ -17,10 +17,10 @@ class Command(BaseCommand):
         else:
             target = qs[0]
 
-            qs = ReducedDatum.objects.filter(target=target, data_type='photometry')
+            qs = PhotometryReducedDatum.objects.filter(target=target)
 
             print('FETCH DATA: Found ' + str(qs.count()) + 'datapoints for ' + target.name)
 
             for rd in qs:
-                print('RD: ' + rd.value['filter'] + ' ' + str(rd.timestamp) + ' ' \
-                        + str(rd.value['magnitude']) + ' ' + str(rd.value['error']))
+                print('RD: ' + rd.bandpass + ' ' + str(rd.timestamp) + ' ' \
+                        + str(rd.brightness) + ' ' + str(rd.brightness_error))

@@ -13,7 +13,7 @@ import pytz
 from scipy import stats
 import logging
 from datetime import datetime, timedelta
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import ReducedDatum, PhotometryReducedDatum
 import json
 from django.db import connection
 
@@ -188,18 +188,17 @@ def fit_pspl_omega2(ra, dec, datasets, emag_limit=None):
     return best_model, model_telescope, status
 
 
-def repackage_lightcurves(qs):
-    """Function to sort through a QuerySet of the ReducedDatums for a given event and repackage the data as a
+def repackage_lightcurves(photometry_qs):
+    """Function to sort through a QuerySet of PhotometryReducedDatums for a given event and repackage the data as a
      dictionary of individual lightcurves in PyLIMA-compatible format for different facilities.
-     Note that not all of the QuerySet of ReducedDatums may be photometry, so some sorting is required.
      """
 
     datasets = {}
 
-    for rd in qs:
-        if rd.data_type == 'photometry' and rd.source_name != 'Interferometry_predictor':
+    for rd in photometry_qs:
+        if rd.source_name != 'Interferometry_predictor':
             # Identify different lightcurves from the filter label given
-            passband = rd.value['filter']
+            passband = rd.bandpass
             if passband in datasets.keys():
                 lc = datasets[passband]
             else:
@@ -207,9 +206,9 @@ def repackage_lightcurves(qs):
 
             # Append the datapoint to the corresponding dataset
             try:
-                lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], rd.value['error']])
+                lc.append([Time(rd.timestamp).jd, rd.brightness, rd.brightness_error])
             except:
-                lc.append([Time(rd.timestamp).jd, rd.value['magnitude'], 1.0])
+                lc.append([Time(rd.timestamp).jd, rd.brightness, 1.0])
 
             datasets[passband] = lc
 

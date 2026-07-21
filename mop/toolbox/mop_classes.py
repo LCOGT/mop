@@ -61,18 +61,20 @@ class MicrolensingEvent():
         for name in qs:
             self.targetnames.append(name.name)
 
-    def set_reduced_data(self, qs):
-        """Extracts the timeseries data from a QuerySet of ReducedDatums, and
-        creates the necessary arrays"""
+    def set_reduced_data(self, photometry_qs, qs):
+        """Extracts the timeseries data from a QuerySet of PhotometryReducedDatums, and
+        creates the necessary arrays.
+        Also accepts a QuerySet of generic ReducedDatums (lc_model, tabular, etc.) for the same
+        target, used to identify pre-existing derived datasets."""
 
         # Store the complete set of results
-        self.red_data = qs
+        self.red_data = photometry_qs
 
         # Unpack the lightcurve data:
         (self.datasets, self.ndata) = fittools.repackage_lightcurves(self.red_data)
 
         # Extract the timestamp of the last observation
-        time = [Time(i.timestamp).jd for i in self.red_data if i.data_type == 'photometry']
+        time = [Time(i.timestamp).jd for i in self.red_data]
         if len(time) > 0:
             self.first_observation = min(time)
             self.last_observation = max(time)

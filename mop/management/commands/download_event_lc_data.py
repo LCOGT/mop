@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from tom_targets.models import Target
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 from mop.toolbox import fittools
 from os import path
 
@@ -22,8 +22,8 @@ class Command(BaseCommand):
         else:
             target = qs[0]
 
-        # Fetch the ReducedData for this Target
-        red_data = ReducedDatum.objects.filter(target=target).order_by("timestamp")
+        # Fetch the PhotometryReducedDatums for this Target
+        red_data = PhotometryReducedDatum.objects.filter(target=target).order_by("timestamp")
 
         # Repackage the data into lightcurves for separate telescopes and filters
         (datasets, ndata) = fittools.repackage_lightcurves(red_data)

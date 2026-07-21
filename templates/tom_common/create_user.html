@@ -1,5 +1,5 @@
 {% extends 'tom_common/base.html' %}
-{% load bootstrap4 %}
+{% load django_bootstrap5 %}
 {% block title %}Create user{% endblock %}
 {% block content %}
 <div class="content">
@@ -10,7 +10,6 @@
 {% endif %}
 {% csrf_token %}
 {% bootstrap_form form %}
-{% buttons %}
   <button type="submit" class="btn btn-primary">
     {% if object %}
     Update
@@ -18,7 +17,6 @@
     Create User
     {% endif %}
   </button>
-{% endbuttons %}
 </form>
 </div>
 {% endblock %}

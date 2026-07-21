@@ -124,4 +124,12 @@ build it here and use it everywhere.
   value: {{ .Values.tnsApiKey | quote }}
 - name: ATLAS_FORCED_PHOTOMETRY_API_KEY
   value: {{ .Values.atlasApiKey | quote }}
+- name: OPM_DISPLAY_NAME
+  value: {{ .Values.opmDisplayName | quote }}
+- name: OPM_BASE_URL
+  value: {{ .Values.opmBaseUrl | quote }}
+- name: OPM_USERNAME
+  value: {{ .Values.opmUserName | quote }}
+- name: OPM_PASSWORD
+  value: {{ .Values.opmPassword | quote }}
 {{- end -}}

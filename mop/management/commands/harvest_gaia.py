@@ -4,7 +4,7 @@ from tom_targets.models import Target
 from mop.brokers import gaia as gaia_mop
 import requests
 from requests.exceptions import HTTPError
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 from datetime import datetime
 from astropy.time import Time, TimezoneInfo
 from mop.toolbox import TAP, utilities, classifier_tools
@@ -43,7 +43,7 @@ class MOPGaia(gaia.GaiaBroker):
             html_data = response.text.split('\n')
 
             try:
-                times = [Time(i.timestamp).jd for i in ReducedDatum.objects.filter(target=target) if i.data_type == 'photometry']
+                times = [Time(i.timestamp).jd for i in PhotometryReducedDatum.objects.filter(target=target)]
             except:
                 times = []
 
@@ -57,18 +57,13 @@ class MOPGaia(gaia.GaiaBroker):
 
                     if ('untrusted' not in phot_data[2]) and ('null' not in phot_data[2]) and (jd.value not in times):
 
-                        value = {
-                        'magnitude': float(phot_data[2]),
-                        'filter': 'G'
-                        }
-
-                        rd, created = ReducedDatum.objects.get_or_create(
+                        rd, created = PhotometryReducedDatum.objects.get_or_create(
                                 timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                                value=value,
                                 source_name=self.name,
                                 source_location=alert_url,
-                                data_type='photometry',
-                                target=target)
+                                target=target,
+                                bandpass='G',
+                                brightness=float(phot_data[2]))
 
             (t_last_jd, t_last_date) = TAP.TAP_time_last_datapoint(target)
             target.latest_data_hjd = t_last_jd

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from tom_dataproducts.models import ReducedDatum
+from tom_dataproducts.models import PhotometryReducedDatum
 from tom_targets.models import Target,TargetExtra
 from astropy.time import Time, TimezoneInfo
 from mop.toolbox import fittools
@@ -63,7 +63,7 @@ class Command(BaseCommand):
             radius = 0.0001 #arsec
 
             try:
-                times = [Time(i.timestamp).jd for i in ReducedDatum.objects.filter(target=target) if i.data_type == 'photometry']
+                times = [Time(i.timestamp).jd for i in PhotometryReducedDatum.objects.filter(target=target)]
             except:
                 times = []
 
@@ -86,22 +86,18 @@ class Command(BaseCommand):
                             emag = float(line[2])
 
                             filt = filters[line[-1]]
-                            value = {
-                                    'magnitude': mag,
-                                    'filter': filt,
-                                    'error': emag
-                                    }
 
                             jd.to_datetime(timezone=TimezoneInfo())
 
                             if  (jd.value not in times):
-                                rd, _ = ReducedDatum.objects.get_or_create(
+                                rd, _ = PhotometryReducedDatum.objects.get_or_create(
                                     timestamp=jd.to_datetime(timezone=TimezoneInfo()),
-                                    value=value,
                                     source_name='ZTFDR3',
                                     source_location='IRSA',
-                                    data_type='photometry',
-                                    target=target)
+                                    target=target,
+                                    bandpass=filt,
+                                    brightness=mag,
+                                    brightness_error=emag)
 
                         except:
                             pass

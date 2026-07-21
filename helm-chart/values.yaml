@@ -189,6 +189,10 @@ lcoApiKey: ""
 lcoProposalId: ""
 lcoUsername: ""
 atlasApiKey: ""
+opmDisplayName: ""
+opmBaseUrl: ""
+opmUserName: ""
+opmPassword: ""
 
 # AWS Credentials
 # These MUST be overriden in secret configuration file

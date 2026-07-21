@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from tom_targets.models import Target, TargetName, TargetExtra, TargetList
-from tom_dataproducts.models import DataProduct, ReducedDatum
+from tom_dataproducts.models import DataProduct, ReducedDatum, PhotometryReducedDatum
 from tom_observations.models import ObservationRecord, ObservationGroup
 from mop.management.commands import merge_utils
 from django_comments.models import Comment
@@ -189,9 +189,12 @@ class Command(BaseCommand):
 
         # Retrieve QuerySets of the DataProducts and ReducedDatums for the primary and matching targets.
         primary_datums = ReducedDatum.objects.filter(target=primary_target)
+        primary_photometry = PhotometryReducedDatum.objects.filter(target=primary_target)
         matching_dataproducts = [DataProduct.objects.filter(target=t) for t in matching_targets]
 
-        merge_utils.merge_data_products(options, primary_target, primary_datums, matching_targets, matching_dataproducts)
+        merge_utils.merge_data_products(
+            options, primary_target, primary_datums, primary_photometry, matching_targets, matching_dataproducts
+        )
 
         logger.info(' -> Completed merge of data products for ' + primary_target.name + ' with matching objects')
 

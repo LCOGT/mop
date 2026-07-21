@@ -14,6 +14,7 @@ import logging.config
 import os
 import ast
 import tempfile
+from tom_common.default_settings import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,55 +32,23 @@ ALLOWED_HOSTS = ['*']
 
 TOM_NAME = 'MOP'
 
+# Use built-in css theme to change the look of your TOM. (Valid themes = [Dark,])
+CSS_THEME = 'Dark'
+
 # Application definition
 
-INSTALLED_APPS = [
-    'whitenoise.runserver_nostatic',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.sites',
-    'django_extensions',
-    'guardian',
-    'tom_common',
-    'django_comments',
-    'bootstrap4',
-    'crispy_bootstrap4',
-    'crispy_forms',
-    'django_filters',
-    'django_gravatar',
-    'django_htmx',
-    'django_tables2',
-    'rest_framework',
-    'rest_framework.authtoken',
-    'tom_targets',
-    'tom_alerts',
-    'tom_observations',
-    'tom_dataproducts',
-    'tom_dataservices',
-    'tom_calendar',
-    'silk',
+INSTALLED_APPS = TOMTOOKIT_INSTALLED_APPS + [
     'mop',
     'microlensing_targets',
+    'silk',
+    'tom_antares',
 ]
+
 
 SITE_ID = 1
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+MIDDLEWARE = TOMTOOKIT_MIDDLEWARE + [
     'silk.middleware.SilkyMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'tom_common.middleware.ExternalServiceMiddleware',
-    'django_htmx.middleware.HtmxMiddleware',
 ]
 
 ROOT_URLCONF = 'mop.urls'
@@ -97,12 +66,11 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
             ],
         },
-    },
+    }
 ]
 
-CSS_THEME = 'Dark'
-
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 
 WSGI_APPLICATION = 'mop.wsgi.application'
 
@@ -128,18 +96,8 @@ DATABASES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-    ],
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100,
-    'STRICT_JSON': False,
-}
-
-
 # Password validation
-# https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
+# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -159,7 +117,6 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'guardian.backends.ObjectPermissionBackend',
@@ -184,6 +141,7 @@ DATE_FORMAT = 'Y-m-d'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
+
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/static/'
@@ -235,10 +193,28 @@ CACHES = {
     }
 }
 
-
+TASKS = {
+    "default": {
+        # "BACKEND": "django_tasks.backends.database.DatabaseBackend"
+        "BACKEND": "django_tasks.backends.immediate.ImmediateBackend"
+    }
+}
 
 # TOM Specific configuration
 TARGET_TYPE = 'SIDEREAL'
+
+# Set to the full path of a custom target model to extend the BaseTarget Model with custom fields.
+TARGET_MODEL_CLASS = 'microlensing_targets.models.MicrolensingTarget'
+
+# Define MATCH_MANAGERS here. This is a dictionary that contains a dotted module path to the desired match manager
+# for a given model.
+# For example:
+# MATCH_MANAGERS = {
+#    "Target": "my_custom_code.match_managers.MyCustomTargetMatchManager"
+# }
+MATCH_MANAGERS = {
+    "Target": "microlensing_targets.match_managers.matching_event_manager.EventMatchManager"
+}
 
 FACILITIES = {
     'LCO': {
@@ -270,28 +246,13 @@ FACILITIES = {
     },
 }
 
-SINGLE_TARGET_DATA_SERVICES = {
-    'ATLAS': {
-        'class': 'tom_dataproducts.single_target_data_service.atlas.AtlasForcedPhotometryService',
-        'url': "https://fallingstar-data.com/forcedphot",
-        'api_key': os.getenv('ATLAS_FORCED_PHOTOMETRY_API_KEY', 'your atlas account api token')
-    },
-    'PANSTARRS': {
-        'class': 'tom_dataproducts.single_target_data_service.panstarrs_service.panstarrs.PanstarrsSingleTargetDataService',
-        'url': 'https://catalogs.mast.stsci.edu/api/v0.1/panstarrs',  # MAST Base URL
-        # MAST_API_TOKEN is not required for public data
-        'api_key': os.getenv('MAST_API_TOKEN', 'MAST_API_TOKEN not set')
-    },
-}
-
 # Define the valid data product types for your TOM. Be careful when removing items, as previously valid types will no
 # longer be valid, and may cause issues unless the offending records are modified.
-TARGET_MODEL_CLASS = 'microlensing_targets.models.MicrolensingTarget'
 
-DATA_TYPES = (
-    ('SPECTROSCOPY', 'Spectroscopy'),
-    ('PHOTOMETRY', 'Photometry')
-)
+#DATA_TYPES = (
+#    ('SPECTROSCOPY', 'Spectroscopy'),
+#    ('PHOTOMETRY', 'Photometry')
+#)
 
 DATA_PRODUCT_TYPES = {
     'photometry': ('photometry', 'Photometry'),
@@ -331,6 +292,20 @@ TOM_ALERT_CLASSES = [
     'tom_antares.antares.ANTARESBroker',
 ]
 
+SINGLE_TARGET_DATA_SERVICES = {
+    'ATLAS': {
+        'class': 'tom_dataproducts.single_target_data_service.atlas.AtlasForcedPhotometryService',
+        'url': "https://fallingstar-data.com/forcedphot",
+        'api_key': os.getenv('ATLAS_FORCED_PHOTOMETRY_API_KEY', 'your atlas account api token')
+    },
+    'PANSTARRS': {
+        'class': 'tom_dataproducts.single_target_data_service.panstarrs_service.panstarrs.PanstarrsSingleTargetDataService',
+        'url': 'https://catalogs.mast.stsci.edu/api/v0.1/panstarrs',  # MAST Base URL
+        # MAST_API_TOKEN is not required for public data
+        'api_key': os.getenv('MAST_API_TOKEN', 'MAST_API_TOKEN not set')
+    },
+}
+
 # TNS credentials for broker
 BROKERS = {
     'TNS': {
@@ -339,6 +314,12 @@ BROKERS = {
         'bot_name': 'MOP_Bot',
     }
 }
+
+# Include or exclude specific dot separated harvester classes. If not set, all harvesters will be included based on
+# app configurations. If INCLUDE_HARVESTER_CLASSES is set, only those harvesters will be included. If
+# EXCLUDE_HARVESTER_CLASSES is set, all harvesters except those will be included.
+# INCLUDE_HARVESTER_CLASSES = ['app.example.harvesters.ExampleHarvester']
+# EXCLUDE_HARVESTER_CLASSES = ['app.example.harvesters.ExampleHarvester']
 
 HARVESTERS = {
     'TNS': {
@@ -470,21 +451,25 @@ TARGETLIST_FIELDS = [
     ('mag_now', 'float')
 ]
 
-# Define MATCH_MANAGERS here. This is a dictionary that contains a dotted module path to the desired match manager
-# for a given model.
-# For example:
-# MATCH_MANAGERS = {
-#    "Target": "my_custom_code.match_managers.MyCustomTargetMatchManager"
-# }
-MATCH_MANAGERS = {
-    "Target": "microlensing_targets.match_managers.matching_event_manager.EventMatchManager"
+# Data sharing
+DATA_SHARING = {
+    'OPM': {
+        # For sharing data with another TOM
+        'DISPLAY_NAME': os.getenv('OPM_DISPLAY_NAME', 'OPM'),
+        'BASE_URL': os.getenv('OPM_BASE_URL', 'https://lensingtom.zah.uni-heidelberg.de'),
+        'USERNAME': os.getenv('OPM_USERNAME', 'None'),
+        'PASSWORD': os.getenv('OPM_PASSWORD', 'None'),
+    }
 }
+
+# Authentication strategy can either be LOCKED (required login for all views, bypassed with OPEN_URLS)
+# or READ_ONLY (read only access to views)
+AUTH_STRATEGY = 'READ_ONLY'
 
 TARGET_PERMISSIONS_ONLY=True
 
-# Authentication strategy can either be LOCKED (required login for all views)
-# or READ_ONLY (read only access to views)
-AUTH_STRATEGY = 'READ_ONLY'
+# Default permission for newly created targets. Values can be 'PRIVATE', 'PUBLIC', or 'OPEN'
+TARGET_DEFAULT_PERMISSION = 'PRIVATE'
 
 # Display these columns in the target list table. Values can be attributes or properties on
 # the Target model, tags or extra fields. The fields `observations` and `saved_data` are
@@ -505,7 +490,7 @@ HOOKS = {
     'multiple_data_products_post_save': 'tom_dataproducts.hooks.multiple_data_products_post_save',
 }
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'
+#X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 AUTO_THUMBNAILS = False
 
@@ -516,9 +501,18 @@ THUMBNAIL_DEFAULT_SIZE = (200, 200)
 HINTS_ENABLED = True
 HINT_LEVEL = 20
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+    ],
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100,
+    'STRICT_JSON': False,
+}
+
 # Default Plotly theme setting, can set to any valid theme:
 # 'plotly', 'plotly_white', 'plotly_dark', 'ggplot2', 'seaborn', 'simple_white', 'none'
-PLOTLY_THEME = 'plotly_white'
+PLOTLY_THEME = 'plotly_dark'
 
 # Setting for displaying pagination information (e.g., "(0-0 of 0)").
 # Set this to False if you have a particularly large DB and paginated views are slow.
