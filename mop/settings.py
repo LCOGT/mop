@@ -310,11 +310,16 @@ SINGLE_TARGET_DATA_SERVICES = {
 
 # TNS credentials for broker
 BROKERS = {
+}
+
+DATA_SERVICES = {
     'TNS': {
         'api_key': os.environ.get('TNS_API_KEY','dummy'),
-        'bot_id': '164734',
-        'bot_name': 'MOP_Bot',
-    }
+        'bot_id': os.getenv('TNS_BOT_ID ', '164734'),
+        'bot_name': os.getenv('TNS_BOT_NAME', 'MOP_Bot'),
+        'base_url': 'https://www.wis-tns.org',
+        'group_name': os.getenv('TNS_GROUP_NAME', ''),
+    },
 }
 
 # Include or exclude specific dot separated harvester classes. If not set, all harvesters will be included based on
