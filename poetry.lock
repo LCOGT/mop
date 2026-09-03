@@ -2171,6 +2171,18 @@ test = ["jaraco.test (>=5.4)", "pytest (>=6,!=8.1.*)", "zipp (>=3.17)"]
 type = ["pytest-mypy"]
 
 [[package]]
+name = "iniconfig"
+version = "2.3.0"
+description = "brain-dead simple config-ini parsing"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "iniconfig-2.3.0-py3-none-any.whl", hash = "sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12"},
+    {file = "iniconfig-2.3.0.tar.gz", hash = "sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730"},
+]
+
+[[package]]
 name = "ipython"
 version = "8.39.0"
 description = "IPython: Productive Interactive Computing"
@@ -3586,6 +3598,22 @@ packaging = "*"
 tenacity = ">=6.2.0"
 
 [[package]]
+name = "pluggy"
+version = "1.6.0"
+description = "plugin and hook calling mechanisms for python"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746"},
+    {file = "pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3"},
+]
+
+[package.extras]
+dev = ["pre-commit", "tox"]
+testing = ["coverage", "pytest", "pytest-benchmark"]
+
+[[package]]
 name = "prompt-toolkit"
 version = "3.0.52"
 description = "Library for building powerful interactive command lines in Python"
@@ -3852,6 +3880,30 @@ files = [
 
 [package.extras]
 diagrams = ["jinja2", "railroad-diagrams"]
+
+[[package]]
+name = "pytest"
+version = "9.1.1"
+description = "pytest: simple powerful testing with Python"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "pytest-9.1.1-py3-none-any.whl", hash = "sha256:37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c"},
+    {file = "pytest-9.1.1.tar.gz", hash = "sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313"},
+]
+
+[package.dependencies]
+colorama = {version = ">=0.4", markers = "sys_platform == \"win32\""}
+exceptiongroup = {version = ">=1", markers = "python_version < \"3.11\""}
+iniconfig = ">=1.0.1"
+packaging = ">=22"
+pluggy = ">=1.5,<2"
+pygments = ">=2.7.2"
+tomli = {version = ">=1", markers = "python_version < \"3.11\""}
+
+[package.extras]
+dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests", "setuptools", "xmlschema"]
 
 [[package]]
 name = "python-dateutil"
@@ -4667,6 +4719,64 @@ elasticsearch-dsl = ">=8.18.0,<9.0.0"
 tomtoolkit = ">=3.0.0,<4.0.0"
 
 [[package]]
+name = "tomli"
+version = "2.4.1"
+description = "A lil' TOML parser"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+markers = "python_version < \"3.11\""
+files = [
+    {file = "tomli-2.4.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:f8f0fc26ec2cc2b965b7a3b87cd19c5c6b8c5e5f436b984e85f486d652285c30"},
+    {file = "tomli-2.4.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:4ab97e64ccda8756376892c53a72bd1f964e519c77236368527f758fbc36a53a"},
+    {file = "tomli-2.4.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:96481a5786729fd470164b47cdb3e0e58062a496f455ee41b4403be77cb5a076"},
+    {file = "tomli-2.4.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:5a881ab208c0baf688221f8cecc5401bd291d67e38a1ac884d6736cbcd8247e9"},
+    {file = "tomli-2.4.1-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:47149d5bd38761ac8be13a84864bf0b7b70bc051806bc3669ab1cbc56216b23c"},
+    {file = "tomli-2.4.1-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:ec9bfaf3ad2df51ace80688143a6a4ebc09a248f6ff781a9945e51937008fcbc"},
+    {file = "tomli-2.4.1-cp311-cp311-win32.whl", hash = "sha256:ff2983983d34813c1aeb0fa89091e76c3a22889ee83ab27c5eeb45100560c049"},
+    {file = "tomli-2.4.1-cp311-cp311-win_amd64.whl", hash = "sha256:5ee18d9ebdb417e384b58fe414e8d6af9f4e7a0ae761519fb50f721de398dd4e"},
+    {file = "tomli-2.4.1-cp311-cp311-win_arm64.whl", hash = "sha256:c2541745709bad0264b7d4705ad453b76ccd191e64aa6f0fc66b69a293a45ece"},
+    {file = "tomli-2.4.1-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:c742f741d58a28940ce01d58f0ab2ea3ced8b12402f162f4d534dfe18ba1cd6a"},
+    {file = "tomli-2.4.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:7f86fd587c4ed9dd76f318225e7d9b29cfc5a9d43de44e5754db8d1128487085"},
+    {file = "tomli-2.4.1-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:ff18e6a727ee0ab0388507b89d1bc6a22b138d1e2fa56d1ad494586d61d2eae9"},
+    {file = "tomli-2.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:136443dbd7e1dee43c68ac2694fde36b2849865fa258d39bf822c10e8068eac5"},
+    {file = "tomli-2.4.1-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:5e262d41726bc187e69af7825504c933b6794dc3fbd5945e41a79bb14c31f585"},
+    {file = "tomli-2.4.1-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:5cb41aa38891e073ee49d55fbc7839cfdb2bc0e600add13874d048c94aadddd1"},
+    {file = "tomli-2.4.1-cp312-cp312-win32.whl", hash = "sha256:da25dc3563bff5965356133435b757a795a17b17d01dbc0f42fb32447ddfd917"},
+    {file = "tomli-2.4.1-cp312-cp312-win_amd64.whl", hash = "sha256:52c8ef851d9a240f11a88c003eacb03c31fc1c9c4ec64a99a0f922b93874fda9"},
+    {file = "tomli-2.4.1-cp312-cp312-win_arm64.whl", hash = "sha256:f758f1b9299d059cc3f6546ae2af89670cb1c4d48ea29c3cacc4fe7de3058257"},
+    {file = "tomli-2.4.1-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:36d2bd2ad5fb9eaddba5226aa02c8ec3fa4f192631e347b3ed28186d43be6b54"},
+    {file = "tomli-2.4.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:eb0dc4e38e6a1fd579e5d50369aa2e10acfc9cace504579b2faabb478e76941a"},
+    {file = "tomli-2.4.1-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c7f2c7f2b9ca6bdeef8f0fa897f8e05085923eb091721675170254cbc5b02897"},
+    {file = "tomli-2.4.1-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f3c6818a1a86dd6dca7ddcaaf76947d5ba31aecc28cb1b67009a5877c9a64f3f"},
+    {file = "tomli-2.4.1-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:d312ef37c91508b0ab2cee7da26ec0b3ed2f03ce12bd87a588d771ae15dcf82d"},
+    {file = "tomli-2.4.1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:51529d40e3ca50046d7606fa99ce3956a617f9b36380da3b7f0dd3dd28e68cb5"},
+    {file = "tomli-2.4.1-cp313-cp313-win32.whl", hash = "sha256:2190f2e9dd7508d2a90ded5ed369255980a1bcdd58e52f7fe24b8162bf9fedbd"},
+    {file = "tomli-2.4.1-cp313-cp313-win_amd64.whl", hash = "sha256:8d65a2fbf9d2f8352685bc1364177ee3923d6baf5e7f43ea4959d7d8bc326a36"},
+    {file = "tomli-2.4.1-cp313-cp313-win_arm64.whl", hash = "sha256:4b605484e43cdc43f0954ddae319fb75f04cc10dd80d830540060ee7cd0243cd"},
+    {file = "tomli-2.4.1-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:fd0409a3653af6c147209d267a0e4243f0ae46b011aa978b1080359fddc9b6cf"},
+    {file = "tomli-2.4.1-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:a120733b01c45e9a0c34aeef92bf0cf1d56cfe81ed9d47d562f9ed591a9828ac"},
+    {file = "tomli-2.4.1-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:559db847dc486944896521f68d8190be1c9e719fced785720d2216fe7022b662"},
+    {file = "tomli-2.4.1-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:01f520d4f53ef97964a240a035ec2a869fe1a37dde002b57ebc4417a27ccd853"},
+    {file = "tomli-2.4.1-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:7f94b27a62cfad8496c8d2513e1a222dd446f095fca8987fceef261225538a15"},
+    {file = "tomli-2.4.1-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:ede3e6487c5ef5d28634ba3f31f989030ad6af71edfb0055cbbd14189ff240ba"},
+    {file = "tomli-2.4.1-cp314-cp314-win32.whl", hash = "sha256:3d48a93ee1c9b79c04bb38772ee1b64dcf18ff43085896ea460ca8dec96f35f6"},
+    {file = "tomli-2.4.1-cp314-cp314-win_amd64.whl", hash = "sha256:88dceee75c2c63af144e456745e10101eb67361050196b0b6af5d717254dddf7"},
+    {file = "tomli-2.4.1-cp314-cp314-win_arm64.whl", hash = "sha256:b8c198f8c1805dc42708689ed6864951fd2494f924149d3e4bce7710f8eb5232"},
+    {file = "tomli-2.4.1-cp314-cp314t-macosx_10_15_x86_64.whl", hash = "sha256:d4d8fe59808a54658fcc0160ecfb1b30f9089906c50b23bcb4c69eddc19ec2b4"},
+    {file = "tomli-2.4.1-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:7008df2e7655c495dd12d2a4ad038ff878d4ca4b81fccaf82b714e07eae4402c"},
+    {file = "tomli-2.4.1-cp314-cp314t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:1d8591993e228b0c930c4bb0db464bdad97b3289fb981255d6c9a41aedc84b2d"},
+    {file = "tomli-2.4.1-cp314-cp314t-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:734e20b57ba95624ecf1841e72b53f6e186355e216e5412de414e3c51e5e3c41"},
+    {file = "tomli-2.4.1-cp314-cp314t-musllinux_1_2_aarch64.whl", hash = "sha256:8a650c2dbafa08d42e51ba0b62740dae4ecb9338eefa093aa5c78ceb546fcd5c"},
+    {file = "tomli-2.4.1-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:504aa796fe0569bb43171066009ead363de03675276d2d121ac1a4572397870f"},
+    {file = "tomli-2.4.1-cp314-cp314t-win32.whl", hash = "sha256:b1d22e6e9387bf4739fbe23bfa80e93f6b0373a7f1b96c6227c32bef95a4d7a8"},
+    {file = "tomli-2.4.1-cp314-cp314t-win_amd64.whl", hash = "sha256:2c1c351919aca02858f740c6d33adea0c5deea37f9ecca1cc1ef9e884a619d26"},
+    {file = "tomli-2.4.1-cp314-cp314t-win_arm64.whl", hash = "sha256:eab21f45c7f66c13f2a9e0e1535309cee140182a9cdae1e041d02e47291e8396"},
+    {file = "tomli-2.4.1-py3-none-any.whl", hash = "sha256:0d85819802132122da43cb86656f8d1f8c6587d54ae7dcaf30e90533028b49fe"},
+    {file = "tomli-2.4.1.tar.gz", hash = "sha256:7c7e1a961a0b2f2472c1ac5b69affa0ae1132c39adcb67aba98568702b9cc23f"},
+]
+
+[[package]]
 name = "tomtoolkit"
 version = "3.0.0"
 description = "TOM Toolkit and base modules"
@@ -4810,65 +4920,66 @@ zstd = ["backports-zstd (>=1.0.0) ; python_version < \"3.14\""]
 
 [[package]]
 name = "vbmicrolensing"
-version = "5.5"
+version = "5.4.1"
 description = "VBMicrolensing is a tool for efficient computation in gravitational microlensing events using the advanced contour integration method, supporting single, binary and multiple lenses."
 optional = false
 python-versions = "<4,>=3.8"
 groups = ["main"]
 files = [
-    {file = "vbmicrolensing-5.5-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:059fe48a689882f50be0a42e9922835fb5bd7ca99dc614728496ff2300ce7c4f"},
-    {file = "vbmicrolensing-5.5-cp310-cp310-macosx_11_0_x86_64.whl", hash = "sha256:81da17199c6bdca46de68f6057ce72b72dfe6bf6f85bcb7441a976d08ec044ce"},
-    {file = "vbmicrolensing-5.5-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2afef167ee79f80f41993259675da4a6e5c61aa141397d03bbaecbf3e49a2994"},
-    {file = "vbmicrolensing-5.5-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:21fbc7e192da15616faa58e7d19f24ad963849157137d32a3eac96571afda68a"},
-    {file = "vbmicrolensing-5.5-cp310-cp310-win32.whl", hash = "sha256:4cc32a422edc1e08fe75668578c1db605001eebd9be93ca2734347e868be3ae3"},
-    {file = "vbmicrolensing-5.5-cp310-cp310-win_amd64.whl", hash = "sha256:ce43de7450647a57139f83980d4627a60646912416e50d6ce3ebcd80c0d89204"},
-    {file = "vbmicrolensing-5.5-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:38b972e1ecc25e3649db39c6e82a3f0324a102d4371e5dceab00da5bcca4a6ca"},
-    {file = "vbmicrolensing-5.5-cp311-cp311-macosx_11_0_x86_64.whl", hash = "sha256:2229dd3f6c9f3f7aabc94b0df17db4fd037e17bf1df359aaaf64c513f0925bdf"},
-    {file = "vbmicrolensing-5.5-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:34b84acc13d14c91ce9efcc17f7377b2d6a0f2bd58b41e62ec88eccbc255c6da"},
-    {file = "vbmicrolensing-5.5-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:6670bd6809fe47855635ea6ab3d8d71bcc15d9a8b2799221dcd4513811ac1ac1"},
-    {file = "vbmicrolensing-5.5-cp311-cp311-win32.whl", hash = "sha256:eb563f8fac696eb7f47e957ba58fdfe01c49cd40f057690ed209d80be687fcbb"},
-    {file = "vbmicrolensing-5.5-cp311-cp311-win_amd64.whl", hash = "sha256:049be30233bde872fef750ba42da9b2824f7b9083a7c4a6b25635d2bba241f11"},
-    {file = "vbmicrolensing-5.5-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:ca5609465c114f02a0c83ceea6e952e1c5c6d3db237723edea26114a083e033f"},
-    {file = "vbmicrolensing-5.5-cp312-cp312-macosx_11_0_x86_64.whl", hash = "sha256:dee46df1519fc4f0f93ff9a0c63ada3d1083fb5fd6d3ef464cf65f0120ea4088"},
-    {file = "vbmicrolensing-5.5-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b79462c18098dc946ab8aa5d036ecf6fd37931aef4dc98979ad83c4e62bceec3"},
-    {file = "vbmicrolensing-5.5-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:0202489ae9ec71da43875720e820c8e39eb1ebda93be5df4baa342d8f13ff68f"},
-    {file = "vbmicrolensing-5.5-cp312-cp312-win32.whl", hash = "sha256:4c97d9b5380b45aaa1f57a63fddb029198481b97b183d319c97e189a0f75969c"},
-    {file = "vbmicrolensing-5.5-cp312-cp312-win_amd64.whl", hash = "sha256:12c825cf70bf3091403eafe94bcd5b22502d8d4a405481fcfeeb9b4e4dcb12e9"},
-    {file = "vbmicrolensing-5.5-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:4dac422ca22063785621e337c15d53e078b0f94e2bda798f1ef0d965709627f5"},
-    {file = "vbmicrolensing-5.5-cp313-cp313-macosx_11_0_x86_64.whl", hash = "sha256:6d546c3d9a1fd13e3f979b26083ec5fdd87038e1ec40a32436b2823d6d2a02bf"},
-    {file = "vbmicrolensing-5.5-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:82f348d643c63f9782dcaaa1ac3fb8bc81791873bd939070b997563c9b2d27c3"},
-    {file = "vbmicrolensing-5.5-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:1ad3d6d4ce789522f16a9b2e5cb0b5899e180cba74c5d18079e4772d2ce26ea9"},
-    {file = "vbmicrolensing-5.5-cp313-cp313-win32.whl", hash = "sha256:0c1082e8128c5e082bfe55d9939b83ae20d9fab8053ae438aa14c66c4c5d4830"},
-    {file = "vbmicrolensing-5.5-cp313-cp313-win_amd64.whl", hash = "sha256:9d1af3b293b54fa430784dc5978a1244b25aa43d376df6300451917f1ea40426"},
-    {file = "vbmicrolensing-5.5-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:2c9a333f53b448874b83ef9463cd9eb1c8e0a485dfe5f478699903502a497f78"},
-    {file = "vbmicrolensing-5.5-cp314-cp314-macosx_11_0_x86_64.whl", hash = "sha256:f89cf1a6396cfb1bba787409b3276160b5c00c031a15314b27cd77bcffaca313"},
-    {file = "vbmicrolensing-5.5-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:03017f27b20e61595f7e51235eab05bed927ec6cb83f04cda66835b251e77066"},
-    {file = "vbmicrolensing-5.5-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:94046b7da1b32277c2de0bbac8a50aabdb4e817f8548102289be357bee73a9c5"},
-    {file = "vbmicrolensing-5.5-cp314-cp314-win32.whl", hash = "sha256:d283cb4ab5b78d7fa32a37342e781eb78c5426cc7c8332fa40af4d88dff2555b"},
-    {file = "vbmicrolensing-5.5-cp314-cp314-win_amd64.whl", hash = "sha256:dec6323ceb7f0985797785300faf6114ded34298dc35dee53b52f8488263385c"},
-    {file = "vbmicrolensing-5.5-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:e8636e4c9f94fc897001314c3862ad3be8fe120c3b73ea8dddf0427f657ba146"},
-    {file = "vbmicrolensing-5.5-cp314-cp314t-macosx_11_0_x86_64.whl", hash = "sha256:ee9e29362963f3be3bab7666d535226c33dadb94e4eede26a27aaf4f25a5a4b0"},
-    {file = "vbmicrolensing-5.5-cp314-cp314t-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c363077265f4d1995ba20a6cb8bec92163ad5baf686e429132af6e09c0789a56"},
-    {file = "vbmicrolensing-5.5-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:debb9da256bf262a494c05b0fc102e34eb81b769f3a53b933adfd3c23a117578"},
-    {file = "vbmicrolensing-5.5-cp314-cp314t-win32.whl", hash = "sha256:66adb0285bfa863a71f356962844aa1f0a8af513f904872256879445062e1147"},
-    {file = "vbmicrolensing-5.5-cp314-cp314t-win_amd64.whl", hash = "sha256:491daf5f261e5142292f11f01828f87f49cb60edaf75ca79a03d997fd70d3556"},
-    {file = "vbmicrolensing-5.5-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:afd843e25801f22f2ee0490094958f5de9f2e7c7d758cbba2a7ee1fcf14c0b67"},
-    {file = "vbmicrolensing-5.5-cp38-cp38-macosx_11_0_x86_64.whl", hash = "sha256:d38888772933c8c36bc3b96e4fa88e2cc692ea72fc2b791a81abd7f636b02b07"},
-    {file = "vbmicrolensing-5.5-cp38-cp38-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6e2dd9faed4c812b4b470c6a3d7775e484d4531515e1bdf98963b8be7121d395"},
-    {file = "vbmicrolensing-5.5-cp38-cp38-musllinux_1_2_x86_64.whl", hash = "sha256:cf123c63942e0f8a5a75c8ca67da85fcee50e6940c8dd75230128689a2c32562"},
-    {file = "vbmicrolensing-5.5-cp38-cp38-win32.whl", hash = "sha256:68bccfed867c9bd189e7dc3449a79b8c4771688fffabe3b8510ed6ab4a5bdc6c"},
-    {file = "vbmicrolensing-5.5-cp38-cp38-win_amd64.whl", hash = "sha256:05c105aceed7f5381bc1bf0a8d3d96eda0704f973aa611c4bf1df12965be1d3b"},
-    {file = "vbmicrolensing-5.5-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:817bb91e961f231b56d10650c075c9b68d62eef75b719c0cfca324b7dd6f1b08"},
-    {file = "vbmicrolensing-5.5-cp39-cp39-macosx_11_0_x86_64.whl", hash = "sha256:4486d3c1d05031bcbfab3561cc7b1721208bc8d01f1d991aec4175c364bb976b"},
-    {file = "vbmicrolensing-5.5-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:088ff954f9f5ce0bd1b20ab1d8a19a74e7a77fb9810b5d7c81d5e774b850b959"},
-    {file = "vbmicrolensing-5.5-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:65f3763fca066ac0dadc7446afc9eca5d58be569ade47e40834214d13eccb986"},
-    {file = "vbmicrolensing-5.5-cp39-cp39-win32.whl", hash = "sha256:99f3ffd6c874f8b93688b22ee00f64c0d5f942aed0c9c27ebf9e610a807b7772"},
-    {file = "vbmicrolensing-5.5-cp39-cp39-win_amd64.whl", hash = "sha256:161cd67627ce702d21616f1d22b02a92a06f7bbb162196622ff59e81b2581839"},
-    {file = "vbmicrolensing-5.5.tar.gz", hash = "sha256:c604b7670fd7d99ec5177a95cebee3eee2d67c3a7ea3da87be88aa6eaa04248e"},
+    {file = "vbmicrolensing-5.4.1-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:de78c97398d39c1db43954728f6b292acadbeff49680c97e1b955b7bcabb46f7"},
+    {file = "vbmicrolensing-5.4.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:4fa61d6315492cfe3e808029f5bb59ff7f9f9c926a55bd93ca0102209b08a7cd"},
+    {file = "vbmicrolensing-5.4.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a0f731aeaea449e1988205e72afc9b2255a1cc31ad6a7648b5410d071b178006"},
+    {file = "vbmicrolensing-5.4.1-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:d645e0192c464f9e681ef89ba9092ee97912f3521f4015d20492847e69dde735"},
+    {file = "vbmicrolensing-5.4.1-cp310-cp310-win32.whl", hash = "sha256:738a2bfa4ee9e8e78fccb8718f7b91652d40ccae40a76df8f01829bf947ec2f5"},
+    {file = "vbmicrolensing-5.4.1-cp310-cp310-win_amd64.whl", hash = "sha256:1dfa278e0ac5d26a6e8c5dcfbf28234c8951cf972da005e2d4ed2a577bf285ad"},
+    {file = "vbmicrolensing-5.4.1-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:e6631fdee4749b323778e9e5e6307a235bd5e1826c89a7a100503b60dd1b3b70"},
+    {file = "vbmicrolensing-5.4.1-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:1ec7800dba3316f97730bc4a2c076a801941d4a6808474ab12809fb14814028b"},
+    {file = "vbmicrolensing-5.4.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:0fe577958b79892616a24aad357b0096ccadff5811c20484b57e9872bf33776b"},
+    {file = "vbmicrolensing-5.4.1-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:46e517471c433e585dac2515954f2ce159d2f216b9556179e66601b33b41deb2"},
+    {file = "vbmicrolensing-5.4.1-cp311-cp311-win32.whl", hash = "sha256:c9c9ed7c3cf80beb6b2702e8a8bf32ff6b023c5f2805677efe1eaa0aafde179e"},
+    {file = "vbmicrolensing-5.4.1-cp311-cp311-win_amd64.whl", hash = "sha256:c1c01fd68c7da4ef032b30acb6e22a0daa009ec13b9059b5bdef5f113364e2ff"},
+    {file = "vbmicrolensing-5.4.1-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:958f1828c1876513e88ce002232234447c5a95690d8ac50bf96b7e5a740d972a"},
+    {file = "vbmicrolensing-5.4.1-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:86c40d3124466bbb1609909109f00eee1411f1638ef9c9900f7d3ad1dcf76f3a"},
+    {file = "vbmicrolensing-5.4.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:88b0ed761da4f3ddbfc2503f642abf25082ef5b4d68d47d063d23078ed0dea9c"},
+    {file = "vbmicrolensing-5.4.1-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:6aa7067466e938a3412c324d30aed7898f263465f1f31528d6b96c9bd3fdf4c7"},
+    {file = "vbmicrolensing-5.4.1-cp312-cp312-win32.whl", hash = "sha256:7f2fe9655a529058bd370f96e3d60fed70d9ba7b7c8398273d399c1d78c503e8"},
+    {file = "vbmicrolensing-5.4.1-cp312-cp312-win_amd64.whl", hash = "sha256:7647ffef28ab087e92289302cc598cba4cbeb4fdff1f455947215e26352b26d7"},
+    {file = "vbmicrolensing-5.4.1-cp313-cp313-macosx_10_15_x86_64.whl", hash = "sha256:7aebe6df215c0d74a258d01f6e3f540de95905f5353ba6db36cc5ba0bffdabd8"},
+    {file = "vbmicrolensing-5.4.1-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:de5c1f6c3eee86701b4e8633c32d2575fbfea0025d97b9318d5f3c80c3811470"},
+    {file = "vbmicrolensing-5.4.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:d717bba1ad9423ff9b25484a83c8f6f7fd7ee6d90d97a16f0254406039816f7d"},
+    {file = "vbmicrolensing-5.4.1-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:22d946091b488ee1fdde2fac99849e9775df198b04beb6616b54d41a47366fbe"},
+    {file = "vbmicrolensing-5.4.1-cp313-cp313-win32.whl", hash = "sha256:545951fb2a249a927f970ed34abe191cf5addf8a97f83302be8fbd52203e3f22"},
+    {file = "vbmicrolensing-5.4.1-cp313-cp313-win_amd64.whl", hash = "sha256:d78385f5bd40202ab79ad633146391327c6b06ffea6db537a4e7554de42f1b41"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:ee58cc38a609a075ab9e8eae70409e018705d91aab4b0326d7e57f27514e1b75"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:149693f59c880c575a9704112ce5371a85002cbe7acd5913bda65748fc6dec73"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:585cf219af76850b71ee230d3aa3353379673baf8701efb86abfbc329a6e6abd"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:81945c7548c0ed8774add8c5e2bf30f2d6504ca7746e041fbd7eed3622eab22e"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314-win32.whl", hash = "sha256:6e417181852cf682e33e51e2afc51fc2e44526ba29a93ab2da558bef3af645d0"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314-win_amd64.whl", hash = "sha256:aefdbe6638f6de23f4c3255e016ad917cddc65821bc548f9808e552a0e640b94"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314t-macosx_10_15_x86_64.whl", hash = "sha256:7c8238159c2766c1e6d75e58539af1eadc8c1abec8080c371e17de7cde959521"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:54d850d493c40a7e34495d252c577e6479f76332421ae15268adc0fb6677f694"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314t-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:177cc32b25f611aa5c249fbc407f7879a302a650a9b37fe35101aad5860e8ef5"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:0c9c049d838e5e85dccb0478e4f9519df5ed52799ad0675019a52c4304c85540"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314t-win32.whl", hash = "sha256:41acf592d92b0054edf3c3b6f64693230b9b8c048ca49bc516d6f3780b1177e6"},
+    {file = "vbmicrolensing-5.4.1-cp314-cp314t-win_amd64.whl", hash = "sha256:7725652b3048726a756f98c81abf8486d7b25ac6ab1240e8914f7e1860dd2250"},
+    {file = "vbmicrolensing-5.4.1-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:6cc9387102443cf993bf0bb195ca93ee148753ccb00b3b39445b9bf8524e6172"},
+    {file = "vbmicrolensing-5.4.1-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:f361555930a1bb2da8a3ac9a80443051f8f9cea9cb5a0aadf8833ee28b25ca1f"},
+    {file = "vbmicrolensing-5.4.1-cp38-cp38-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:90cb2e5739af14db6b5350900bd9177de57975f825f5369f168e404db7466772"},
+    {file = "vbmicrolensing-5.4.1-cp38-cp38-musllinux_1_2_x86_64.whl", hash = "sha256:e572c744511e4eea4a3eba44a1529bb847c117f8078306f2dd634234e4793274"},
+    {file = "vbmicrolensing-5.4.1-cp38-cp38-win32.whl", hash = "sha256:39b6c3aaba0b3ec8c9f4e2c12fe01d7681dd426175c925a281b0bbc0af1dd1ee"},
+    {file = "vbmicrolensing-5.4.1-cp38-cp38-win_amd64.whl", hash = "sha256:a11274f0bc3d42cdb3a42b52ce566ea8df67a3a2c94ea8a9a46c5dcf9eb3f961"},
+    {file = "vbmicrolensing-5.4.1-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:a9476a577ad42bc09cee304c7f3309c85e105ecb44829cdc4dddf40c7b1ca1b8"},
+    {file = "vbmicrolensing-5.4.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:2f9a238934b4e9995a995697e2648859534c33bbbc4cf526b742c471c1f9dca9"},
+    {file = "vbmicrolensing-5.4.1-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:5ac5e7fa9da841a06288434ad206a5448e48e9ebea271d77986ddb914979873c"},
+    {file = "vbmicrolensing-5.4.1-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:4a983710809cfd84ac54a68c6c445276c267148e0bafa9952a8639e07aa97d48"},
+    {file = "vbmicrolensing-5.4.1-cp39-cp39-win32.whl", hash = "sha256:3c3c64d83d13c345bcb0ceb218f8067c4bdd1666f295833d5e969b230be9df6d"},
+    {file = "vbmicrolensing-5.4.1-cp39-cp39-win_amd64.whl", hash = "sha256:dd15cc99d77bf98200e07dc07bed558b957339c8f726f3cc6ffd2c5731623594"},
+    {file = "vbmicrolensing-5.4.1.tar.gz", hash = "sha256:7640103ebfb6b5ac4743583e4d253a812da7a4d65550f5a92ad5421ef20d4e1c"},
 ]
 
 [package.dependencies]
 numpy = "*"
+pytest = "*"
 
 [[package]]
 name = "wcwidth"
@@ -5119,4 +5230,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.1"
 python-versions = "<3.13,>=3.10.0"
-content-hash = "e16cf7d7fa93c4eb311baa0b75248d6f091e9dc6cd795e618c09491ec4794345"
+content-hash = "3f8e3a533181ce093a1fe4f36a44a9b6f3342fbb5e803a127131a65a4b74efbe"
